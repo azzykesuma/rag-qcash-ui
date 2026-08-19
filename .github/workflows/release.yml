@@ -9,29 +9,9 @@ permissions:
   contents: write
 
 jobs:
-  build:
-    name: Build (${{ matrix.os }})
-    runs-on: ${{ matrix.os }}
-    strategy:
-      matrix:
-        include:
-          - os: windows-latest
-            goos: windows
-            goarch: amd64
-            output_name: vault-windows-amd64.exe
-          - os: ubuntu-latest
-            goos: linux
-            goarch: amd64
-            output_name: vault-linux-amd64
-          - os: macos-latest
-            goos: darwin
-            goarch: arm64
-            output_name: vault-darwin-arm64
-          - os: macos-13
-            goos: darwin
-            goarch: amd64
-            output_name: vault-darwin-amd64
-
+  release:
+    name: Build Multi-Platform Binaries
+    runs-on: ubuntu-latest
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
@@ -42,34 +22,24 @@ jobs:
           go-version-file: 'go.mod'
           cache: true
 
-      - name: Build Binary
-        env:
-          GOOS: ${{ matrix.goos }}
-          GOARCH: ${{ matrix.goarch }}
+      - name: Build Windows Binary (x86_64)
         run: |
-          go build -ldflags="-s -w" -o "${{ matrix.output_name }}" ./cmd/vault
+          mkdir -p dist
+          GOOS=windows GOARCH=amd64 CGO_ENABLED=0 go build -ldflags="-s -w" -o dist/vault-windows-amd64.exe ./cmd/vault
 
-      - name: Upload Build Artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: ${{ matrix.output_name }}
-          path: ${{ matrix.output_name }}
+      - name: Build Linux Binary (x86_64)
+        run: |
+          GOOS=linux GOARCH=amd64 CGO_ENABLED=0 go build -ldflags="-s -w" -o dist/vault-linux-amd64 ./cmd/vault
 
-  release:
-    name: Create GitHub Release
-    needs: build
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout Code
-        uses: actions/checkout@v4
+      - name: Build macOS Apple Silicon Binary (arm64)
+        run: |
+          GOOS=darwin GOARCH=arm64 CGO_ENABLED=0 go build -ldflags="-s -w" -o dist/vault-darwin-arm64 ./cmd/vault
 
-      - name: Download All Artifacts
-        uses: actions/download-artifact@v4
-        with:
-          path: dist
-          merge-multiple: true
+      - name: Build macOS Intel Binary (amd64)
+        run: |
+          GOOS=darwin GOARCH=amd64 CGO_ENABLED=0 go build -ldflags="-s -w" -o dist/vault-darwin-amd64 ./cmd/vault
 
-      - name: Publish Release
+      - name: Publish GitHub Release
         uses: softprops/action-gh-release@v2
         with:
           files: dist/*
