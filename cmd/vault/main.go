@@ -30,9 +30,43 @@ COMMANDS:
   stats                  Display statistics about stored conversations
 
 OPTIONS:
+  --vault-dir <path>     Explicit path to the vault repository (defaults to current dir or LLM_VAULT_DIR)
   --redact-words <w1,w2> Comma-separated list of custom words/company names to redact
   --tool <name>          Explicit tool name for 'import' (agy, codex, opencode, aider)
 `)
+}
+
+func resolveVaultDir() string {
+	// 1. Environment variable
+	if envDir := os.Getenv("LLM_VAULT_DIR"); envDir != "" {
+		if _, err := os.Stat(envDir); err == nil {
+			return envDir
+		}
+	}
+
+	// 2. Current working directory if it contains conversations/
+	if _, err := os.Stat("conversations"); err == nil {
+		cwd, _ := os.Getwd()
+		return cwd
+	}
+
+	// 3. Executable's own directory
+	if exePath, err := os.Executable(); err == nil {
+		exeDir := filepath.Dir(exePath)
+		if _, err := os.Stat(filepath.Join(exeDir, "conversations")); err == nil {
+			return exeDir
+		}
+	}
+
+	// 4. Default persistent vault directory
+	defaultPath := filepath.Join("D:\\code", "llm-context-vault")
+	if _, err := os.Stat(defaultPath); err == nil {
+		return defaultPath
+	}
+
+	// 5. Fallback to CWD
+	cwd, _ := os.Getwd()
+	return cwd
 }
 
 func main() {
@@ -41,11 +75,7 @@ func main() {
 		return
 	}
 
-	workDir, err := os.Getwd()
-	if err != nil {
-		fmt.Printf("Error getting current working directory: %v\n", err)
-		os.Exit(1)
-	}
+	workDir := resolveVaultDir()
 
 	command := strings.ToLower(os.Args[1])
 
