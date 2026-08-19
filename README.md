@@ -121,6 +121,10 @@ vault audit
 ---
 
 ## 🤝 Contributing
-1. Run `vault scan-agy` or `vault import <path>`.
-2. Run `vault audit` to ensure all secrets are scrubbed.
-3. Commit the updated `conversations/` directory and open a Pull Request!
+Contributions are welcome! Please check out our [Contributing Guidelines](CONTRIBUTING.md) to see how you can safely scan and submit your own local assistant problem-solving sessions via Pull Request.
+
+---
+
+## 📄 License
+MIT License. Free for open-source research, developer tooling, and dataset enrichment.
+
