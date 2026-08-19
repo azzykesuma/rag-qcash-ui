@@ -1,0 +1,87 @@
+{
+  "id": "a0156c25-bdd2-4b41-91bf-aa950ae13a48",
+  "conversations": [
+    {
+      "from": "human",
+      "value": "please guide me to run this repo locally"
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": "This repository is **LLM Context Vault** (entrypoint in [`cmd/vault/main.go`](file://~/Development/rag-qcash-ui/cmd/vault/main.go)), a Go-based CLI tool designed to extract, sanitize, search, and export problem-solving conversations from local AI coding assistants (Antigravity/AGY, OpenCode, OpenAI Codex, Aider).\n\n---\n\n### 📋 Prerequisites\n\nTo run this repository locally, you can choose between **building from source with Go** or **running a pre-compiled binary**.\n\n---\n\n### Option 1: Run with Go (Recommended for Development)\n\n#### 1. Install Go\nIf you don't already have Go installed on your machine:\n```bash\nbrew install go\n```\nVerify the installation:\n```bash\ngo version\n```\n\n#### 2. Run Directly (No build step required)\nYou can run any command directly using `go run`:\n```bash\n# Show CLI help and available commands\ngo run ./cmd/vault\n\n# Run unified auto-discovery scan across your local AI assistants\ngo run ./cmd/vault scan\n\n# Search past debugging sessions\ngo run ./cmd/vault search \"JWT validation\"\n\n# Run a privacy \u0026 secret redaction audit\ngo run ./cmd/vault audit\n\n# View conversation statistics\ngo run ./cmd/vault stats\n```\n\n#### 3. (Optional) Build a Standalone Executable\nBuild a local `vault` binary:\n```bash\ngo build -o vault ./cmd/vault\n```\nThen execute it directly:\n```bash\n./vault --help\n./vault scan\n```\n\n---\n\n### Option 2: Run via Pre-Compiled Binary\n\nIf you prefer not to install the Go toolchain:\n\n1. Download the executable matching your OS/Architecture from [GitHub Releases](https://github.com/azzykesuma/rag-qcash-ui/releases/latest):\n   - **macOS (Apple Silicon / M-series)**: `vault-darwin-arm64`\n   - **macOS (Intel)**: `vault-darwin-amd64`\n   - **Linux**: `vault-linux-amd64`\n   - **Windows**: `vault-windows-amd64.exe`\n\n2. Make it executable and place it in your path:\n   ```bash\n   chmod +x vault-darwin-arm64\n   sudo mv vault-darwin-arm64 /usr/local/bin/vault\n   ```\n\n3. Run from anywhere:\n   ```bash\n   vault scan\n   ```\n\n---\n\n### 🛠️ Common CLI Commands\n\n| Command | Description |\n| :--- | :--- |\n| `vault scan` | Auto-detects and extracts conversations from Antigravity, OpenCode, Codex, and Aider |\n| `vault scan --redact-words \"Company,Secret\"` | Scan while scrubbing custom proprietary keywords |\n| `vault scan-agy` | Scan only Antigravity (`~/.gemini/antigravity-cli/brain`) sessions |\n| `vault scan-opencode` | Scan only OpenCode SQLite database |\n| `vault scan-codex` | Scan only OpenAI Codex sessions |\n| `vault search \u003cquery\u003e` | Search your sanitized conversation dataset for solutions |\n| `vault context \u003cquery\u003e` | Generate markdown context snippets to inject into local LLMs |\n| `vault audit` | Verify that 0 API keys, passwords, or personal file paths are stored |\n| `vault stats` | View dataset size and session counts |\n\n---\n\n### 📂 Key Project Structure\n\n- [`cmd/vault/main.go`](file://~/Development/rag-qcash-ui/cmd/vault/main.go) — CLI entrypoint and command handlers.\n- [`pkg/sanitizer/`](file://~/Development/rag-qcash-ui/pkg/sanitizer) — API key, secret, and path redaction engine.\n- [`pkg/extractor/`](file://~/Development/rag-qcash-ui/pkg/extractor) — Parsers for AGY, OpenCode SQLite, Codex JSONL, and Aider history.\n- [`conversations/`](file://~/Development/rag-qcash-ui/conversations) — Output folder containing sanitized markdown and ShareGPT datasets.\n- [`README.md`](file://~/Development/rag-qcash-ui/README.md) \u0026 [`CONTRIBUTING.md`](file://~/Development/rag-qcash-ui/CONTRIBUTING.md) — Detailed project documentation."
+    },
+    {
+      "from": "human",
+      "value": "i cant run vault scan"
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": "The `vault` executable is not installed or downloaded on your machine yet (which is why running `vault scan` returned `command not found: vault`).\n\nBecause you are on **macOS (Apple Silicon / arm64)**, here is the fastest way to get `vault scan` running:\n\n---\n\n### Quick Setup (macOS Terminal)\n\nOpen your terminal in the repository folder (`~/Development/rag-qcash-ui`) and run:\n\n```bash\n# 1. Download the pre-built macOS ARM64 binary\ncurl -L -o vault https://github.com/azzykesuma/rag-qcash-ui/releases/latest/download/vault-darwin-arm64\n\n# 2. Grant executable permissions\nchmod +x vault\n\n# 3. Run the scan!\n./vault scan\n```\n\n---\n\n### (Optional) Make `vault` Available Globally\n\nIf you want to run `vault scan` anywhere without typing `./`:\n\n```bash\nsudo mv vault /usr/local/bin/vault\n```\nAfter doing this, you can simply run:\n```bash\nvault scan\n```\n\n---\n\n### Alternative: If you prefer to install Go and build from source\n\nIf you want to develop or compile the source code directly:\n1. Install Go via Homebrew:\n   ```bash\n   brew install go\n   ```\n2. Run directly with Go:\n   ```bash\n   go run ./cmd/vault scan\n   ```"
+    }
+  ],
+  "source": "antigravity",
+  "tags": [
+    "coding",
+    "assistant",
+    "antigravity"
+  ]
+}

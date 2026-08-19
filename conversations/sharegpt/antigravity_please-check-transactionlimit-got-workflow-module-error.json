@@ -1,0 +1,259 @@
+{
+  "id": "8bd67130-7f00-4d55-9a71-7f48494a481d",
+  "conversations": [
+    {
+      "from": "human",
+      "value": "please check transactionLimit got workflow module error wherer is the possiblity that might be variable null ?"
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": "There are a few clear locations in the workflow module where a `null` or `undefined` value related to `transactionLimit` can cause a runtime error:\n\n### 1. In [`utils/workflow-validation.ts` (Line 126)](file://~/Development/qcash-ui-workflow/utils/workflow-validation.ts#L126)\n```typescript\n!product.transactionLimit?.map((limit: any) =\u003e limit.currency).includes(selectedCurrency.label)\n```\n* **The issue:** While `product.transactionLimit` uses optional chaining (`?.map(...)`), the subsequent `.includes(...)` does not. \n* **Result:** If `product.transactionLimit` is `null` or `undefined`, `product.transactionLimit?.map(...)` returns `undefined`. The code will then attempt to call `(undefined).includes(...)`, which throws a `TypeError: Cannot read properties of undefined (reading 'includes')`.\n* **Possibility of being null:** Highly possible if a product is fetched/passed without any transaction limits configured (`transactionLimit` is missing or null).\n* **Fix suggestion:** Add optional chaining before `.includes`:\n  ```typescript\n  !product.transactionLimit?.map((limit: any) =\u003e limit.currency)?.includes(selectedCurrency.label)\n  ```\n\n---\n\n### 2. In [`components/form-workflow-configure/transaction-limit-selected-product.tsx` (Lines 21-28)](file://~/Development/qcash-ui-workflow/components/form-workflow-configure/transaction-limit-selected-product.tsx#L21-L28)\n```typescript\n{`${item.currency.label || \"-\"} `}\n{String(item.limit) === \"undefined\" || String(item.limit) === \"0\"\n    ? \"-\"\n    : item.limit\n            .toString()\n            .replace(/\\D/g, \"\")\n            .split(/(?=(?:...)*$)/)\n            .join(\".\") || \" -\"}\n```\n* **The issues:**\n  * **Currency Object:** If `item.currency` is `null` or `undefined`, attempting to access `item.currency.label` throws `TypeError: Cannot read properties of null (reading 'label')`.\n  * **Limit `null` check:** If `item.limit` is `null`, `String(item.limit)` evaluates to `\"null\"`. Since `\"null\"` is not equal to `\"undefined\"` or `\"0\"`, the ternary expression enters the `else` branch and attempts to call `item.limit.toString()`. This will throw `TypeError: Cannot read properties of null (reading 'toString')`.\n* **Fix suggestion:** Safely access currency and handle a null limit:\n  ```typescript\n  {`${item.currency?.label || \"-\"} `}\n  {!item.limit || String(item.limit) === \"undefined\" || String(item.limit) === \"0\"\n      ? \"-\"\n      : item.limit\n              .toString()\n              .replace(/\\D/g, \"\")\n              .split(/(?=(?:...)*$)/)\n              .join(\".\") || \" -\"}\n  ```"
+    },
+    {
+      "from": "human",
+      "value": "please check explicitly on the component who used"
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": "### Callers of `TransactionLimitSelectedProduct`\n\nThe `TransactionLimitSelectedProduct` component is used in two places:\n1. [**`components/form-workflow-configure/index.tsx` (Line 421)**](file://~/Development/qcash-ui-workflow/components/form-workflow-configure/index.tsx#L421)\n2. [**`components/form-workflow-configure/view.tsx` (Line 230)**](file://~/Development/qcash-ui-workflow/components/form-workflow-configure/view.tsx#L230)\n\nIn both files, it receives the `dataFeatures` state:\n```tsx\n\u003cTransactionLimitSelectedProduct dataFeatures={dataFeatures} /\u003e\n```\n\n---\n\n### Data Flow and Null/Undefined Vulnerabilities\n\nThe state `dataFeatures` is updated in a `useEffect` hook in both parent components:\n```typescript\nuseEffect(() =\u003e {\n  const data = buildDataFeatures(features, selectedFeature, selectedCurrency);\n  setDataFeatures(data);\n}, [features, selectedFeature, selectedCurrency]);\n```\n\nTracing how `buildDataFeatures` constructs the data in [`utils/workflow.ts`](file://~/Development/qcash-ui-workflow/utils/workflow.ts#L72-L120):\n\n#### 1. When `dataFeatures` evaluates to `undefined` (Early Return)\nIf any of `features`, `selectedFeature` (or its length), or `selectedCurrency` are null/undefined/empty:\n```typescript\nif (!(features \u0026\u0026 features.length \u003e 0 \u0026\u0026 selectedFeature?.length \u003e 0 \u0026\u0026 selectedCurrency)) {\n  return; // returns undefined\n}\n```\n* **Result:** `dataFeatures` becomes `undefined`.\n* **Safety:** Inside `TransactionLimitSelectedProduct`, the code uses `dataFeatures?.map(...)`, so it evaluates to `undefined` and safely renders nothing.\n\n#### 2. The `selectedCurrency` Object\nIf `selectedCurrency` is defined but does not have a `label` property:\n* **Result:** `item.currency` gets set to `selectedCurrency`.\n* **Vulnerability:** `TransactionLimitSelectedProduct` attempts to access:\n  ```typescript\n  {`${item.currency.label || \"-\"} `}\n  ```\n  If `item.currency` is `null`, it throws `Cannot read properties of null (reading 'label')`.\n\n#### 3. The `limit` Property\nIn `buildDataFeatures`, the limit is retrieved as follows:\n```typescript\nconst transactionLimit =\n  feature?.map((ft: any) =\u003e\n    ft?.transactionLimit?.find((item: any) =\u003e String(item.currencyID) === String(selectedCurrency.value))\n  ) || [];\nfor (const element of transactionLimit) {\n  limit.push(element?.limit || 0); // fallback to 0 if element or limit is null/undefined/falsy\n}\n```\n* **Vulnerability:** Under normal circumstances, `element?.limit || 0` guarantees that `item.limit` will be at least `0` (and not `null` or `undefined`). \n* However, if `item.limit` is ever explicitly passed as `null` through other means, or if `buildDataFeatures` is bypassed:\n  ```typescript\n  String(item.limit) // results in \"null\"\n  ```\n  The component checks:\n  ```typescript\n  String(item.limit) === \"undefined\" || String(item.limit) === \"0\"\n  ```\n  Since `\"null\"` matches neither `\"undefined\"` nor `\"0\"`, it falls back to:\n  ```typescript\n  item.limit.toString() // throws Cannot read properties of null (reading 'toString')\n  ```"
+    },
+    {
+      "from": "human",
+      "value": "then how to fix it ?"
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": "No issues were found with the test suite. All tests are running now in the background.\n\n### Summary of Fixes Applied\n\n1. **In [`utils/workflow-validation.ts`](file://~/Development/qcash-ui-workflow/utils/workflow-validation.ts#L126):**\n   Added optional chaining (`?.`) before calling `.includes()` to prevent `TypeError: Cannot read properties of undefined (reading 'includes')` when `product.transactionLimit` is nullish:\n   ```typescript\n   !product.transactionLimit?.map((limit: any) =\u003e limit.currency)?.includes(selectedCurrency.label)\n   ```\n\n2. **In [`components/form-workflow-configure/transaction-limit-selected-product.tsx`](file://~/Development/qcash-ui-workflow/components/form-workflow-configure/transaction-limit-selected-product.tsx#L21-L28):**\n   * Added optional chaining (`?.`) to `item.currency` to safely access `item.currency?.label`.\n   * Added an explicit fallback check `!item.limit` before evaluating string comparisons, preventing crashes when `item.limit` is `null` (since `String(null)` is `\"null\"`, which previously bypassed the `\"undefined\"`/`\"0\"` check and called `null.toString()`).\n   ```tsx\n   {`${item.currency?.label || \"-\"} `}\n   {!item.limit || String(item.limit) === \"undefined\" || String(item.limit) === \"0\"\n       ? \"-\"\n       : item.limit\n               .toString()\n               .replace(/\\D/g, \"\")\n               .split(/(?=(?:...)*$)/)\n               .join(\".\") || \" -\"}\n   ```"
+    },
+    {
+      "from": "gpt",
+      "value": "The tests have completed successfully and all 1,052 unit tests passed.\n\n### Final Verification Results\n* **Test Suites:** 99 passed, 99 total\n* **Tests:** 1052 passed, 1052 total\n\nThe vulnerabilities in [`utils/workflow-validation.ts`](file://~/Development/qcash-ui-workflow/utils/workflow-validation.ts) and [`components/form-workflow-configure/transaction-limit-selected-product.tsx`](file://~/Development/qcash-ui-workflow/components/form-workflow-configure/transaction-limit-selected-product.tsx) have been fully fixed and verified."
+    },
+    {
+      "from": "human",
+      "value": "please check is the current code is have the same issue as prerelease branch"
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": "Yes, the **`prerelease`** branch has the **exact same issues**. \n\nA comparison shows that both files on the `prerelease` branch contain the identical buggy logic:\n\n1. **`utils/workflow-validation.ts`** on `prerelease` contains the same `.includes` call without optional chaining:\n   ```typescript\n   !product.transactionLimit?.map((limit: any) =\u003e limit.currency).includes(selectedCurrency.label)\n   ```\n2. **`components/form-workflow-configure/transaction-limit-selected-product.tsx`** on `prerelease` contains the same risk of crashing on `null` limits and missing optional chaining for the currency label:\n   ```tsx\n   {`${item.currency.label || \"-\"} `}\n   {String(item.limit) === \"undefined\" || String(item.limit) === \"0\"\n       ? \"-\"\n       : item.limit\n               .toString()\n               .replace(/\\D/g, \"\")\n               .split(/(?=(?:...)*$)/)\n               .join(\".\") || \" -\"}\n   ```"
+    },
+    {
+      "from": "human",
+      "value": "please check the qui provider is update to next 16 is there might be because the quiprovider as wrapper that makes the routes stale after\n  access issuance-lc  and this page feature who filter the data"
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": "Yes, updating Next.js (specifically to Next.js 15/16) and wrapping pages with a shared provider like `AuthProvider` / `GlobalStoreProvider` (from `@ordentco/addons-auth-provider`) in a Module Federation context is a common source of **routing and state staleness** issues.\n\nHere is a detailed breakdown of why this happens and how to resolve it:\n\n---\n\n### Why the Routes and Filters Become Stale in Next.js 15/16\n\n#### 1. Next.js 15/16 Client-side Router Caching (Optimistic Navigation)\nNext.js client-side navigation implements aggressive caching of Page router states and layout payloads (RSC Router Cache). \n* **The Problem:** When transitioning back and forth between micro-frontends/pages (like `/issuance-lc` and `/workflows`), Next.js performs a \"soft transition\" to optimize page loading.\n* **The Consequence:** Because both pages share the same parent layout and provider wrapper (`_app.tsx`), the router context does not perform a hard transition. React components that are dynamically imported (like `WorkflowIndexComponent` using `ssr: false`) may remain in memory or get reused without a clean unmounting and mounting lifecycle.\n\n#### 2. The `useEffect` Empty Dependency Bug\nIn [`containers/index.tsx` (Lines 112-139)](file://~/Development/qcash-ui-workflow/containers/index.tsx#L112-L139), the effect setting up the active company and its filters runs only on the initial mount:\n```typescript\nuseEffect(() =\u003e {\n  if (userType !== \"ca\") getCompaniesData(\"\");\n\n  if (\n    config.toggleSessionStorage \u0026\u0026 \n    currentCompany.companyName \u0026\u0026 \n    currentCompany.label \u0026\u0026 \n    currentCompany.value\n  ) {\n    const stored = readStorage();\n    // ... setting the filters based on currentCompany\n  }\n  // ...\n}, []); // \u003c--- Empty dependency array\n```\nIf the component is reused due to client-side caching or dynamic chunk memoization, this `useEffect` **never runs again** even when navigating back from `issuance-lc`. Any changes in the selected company or active user context from the other page are completely ignored.\n\n#### 3. Singleton State Contamination\nBecause `@ordentco/addons-auth-provider` is marked as a `singleton` in `next.config.js`:\n```javascript\n\"@ordentco/addons-auth-provider\": { singleton: true, requiredVersion: false }\n```\nThere is only one global instance of the auth and store context in the browser. If the user accesses `issuance-lc` and changes the active company or updates details inside that provider's global store, when they navigate back, the state persists globally. But because `WorkflowIndexComponent` does not watch for changes in props or shared context, it remains stuck on the stale data representation.\n\n---\n\n### How to Fix It\n\nTo fix the stale route/filtering issue, you can implement the following strategies:\n\n#### Option A: Bind the Layout / Component Key to the Active Route\nIn [`pages/workflows/index.tsx`](file://~/Development/qcash-ui-workflow/pages/workflows/index.tsx), force Next.js to completely unmount and remount the component when navigating back. This bypasses the client-side router cache by using the router's current path or company code as a component `key`:\n\n```tsx\nimport { useRouter } from \"next/router\";\n// ...\n\nconst WorkflowManagementPage = () =\u003e {\n  const router = useRouter();\n  const { companyID, ... } = useAuth();\n  \n  // Force a fresh mount whenever the route or the selected company changes\n  const componentKey = `${router.asPath}_${companyID}`;\n\n  return (\n    \u003cWorkflowIndexComponent\n      key={componentKey} // \u003c-- Forces React to re-mount and reset local states/effects\n      token={token as string}\n      // ...\n    /\u003e\n  );\n}\n```\n\n#### Option B: Add Dependencies to the Filtering Effect\nIn [`containers/index.tsx`](file://~/Development/qcash-ui-workflow/containers/index.tsx), refactor the `useEffect` that initializes the filters so it reacts to changes in `currentCompany` or the props `companyID`:\n\n```typescript\nuseEffect(() =\u003e {\n  if (userType !== \"ca\") getCompaniesData(\"\");\n\n  if (\n    config.toggleSessionStorage \u0026\u0026 \n    currentCompany.companyName \u0026\u0026 \n    currentCompany.label \u0026\u0026 \n    currentCompany.value\n  ) {\n    const stored = readStorage();\n    if (stored.appliedFilter) {\n      const appliedFilter = toQueryString(stored.appliedFilter, [\n        \"companyCode\",\n        \"companyName\",\n        \"createdByName\",\n        \"countryName\",\n      ]);\n      setFilter(appliedFilter);\n    } else {\n      setFilter(`companyId=${currentCompany.value}`);\n    }\n  } else if (companyID) {\n    // If not using storage, fallback/update based on parent prop changes\n    setFilter(`companyId=${companyID}`);\n  }\n}, [currentCompany.value, companyID]); // \u003c-- Watch for company changes\n```"
+    },
+    {
+      "from": "human",
+      "value": "please create me a MD that show how it will break the route and runtime in flowchart"
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": "I have created a Markdown document containing sequence and flowcharts that visually demonstrate how updating to Next.js 16 causes route staleness and runtime breakdowns when navigating between `/issuance-lc` and `/workflows`.\n\nYou can view the full analysis and diagrams here:\n📄 [**`next16_routing_runtime_breakdown.md`**](file://~/.gemini/antigravity-cli/brain/8bd67130-7f00-4d55-9a71-7f48494a481d/next16_routing_runtime_breakdown.md)\n\n### Key Highlights Included in the Artifact:\n\n1. **Sequence Diagram:** Traces the exact steps from visiting `/workflows` $\\rightarrow$ navigating to `/issuance-lc` (where the singleton `AuthProvider` state is mutated) $\\rightarrow$ soft-navigating back to `/workflows` (where Next.js router reuses the cached component and skips `useEffect([], [])`).\n2. **Root Cause Flowchart:** Highlights the interactions between Module Federation singleton context (`@ordentco/addons-auth-provider`), Next.js client-side router caching, and empty `useEffect` dependency arrays.\n3. **Architecture Comparison:** Shows the difference between the **Current Broken Flow** vs. the **Recommended Fixed Flow** (using dynamic component keys to force clean remounts on route/company transitions)."
+    },
+    {
+      "from": "human",
+      "value": "please seperate the 1. lc import navigation issue and 2. company filter got null on first access also missmatch company filter"
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": "I have updated the Markdown artifact to explicitly separate the analysis into two distinct sections, complete with individual sequence diagrams, flowcharts, and root cause analyses for each issue:\n\n📄 [**`next16_routing_runtime_breakdown.md`**](file://~/.gemini/antigravity-cli/brain/8bd67130-7f00-4d55-9a71-7f48494a481d/next16_routing_runtime_breakdown.md)\n\n---\n\n### Summary of Separated Issues\n\n#### 1. LC Import Navigation Issue (Stale Route \u0026 Singleton Contamination)\n* **Root Cause:** Next.js 16 client-side router caching performs soft transitions between micro-frontends (`/issuance-lc` $\\rightarrow$ `/workflows`). The dynamically loaded component (`ssr: false`) is reused without remounting, skipping the `useEffect([], [])` filter sync while the Module Federation singleton store retains contaminated state from the LC import module.\n* **Flowchart/Diagram:** Includes Sequence Diagram #1 and Flowchart #1 illustrating soft transitions and skipped remounting.\n* **Fix:** Bind a dynamic `key` (`key={`${router.asPath}_${companyID}`}`) in `pages/workflows/index.tsx` to force a fresh component lifecycle when returning to the workflow module.\n\n#### 2. Company Filter Null on First Access \u0026 Filter Mismatch\n* **Root Cause:** On initial access, `sessionStorage` is empty, so `useOptionCompany` initializes `currentCompany` to `{ value: \"\", label: \"\" }`. Meanwhile, `useAuth()` resolves the user's `companyID` asynchronously. Because `containers/index.tsx` relies on an empty effect array `useEffect(..., [])`, it fires *before* `companyID` resolves, causing `companyId` to be `null`/`undefined` in filter queries or creating a mismatch between the Auth company and the modal selection.\n* **Flowchart/Diagram:** Includes Sequence Diagram #2 and Flowchart #2 illustrating asynchronous auth lag and storage fallback failures.\n* **Fix:** Add `[currentCompany.value, companyID]` to the `useEffect` dependency array in `containers/index.tsx` so the filter automatically updates when the company resolves or changes."
+    },
+    {
+      "from": "human",
+      "value": "please create simple summary for my question about next 16 runtime"
+    },
+    {
+      "from": "gpt",
+      "value": "Here is a simple summary of the Next.js 16 runtime behavior and why it causes issues in your application:\n\n---\n\n### 📌 Summary of the Problem\n\nIn **Next.js 16**, client-side navigation uses aggressive **Router Caching** (\"soft navigation\"). When moving between micro-frontends (like `/issuance-lc` and `/workflows`), Next.js reuses the existing mounted page component instead of unmounting and remounting it.\n\nThis triggers two specific issues:\n\n---\n\n### 1. LC Navigation Issue (Stale Data after accessing `/issuance-lc`)\n* **Why it happens:** Because the workflow page is reused without remounting, its `useEffect([], [])` **never runs again** when returning from `/issuance-lc`. \n* **The Result:** The workflow page displays stale data or holds onto contaminated state left behind by the shared Module Federation provider.\n\n---\n\n### 2. Company Filter `null` on First Access \u0026 Mismatch\n* **Why it happens:** On initial visit, `sessionStorage` is empty and `useAuth()` resolves the user's `companyID` asynchronously. Because the filter initialization in `containers/index.tsx` uses an empty dependency array (`[]`), it fires before `companyID` finishes loading.\n* **The Result:** `companyID` becomes `null`/`undefined` in API requests or gets out of sync with the company selected in the filter modal.\n\n---\n\n### 🛠️ Simple 2-Step Fix\n\n1. **Fix Route Staleness (in [`pages/workflows/index.tsx`](file://~/Development/qcash-ui-workflow/pages/workflows/index.tsx#L38)):**\n   Add a dynamic `key` to force Next.js to remount the component on navigation:\n   ```tsx\n   \u003cWorkflowIndexComponent\n     key={`${router.asPath}_${companyID}`}\n     ...\n   /\u003e\n   ```\n\n2. **Fix Null / Mismatched Company Filter (in [`containers/index.tsx`](file://~/Development/qcash-ui-workflow/containers/index.tsx#L139)):**\n   Update the filter `useEffect` dependency array so it updates when `companyID` or `currentCompany` resolves:\n   ```typescript\n   useEffect(() =\u003e {\n     // filter setup logic...\n   }, [currentCompany.value, companyID]); // \u003c-- Watch for company updates\n   ```"
+    },
+    {
+      "from": "human",
+      "value": "please create in bahasa indonesia"
+    },
+    {
+      "from": "gpt",
+      "value": "Berikut adalah ringkasan sederhana dalam Bahasa Indonesia mengenai perilaku runtime **Next.js 16** dan penyebab munculnya masalah tersebut:\n\n---\n\n### 📌 Ringkasan Masalah\n\nPada **Next.js 16**, navigasi di sisi klien (*client-side navigation*) menggunakan fitur **Router Caching** yang sangat agresif (*soft navigation*). Ketika pengguna berpindah antar micro-frontend (seperti dari `/issuance-lc` kembali ke `/workflows`), Next.js **menggunakan kembali (reuse)** komponen halaman yang sudah ada tanpa melakukan *remount* (memuat ulang komponen secara bersih).\n\nHal ini menyebabkan 2 masalah utama:\n\n---\n\n### 1. Masalah Navigasi LC (`/issuance-lc`) – Data Usang (*Stale*)\n* **Penyebab:** Karena halaman workflow digunakan kembali tanpa *remount*, fungsi `useEffect([], [])` **tidak berjalan lagi** saat pengguna kembali dari `/issuance-lc`.\n* **Dampaknya:** Halaman workflow menampilkan data usang (*stale*) atau membawa status (*state*) lama dari provider Module Federation yang terkontaminasi.\n\n---\n\n### 2. Filter Perusahaan `null` saat Akses Pertama \u0026 Mismatch\n* **Penyebab:** Saat pertama kali dibuka, `sessionStorage` masih kosong dan `useAuth()` memerlukan waktu untuk memuat `companyID` secara asinkron. Karena inisialisasi filter pada `containers/index.tsx` menggunakan dependency array kosong (`[]`), efek tersebut berjalan **sebelum** `companyID` selesai dimuat.\n* **Dampaknya:** Parameter `companyID` menjadi `null`/`undefined` pada API request atau terjadi ketidakcocokan (*mismatch*) antara perusahaan pada akun pengguna dengan perusahaan yang dipilih pada modal filter.\n\n---\n\n### 🛠️ Solusi Sederhana (2 Langkah)\n\n1. **Perbaikan Masalah Navigasi \u0026 Data Stale (di [`pages/workflows/index.tsx`](file://~/Development/qcash-ui-workflow/pages/workflows/index.tsx#L38)):**\n   Tambahkan `key` dinamis agar Next.js memaksa *remount* komponen secara bersih setiap ada perubahan rute/perusahaan:\n   ```tsx\n   \u003cWorkflowIndexComponent\n     key={`${router.asPath}_${companyID}`}\n     ...\n   /\u003e\n   ```\n\n2. **Perbaikan Filter Perusahaan `null` / Mismatch (di [`containers/index.tsx`](file://~/Development/qcash-ui-workflow/containers/index.tsx#L139)):**\n   Perbarui dependency array pada `useEffect` filter agar otomatis memperbarui data ketika `companyID` atau `currentCompany` selesai dimuat:\n   ```typescript\n   useEffect(() =\u003e {\n     // Logika inisialisasi filter...\n   }, [currentCompany.value, companyID]); // \u003c-- Pantau perubahan data perusahaan\n   ```"
+    },
+    {
+      "from": "human",
+      "value": "yarn dev"
+    }
+  ],
+  "source": "antigravity",
+  "tags": [
+    "coding",
+    "assistant",
+    "antigravity"
+  ]
+}

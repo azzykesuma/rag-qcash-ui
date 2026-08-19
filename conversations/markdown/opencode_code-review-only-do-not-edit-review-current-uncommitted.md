@@ -1,0 +1,156 @@
+# Review issuance lifecycle diff (@general subagent)
+
+- **ID**: `ses_0151df923ffeNCoKyelBjWL30X`
+- **Source Tool**: `opencode`
+- **Date**: `2026-08-10 15:55:09`
+- **Tags**: `coding`, `assistant`, `opencode`
+
+---
+
+## Turn 1: User
+
+Code review only, do not edit. Review the current uncommitted diff in ~/Development/qcash-ui-issuance-lc for the soft-navigation robustness fix. Focus on behavioral regressions in standalone versus hosted mode, Federation initialization, QUI provider ownership, QueryClient correctness, scroll listener cleanup, and test quality. Findings first with exact file/line references; report only actionable issues introduced by this diff, not broad pre-existing debt. Tests currently: 70 suites/688 tests pass; lint warnings only; tsc has pre-existing test typing errors.
+
+---
+
+## Turn 2: Assistant
+
+<details><summary>🔧 Tool Invocations (3)</summary>
+
+- **bash**: Tool: bash
+- **bash**: Tool: bash
+- **bash**: Tool: bash
+
+</details>
+
+I’ll inspect the repository status and uncommitted diff, then trace the affected initialization, provider, query client, and scroll cleanup paths against their tests.
+
+---
+
+## Turn 3: Assistant
+
+<details><summary>🔧 Tool Invocations (3)</summary>
+
+- **bash**: Tool: bash
+- **bash**: Tool: bash
+- **bash**: Tool: bash
+
+</details>
+
+
+
+---
+
+## Turn 4: Assistant
+
+<details><summary>🔧 Tool Invocations (6)</summary>
+
+- **read**: Tool: read
+- **read**: Tool: read
+- **grep**: Tool: grep
+- **grep**: Tool: grep
+- **glob**: Tool: glob
+- **glob**: Tool: glob
+
+</details>
+
+The diff centralizes both Federation setup and QUI ownership in `_app`. I’m checking whether that lifecycle exists when these pages are consumed as federated modules, and whether the singleton query client change alters host/standalone behavior.
+
+---
+
+## Turn 5: Assistant
+
+<details><summary>🔧 Tool Invocations (7)</summary>
+
+- **glob**: Tool: glob
+- **glob**: Tool: glob
+- **glob**: Tool: glob
+- **read**: Tool: read
+- **read**: Tool: read
+- **read**: Tool: read
+- **read**: Tool: read
+
+</details>
+
+
+
+---
+
+## Turn 6: Assistant
+
+<details><summary>🔧 Tool Invocations (6)</summary>
+
+- **read**: Tool: read
+- **read**: Tool: read
+- **read**: Tool: read
+- **grep**: Tool: grep
+- **grep**: Tool: grep
+- **grep**: Tool: grep
+
+</details>
+
+
+
+---
+
+## Turn 7: Assistant
+
+<details><summary>🔧 Tool Invocations (6)</summary>
+
+- **read**: Tool: read
+- **read**: Tool: read
+- **read**: Tool: read
+- **glob**: Tool: glob
+- **grep**: Tool: grep
+- **bash**: Tool: bash
+
+</details>
+
+
+
+---
+
+## Turn 8: Assistant
+
+<details><summary>🔧 Tool Invocations (6)</summary>
+
+- **grep**: Tool: grep
+- **read**: Tool: read
+- **read**: Tool: read
+- **read**: Tool: read
+- **read**: Tool: read
+- **grep**: Tool: grep
+
+</details>
+
+
+
+---
+
+## Turn 9: Assistant
+
+<details><summary>🔧 Tool Invocations (5)</summary>
+
+- **grep**: Tool: grep
+- **grep**: Tool: grep
+- **grep**: Tool: grep
+- **grep**: Tool: grep
+- **grep**: Tool: grep
+
+</details>
+
+
+
+---
+
+## Turn 10: Assistant
+
+**Findings**
+1. **High:** Standalone rendering is now blocked by an asynchronously loaded remote provider. `_app.tsx:70-73` wraps the entire application in `QuiProviders`, which is declared with `ssr: false` and no loading fallback at `components/global.tsx:568-570`. Standalone SSR and initial hydration therefore render no page content while `qui/providers` loads; if that remote fails, every route, including unauthorized and skeleton states, can remain blank. Previously this dependency only gated the affected new form. Add an explicit loading/error strategy or avoid placing an `ssr: false` remote wrapper above the entire standalone application.
+
+2. **Low:** Scroll cleanup coverage omits one of the three modified implementations. Cleanup was added at `components/create/page-3.tsx:432-439`, but tests were added only for `components/create-new-old/page-3.tsx` and `components/create-new-skin/page-3.tsx`. Add the equivalent mount/unmount assertion for the legacy implementation.
+
+No other actionable regressions found in hosted Federation ownership, QueryClient behavior, or listener cleanup. The page tests do not exercise `_app`, so the standalone regression above is not covered by the passing suite.
+
+---
+

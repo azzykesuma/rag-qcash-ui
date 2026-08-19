@@ -1,0 +1,83 @@
+{
+  "id": "ses_01142ac8fffe941xP3V63ENVcq",
+  "conversations": [
+    {
+      "from": "human",
+      "value": "Research only, do not edit. Audit qcash-ui environment selection and Federation registry for deployment-sensitive errors: ENV_DOMAIN, NEXT_PUBLIC variables, hostname detection, baseFederation, remote URLs, malformed/undefined values, server/client differences, and build-time replacement. Search current code plus cached dev branch/history for relevant changes. Explain whether an environment issue can make qcash-ui's own remoteEntry return 500 versus make a consumed remoteEntry return 500. Return exact references and diagnostic checks."
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": "## Audit result\n\nCurrent checkout: `v1.630.3-release-com` at `9d4a3e3a`.  \nCached refs inspected: local `dev` at `81bf7427`, cached `origin/dev` at `03ad8635`.\n\n### Main conclusion\n\nAn environment-selection error in **qcash-ui** can generate incorrect URLs for remotes that qcash-ui consumes. Those requests may return 500 from the selected upstream, gateway, or—if the malformed URL becomes relative—from qcash-ui’s own origin.\n\nIt does **not normally make qcash-ui’s own container** at:\n\n```text\n/v2/_next/static/chunks/remoteEntry.js\n```\n\nreturn 500. That file is emitted from static `NextFederationPlugin` configuration with no environment-dependent remotes or exposes. A 500 on that exact resource points primarily to deployment routing, missing/corrupt static assets, proxy behavior, or Next’s error handling—not the runtime registry.\n\n---\n\n## Findings\n\n### 1. `ENV_DOMAIN` is not used by qcash-ui\n\nNo `ENV_DOMAIN`, `NEXT_PUBLIC_ENV_DOMAIN`, or equivalent Federation-domain override exists in current qcash-ui or its searched history.\n\nThe shell instead derives Federation origin from its API variables:\n\n- `~/Development/qcash-ui/config.ts:5-26`\n- `~/Development/qcash-ui/utils/index.ts:16-109`\n\nSibling MFEs do use `ENV_DOMAIN` conventions, which can cause confusion:\n\n- `~/Development/qcash-ui-complaint/next.config.js:6-15`\n- `~/Development/qcash-ui-helpdesk-portal/next.config.js:4-13`\n- `~/Development/qcash-ui-issuance-lc/next.config.js:15-25`\n- `~/Development/qcash-ui-scm/next.config.js:4-15`\n\nConsequently, an `ENV_DOMAIN` error in a **consumer of qcash-ui** could make that consumer request the wrong qcash-ui URL. It still does not alter qcash-ui’s emitted asset.\n\n---\n\n### 2. Federation origin is coupled to API URL configuration\n\n`baseFederation` is not independently configured:\n\n```ts\nbaseFederation: getBaseUrlByEnv({...})?.split(\"/api\")[0]\n```\n\nReference:\n\n- `~/Development/qcash-ui/config.ts:16-26`\n\nRisks:\n\n1. An API value without `/api` remains unchanged, producing URLs such as:\n   ```text\n   https://host/some-api-root/header-footer/...\n   ```\n\n2. `/api` is removed using string splitting, not URL/path validation. Values such as `/api-v2` are also truncated.\n\n3. Whitespace is checked with `trim()` but the untrimmed value is returned:\n   - `~/Development/qcash-ui/utils/index.ts:102-109`\n\n4. A literal build value `\"undefined\"` is truthy and passes validation.\n\n5. If the selected environment is empty, code silently falls back to `prod_id`:\n   - `~/Development/qcash-ui/utils/index.ts:104-107`\n\n   That can turn a missing dev/staging value into cross-environment production traffic.\n\n6. If both the selected value and `prod_id` are absent, the function returns runtime `undefined` despite its declared `string` return type.\n\n---\n\n### 3. Missing values produce inconsistent malformed URLs\n\nCustom entries interpolate `baseFederation` directly:\n\n```ts\nreturn `${config.baseFederation}/${service}/_next/static/chunks/remoteEntry.js`;\n```\n\n- `~/Development/qcash-ui/constants/features/registry.ts:26-32`\n\nWith an undefined base, this becomes:\n\n```text\nundefined/global-component/_next/static/chunks/remoteEntry.js\n```\n\nThat is a relative URL. Depending on the current page, the browser can request it from qcash-ui’s own origin.\n\nStandard entries instead default the base to an empty string:\n\n```ts\nreturn buildStandardEntryUrl(name, config.baseFederation ?? \"\");\n```\n\n- `~/Development/qcash-ui/services/federation/utils/registry.ts:81-100`\n\nThat becomes:\n\n```text\n/main-page-v2/_next/static/chunks/remoteEntry.js\n```\n\nTherefore missing configuration has two different failure modes:\n\n- **custom entry:** `undefined/...`, relative to the current location;\n- **standard entry:** `/module-v2/...`, absolute on qcash-ui’s current origin.\n\nEither can appear as a qcash-ui-origin 500 even though the request was intended for a consumed MFE.\n\n---\n\n### 4. Hostname detection is client-only and permissive\n\nEnvironment selection uses `window.location.hostname`:\n\n- `~/Development/qcash-ui/utils/index.ts:16-58`\n\nRules include:\n\n- `localhost` → dev ID\n- `gym-master` plus any occurrence of `tl`/`sg`\n- `addons.cms.dev` → prestage\n- `addons.apps` → preploy\n- `demo.addons` → piloting\n- `bricams` plus any occurrence of `tl`/`sg`\n- unknown → production ID\n\nConcerns:\n\n- `includes(\"tl\")` and `includes(\"sg\")` inspect the entire hostname rather than a country label.\n- New aliases, vanity domains, IP access, preview hosts, and renamed routes silently become production ID.\n- The browser hostname—not an ingress forwarding header—is authoritative.\n- Unknown hosts do not fail closed; they use production.\n\nThe tests confirm this intended fallback:\n\n- `~/Development/qcash-ui/utils/__tests__/index.test.ts:90-100`\n\n---\n\n### 5. Server and client deliberately select different environments\n\nWhen `window` is unavailable, detection returns `prod_id`:\n\n- `~/Development/qcash-ui/utils/index.ts:16-20`\n- `~/Development/qcash-ui/utils/index.ts:29-31`\n\nThus:\n\n- server-side module evaluation uses production ID;\n- browser evaluation uses browser hostname.\n\nFederation initialization itself is browser-gated:\n\n- `~/Development/qcash-ui/pages/_app.tsx:38-49`\n\nMost Federation providers and consumed remotes are also `ssr: false`:\n\n- `~/Development/qcash-ui/pages/_app.tsx:62-78`\n\nThis limits server/client Federation disagreement, but `config` is imported by `_app` at:\n\n- `~/Development/qcash-ui/pages/_app.tsx:9-11`\n\nand environment-dependent feature flags can still differ between server rendering and hydration.\n\n---\n\n### 6. `NEXT_PUBLIC_*` values are build-time inputs\n\nThe Docker build receives and exports all API URLs before `yarn build`:\n\n- `~/Development/qcash-ui/Dockerfile:81-114`\n\nThe runtime image does not re-declare them:\n\n- `~/Development/qcash-ui/Dockerfile:124-136`\n\nFor client bundles, Next replaces `NEXT_PUBLIC_*` references during build. Changing only Kubernetes/OpenShift runtime environment variables after the image is built will not change browser remote URLs.\n\nRelevant local values:\n\n- `~/Development/qcash-ui/.env:1-8`\n\nNotably, the checked-in `.env` has no `NEXT_PUBLIC_API_URL_PILOTING`, although both code and Docker expect it:\n\n- `~/Development/qcash-ui/config.ts:11,22`\n- `~/Development/qcash-ui/Dockerfile:92-93`\n\nA piloting build therefore depends on CI supplying that argument. Otherwise it silently falls back to production ID.\n\n---\n\n### 7. Registry construction registers all features\n\nFederation initialization calls `getAllFeatures()` and constructs entries for every registry item:\n\n- `~/Development/qcash-ui/services/federation/init.ts:37-50`\n- `~/Development/qcash-ui/services/federation/utils/registry.ts:11-13`\n\nFeature toggles are not applied during remote registration. They affect route selection later. Consequently, malformed values can be present in the runtime registry even for disabled features.\n\nGlobal remotes are particularly important because global styles/providers are loaded immediately:\n\n- `~/Development/qcash-ui/services/federation/init.ts:72-84`\n- `~/Development/qcash-ui/constants/features/registry.ts:37-52`\n\nCurrent global entry patterns are:\n\n```text\n${baseFederation}/global-component/_next/static/chunks/remoteEntry.js\n${baseFederation}/header-footer/_next/static/chunks/remoteEntry.js\n${baseFederation}/design-system/static/remoteEntry.js\n```\n\n---\n\n## qcash-ui’s own `remoteEntry`\n\nIts own container is configured independently of the runtime registry:\n\n- `~/Development/qcash-ui/next.config.js:7-13`\n- `~/Development/qcash-ui/next.config.js:154`\n\nConfiguration:\n\n```js\nname: \"qcash-ui\",\nfilename: \"static/chunks/remoteEntry.js\",\nremotes: {},\nexposes: {},\n```\n\nThe application has `basePath: \"/v2\"`:\n\n- `~/Development/qcash-ui/next.config.js:66-69`\n- `~/Development/qcash-ui/.next/routes-manifest.json:1`\n\nTherefore its browser URL is expected to be:\n\n```text\nhttps://\u003cqcash-host\u003e/v2/_next/static/chunks/remoteEntry.js\n```\n\nThe cached build contains:\n\n- `~/Development/qcash-ui/.next/static/chunks/remoteEntry.js`\n- `~/Development/qcash-ui/.next/static/chunks/remoteEntry.js.gz`\n- `~/Development/qcash-ui/.next/static/ssr/remoteEntry.js`\n- `~/Development/qcash-ui/.next/server/chunks/remoteEntry.js`\n\nThe standalone directory itself does not contain the browser entry, but Docker explicitly copies `.next/static` into the final image:\n\n- `~/Development/qcash-ui/Dockerfile:132-135`\n\n### Can environment selection make this exact endpoint return 500?\n\n**Directly: no.**\n\nThe endpoint’s generation and URL do not reference `baseFederation`, hostname detection, `ENV_DOMAIN`, or API URL variables. Furthermore, an HTTP 500 is decided before any downloaded JavaScript executes; a runtime Federation exception cannot retroactively turn a successful static response into HTTP 500.\n\nPossible indirect cases:\n\n- `/v2` is omitted and ingress forwards the request into a failing Next 404/error renderer.\n- `.next/static` was not copied into the deployed image.\n- an ingress rewrite sends the static path to another upstream.\n- compressed asset negotiation/proxy handling fails.\n- the container is starting or crashing while serving requests.\n- a consumer’s bad domain points “qcash-ui remoteEntry” at a different application that returns 500.\n\n---\n\n## Relevant history\n\n- `ea7a69d4` — introduced hostname-driven API selection and Docker build arguments.\n- `fe867d07` — added piloting selection.\n- `36c989b7` — tightened prestage hostname matching from `addons.cms` to `addons.cms.dev`.\n- `bec5526a` — refactored selection into current SSR-safe environment detection.\n- `07856e41` — introduced object-form URL arguments and current fallback validation.\n- `f0945ed4` — introduced the `remoteEntry(service)` registry helper.\n- `a5f574e5` — moved dynamic/local URL construction into `module-entry.ts`.\n- `9d4a3e3a` — current release commit; disables the timestamp-stripping plugin.\n\nThe cached dev implementation has the same fundamental hostname selection, API-derived `baseFederation`, and custom/standard URL behavior. No cached dev change fixes runtime/build-time environment promotion.\n\n---\n\n## Diagnostic checks\n\n### 1. Test the exact shell asset and base path\n\n```bash\ncurl -vkI https://HOST/v2/_next/static/chunks/remoteEntry.js\ncurl -vk  https://HOST/v2/_next/static/chunks/remoteEntry.js\ncurl -vkI https://HOST/_next/static/chunks/remoteEntry.js\n```\n\nExpected:\n\n- first URL: `200`, JavaScript content type;\n- no-base-path URL: normally 404/redirect, not the canonical resource.\n\nRecord response headers, body, ingress request ID, `Server`, `Via`, and upstream name. A branded gateway error indicates the 500 is upstream of Next.\n\n### 2. Verify the deployed image, not merely the builder\n\nInside the running container:\n\n```bash\ntest -s /usr/src/app/addons-build/.next/static/chunks/remoteEntry.js\ntest -s /usr/src/app/addons-build/.next/BUILD_ID\n```\n\nAlso verify that the running image was built through the current Dockerfile’s final copy steps.\n\n### 3. Inspect actual browser-selected remotes\n\nIn DevTools:\n\n```js\nlocation.hostname\nperformance\n  .getEntriesByType(\"resource\")\n  .map(x =\u003e x.name)\n  .filter(x =\u003e x.includes(\"remoteEntry\"))\n```\n\nCheck for:\n\n```text\nundefined/\nnull/\n%22\n/api/\ndouble slashes after the hostname\nwrong environment hostname\nmissing /v2 on qcash-ui itself\n```\n\nUse the Network panel’s full **Request URL**, response body, and remote IP—not only the displayed filename.\n\n### 4. Validate build arguments before building\n\nRequire every expected value to be nonempty and a valid absolute URL, especially:\n\n```text\nNEXT_PUBLIC_API_URL_PILOTING\nNEXT_PUBLIC_API_URL_PROD_ID\nthe environment matching the deployment hostname\n```\n\nDo not pass literal strings `undefined` or `null`. Confirm the API values terminate at the intended `/api` boundary.\n\n### 5. Verify build-time replacement\n\nInspect the deployed client chunks for known environment hosts and malformed literals. Runtime pod environment alone is insufficient because public variables were inlined during `yarn build`.\n\nRebuild the image after correcting any `NEXT_PUBLIC_*` value; restarting the old image will not update browser URLs.\n\n### 6. Separate shell failure from consumed-remote failure\n\n- If `/v2/_next/static/chunks/remoteEntry.js` itself is 500: inspect qcash-ui ingress/static packaging/server logs.\n- If a URL such as `/header-footer/...`, `/giro-v2/...`, or `undefined/...` is 500: inspect qcash-ui’s generated registry URL and the selected remote upstream.\n- Curl the failing consumed URL directly from both outside and inside the qcash-ui pod. If it returns 500 independently, qcash-ui is only the caller."
+    }
+  ],
+  "source": "opencode",
+  "tags": [
+    "coding",
+    "assistant",
+    "opencode"
+  ]
+}

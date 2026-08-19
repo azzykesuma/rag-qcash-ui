@@ -1,0 +1,135 @@
+{
+  "id": "ses_016c95ac0ffeBaXtVzxujZB77R",
+  "conversations": [
+    {
+      "from": "human",
+      "value": "Research only, do not edit. Very thorough architecture audit of all ~/Development/qcash-ui-* repositories EXCEPT qcash-ui itself, landing-page, header-footer, header-footer-bri, dashboard, main-page, design-system, base. Group repositories by architecture pattern and business domain. Inspect package.json, next/webpack/module federation configs, src/pages/services/store patterns, test setup, README, and dev branch where locally available. Identify concrete systemic and repository-specific technical debt, documentation gaps, and coupling. Return exact file:line references for representative/high-risk evidence and a complete repo grouping suitable for adding to root ARCHITECTURE.md. Ignore node_modules, .next, generated @mf-types."
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": "# Architecture audit\n\nResearch-only audit completed; no files were modified. Scope: **71 repositories** matching `qcash-ui-*`, excluding the seven requested repositories. Ignored `node_modules`, `.next`, and generated `@mf-types`.\n\n## 1. Executive summary\n\nThe estate is effectively one large, loosely governed micro-frontend platform:\n\n- **69/71 repositories** use the legacy architecture: Next.js Pages Router, mostly Next `13.5.x`, webpack 5, and `@module-federation/nextjs-mf`.\n- **2/71 repositories** are a newer architecture using Next 16, `next-rspack`, Tailwind 4, Biome, and `@module-federation/enhanced`:\n  - `qcash-ui-dashboard-auto-collection`\n  - `qcash-ui-forex`\n- **62 repositories** hard-code the development OpenShift domain in federation configuration.\n- **67 repositories** directly depend on `@ordentco/addons-auth-provider`, across many incompatible versions.\n- Only **34/71 current worktrees have a test script**; 37 have no executable test contract.\n- Local or remote `dev` references exist for **46 repositories**, but many checked-out `master` trees are far behind or divergent from `dev`.\n- MFEs are not isolated business modules in practice. They share:\n  - token storage keys,\n  - login and shell routes,\n  - browser events such as `showDialog`,\n  - remote component URLs,\n  - generated type layouts,\n  - API environment-selection code,\n  - response/error semantics,\n  - CSS exposure conventions.\n\nThe biggest architectural risk is therefore not Module Federation itself, but the absence of centrally versioned contracts around federation, authentication, routing, API clients, runtime configuration, and testing.\n\n---\n\n# 2. Complete repository grouping\n\nUnless marked **modern**, every repository below belongs to the legacy Next.js/webpack/`nextjs-mf` pattern.\n\n## Platform administration, IAM and configuration — 19\n\n- `qcash-ui-announcement-management`\n- `qcash-ui-company-management`\n- `qcash-ui-content-management-system`\n- `qcash-ui-cut-off-management`\n- `qcash-ui-employee-data`\n- `qcash-ui-group-management`\n- `qcash-ui-holiday-management`\n- `qcash-ui-language-management`\n- `qcash-ui-menu-management`\n- `qcash-ui-onboarding-tour`\n- `qcash-ui-partners-integrations`\n- `qcash-ui-rma-management`\n- `qcash-ui-role-management`\n- `qcash-ui-sistem-management`\n- `qcash-ui-subscription-management`\n- `qcash-ui-update-user`\n- `qcash-ui-user`\n- `qcash-ui-user-basic-management`\n- `qcash-ui-user-manual`\n\n## Workflow and approval — 2\n\n- `qcash-ui-approval-signature`\n- `qcash-ui-workflow`\n\n## Customer support — 2\n\n- `qcash-ui-complaint`\n- `qcash-ui-helpdesk-portal`\n\n## Registration and onboarding — 5\n\n- `qcash-ui-account-registration`\n- `qcash-ui-account-validation`\n- `qcash-ui-registration-giro`\n- `qcash-ui-registration-online`\n- `qcash-ui-user-registration-online`\n\n## Accounts, receivables, statements and monitoring — 11\n\n- `qcash-ui-account-management`\n- `qcash-ui-account-receivable`\n- `qcash-ui-account-statement`\n- `qcash-ui-account-summary`\n- `qcash-ui-bank-monitoring-transaction`\n- `qcash-ui-beneficiary-account-management`\n- `qcash-ui-global-account-statement`\n- `qcash-ui-global-account-summary`\n- `qcash-ui-rdn-summary`\n- `qcash-ui-rdn-transaction`\n- `qcash-ui-report-statement`\n\n## Payments, cards and transfers — 12\n\n- `qcash-ui-bifast`\n- `qcash-ui-cashcard`\n- `qcash-ui-credit-card`\n- `qcash-ui-ewallet-topup`\n- `qcash-ui-fund-transfer`\n- `qcash-ui-global-external-transfer`\n- `qcash-ui-global-internal-transfer`\n- `qcash-ui-mass-brizzi`\n- `qcash-ui-mass-transfer`\n- `qcash-ui-payroll-transfer`\n- `qcash-ui-rtgs`\n- `qcash-ui-swift`\n\n## Trade finance, treasury and liquidity — 5\n\n- `qcash-ui-amend-cancel-lc`\n- `qcash-ui-digi-guarantee`\n- `qcash-ui-forex` — **modern**\n- `qcash-ui-issuance-lc`\n- `qcash-ui-liquidities`\n\n## Government, tax and regulatory payments — 4\n\n- `qcash-ui-local-tax-dki-jakarta`\n- `qcash-ui-mpn`\n- `qcash-ui-regol`\n- `qcash-ui-span`\n\n## Industry, SCM and specialized corporate products — 11\n\n- `qcash-ui-dashboard-auto-collection` — **modern**\n- `qcash-ui-dashboard-dhe`\n- `qcash-ui-df-pupuk-indonesia`\n- `qcash-ui-do-pertamina`\n- `qcash-ui-do-pupuk-indonesia`\n- `qcash-ui-do-semen-indonesia`\n- `qcash-ui-mitra-asuransi`\n- `qcash-ui-pencairan-bulog`\n- `qcash-ui-plafon-pegadaian`\n- `qcash-ui-scm`\n- `qcash-ui-scm-cu`\n\n---\n\n# 3. Architecture patterns\n\n## Pattern A: Legacy federated Next.js Pages Router — 69 repositories\n\nTypical structure:\n\n```text\npages/           route entries and federation exposure targets\ncontainers/      stateful business screens\ncomponents/      local and remote-component wrappers\nservices/        duplicated Axios clients and API modules\nstyles/          generated Tailwind output exposed through federation\nconfig.ts        environment-by-hostname and feature-toggle selection\n```\n\nRepresentative configuration:\n\n- Federation directly exposes page files and CSS:\n  - `~/Development/qcash-ui-account-management/next.config.js:11-20`\n  - `~/Development/qcash-ui-workflow/federation.config.js:9-15`\n- Standalone deployment and business-specific `basePath`:\n  - `~/Development/qcash-ui-account-management/next.config.js:56-57`\n  - `~/Development/qcash-ui-workflow/next.config.js:12-13`\n- Every MFE alters Next's webpack pipeline to add `style-loader`, force a browser target, and install federation:\n  - `~/Development/qcash-ui-account-management/next.config.js:58-69`\n  - `~/Development/qcash-ui-global-account-summary/next.config.js:47-51`\n\nThis template is consistent enough to automate, but it has been copied rather than maintained as a shared preset.\n\n## Pattern B: Modern Next 16/Rspack federation — 2 repositories\n\n### `qcash-ui-dashboard-auto-collection`\n\n- Next 16.2.9 and `@module-federation/enhanced`:\n  - `~/Development/qcash-ui-dashboard-auto-collection/package.json:21-31`\n- Rspack federation runs only on client builds:\n  - `~/Development/qcash-ui-dashboard-auto-collection/next.config.ts:12-31`\n- Exposes pages from `src/pages` and a generated stylesheet module:\n  - `~/Development/qcash-ui-dashboard-auto-collection/next.config.ts:47-52`\n- Has Vitest, Biome, Tailwind 4 and a host-compatibility development proxy:\n  - `~/Development/qcash-ui-dashboard-auto-collection/package.json:11-19`\n  - `~/Development/qcash-ui-dashboard-auto-collection/README.md:19-41`\n\n### `qcash-ui-forex`\n\n- Next 16.2.4, Rspack and enhanced federation:\n  - `~/Development/qcash-ui-forex/package.json:20-38`\n  - `~/Development/qcash-ui-forex/next.config.ts:1-5`\n- Explicitly shares React/React DOM as eager singletons:\n  - `~/Development/qcash-ui-forex/next.config.ts:32-35`\n- Consumes design-system type artifacts from a cluster URL:\n  - `~/Development/qcash-ui-forex/next.config.ts:41-54`\n\nThese two repositories are an emerging replacement architecture, but they do not yet share one canonical implementation: one uses Rspack's `ModuleFederationPluginV1`, the other `@module-federation/enhanced/rspack`.\n\n---\n\n# 4. Systemic technical debt and coupling\n\n## Critical: hard-coded development federation topology\n\nAt least 62 repositories embed `internal-service.example.com` in federation configuration. This makes independent environments and local composition fragile and turns a development cluster into a build-time dependency.\n\nRepresentative evidence:\n\n- `~/Development/qcash-ui-account-management/next.config.js:7-10`\n- `~/Development/qcash-ui-workflow/federation.config.js:5-8`\n- `~/Development/qcash-ui-dashboard-auto-collection/next.config.ts:35-38`\n- `~/Development/qcash-ui-forex/next.config.ts:29-31`\n\n`qcash-ui-global-account-summary` nominally supports environment variables but then unconditionally overwrites `ENV_DOMAIN`:\n\n- `~/Development/qcash-ui-global-account-summary/next.config.js:4-7`\n\nA runtime remote registry or shared federation preset should own remote names, paths and environment resolution.\n\n## Critical: authentication and shell behavior duplicated inside feature MFEs\n\nFeature-level Axios clients directly know:\n\n- `access-token`, `refresh-token`, and `login` storage keys;\n- `/homepage` and `/main-page`;\n- the `\"Another Login Detected\"` backend string;\n- the `showDialog` DOM event contract;\n- retry behavior for status 401/408/499.\n\nRepresentative evidence:\n\n- `~/Development/qcash-ui-workflow/services/custom-axios.ts:45-68`\n- `~/Development/qcash-ui-workflow/services/custom-axios.ts:107-160`\n- `~/Development/qcash-ui-account-management/services/custom-axios.ts:28-48`\n- `~/Development/qcash-ui-account-management/services/custom-axios.ts:181-232`\n\nThis couples each MFE to shell internals and preserves the obsolete `/main-page` login route even though the root architecture describes `/landing-page` as current.\n\nThe account-management client is 257 lines and includes authentication, retry queues, WAF HTML parsing, business-error normalization, routing and dialog rendering:\n\n- `~/Development/qcash-ui-account-management/services/custom-axios.ts:51-162`\n- `~/Development/qcash-ui-account-management/services/custom-axios.ts:164-255`\n\nThese responsibilities need a shared API/auth adapter with a typed host interface.\n\n## High: dependency and singleton drift\n\nThere are 67 direct Ordentco auth-provider dependencies, ranging from `0.9.70` through `0.9.142-mfe`, with both exact and range constraints.\n\nExamples:\n\n- `~/Development/qcash-ui-beneficiary-account-management/package.json:23`\n- `~/Development/qcash-ui-menu-management/package.json:20`\n- `~/Development/qcash-ui-dashboard-auto-collection/package.json:23`\n\nFederation commonly disables version enforcement:\n\n- `~/Development/qcash-ui-account-management/next.config.js:23-40`\n- `~/Development/qcash-ui-workflow/federation.config.js:20-42`\n\n`requiredVersion: false` hides incompatibility instead of managing it. Shared libraries, especially auth and i18n contexts, need an estate-wide compatibility matrix and enforced versions.\n\n## High: build checks are bypassed\n\nAt least nine repositories suppress lint and/or TypeScript failures during builds. The strongest example disables both:\n\n- `~/Development/qcash-ui-user-basic-management/next.config.js:49-56`\n\nOther examples include:\n\n- `~/Development/qcash-ui-workflow/next.config.js:14-19`\n- `~/Development/qcash-ui-account-management/next.config.js:49-55`\n\nThis allows incompatible remote interfaces and broken generated-type imports to reach deployment.\n\n## High: federation exposes implementation-level page modules\n\nMost MFEs expose route files directly. That couples hosts to:\n\n- repository directory structure,\n- Next router semantics,\n- dynamic route parameter names,\n- page-level providers,\n- CSS side effects.\n\nExamples:\n\n- `~/Development/qcash-ui-account-management/next.config.js:12-20`\n- `~/Development/qcash-ui-workflow/federation.config.js:10-15`\n\nStable adapters such as `src/exposes/account-list.tsx` would provide a safer public API.\n\n## High: CSS and webpack ownership are unclear\n\nLegacy projects add a second CSS/Sass loader chain to Next's webpack config:\n\n- `~/Development/qcash-ui-global-account-summary/next.config.js:47-50`\n- `~/Development/qcash-ui-menu-management/next.config.js:49-57`\n\nThey also expose generated global CSS. This creates ordering, duplication, hydration and class-collision risks. Styling prefixes exist per repository, but no documented host-level ordering or lifecycle contract was found.\n\n## Medium: state and remote types cross boundaries\n\nState management is inconsistent: most repositories use local React state, selected repositories use TanStack Query, and a few use Zustand.\n\nExamples:\n\n- Remote-generated UI types are embedded in local global state:\n  - `~/Development/qcash-ui-scm/store/globalStore.ts:1-16`\n- Persisted browser state directly invokes services:\n  - `~/Development/qcash-ui-fund-transfer/store/useMasterDataStore.ts:11-37`\n\nThe latter persists environment-derived master data without a version, user, tenant or environment key, creating stale/cross-session data risk.\n\n---\n\n# 5. Testing audit\n\n## Coverage of executable test contracts\n\n- **34/71 repositories** currently define a `test` script.\n- Four use Vitest:\n  - `qcash-ui-dashboard-auto-collection`\n  - `qcash-ui-helpdesk-portal`\n  - `qcash-ui-plafon-pegadaian`\n  - `qcash-ui-sistem-management`\n- The remainder use Jest.\n- No consistent estate-wide integration, contract, browser or host-composition test layer was found.\n\n### Concrete debt\n\n- `qcash-ui-menu-management` permits an empty suite:\n  - `~/Development/qcash-ui-menu-management/package.json:12-13`\n- It combines Jest 30 with `ts-jest` 29:\n  - `~/Development/qcash-ui-menu-management/package.json:53-67`\n- `qcash-ui-beneficiary-account-management` also combines Jest 30 with `ts-jest` 29:\n  - `~/Development/qcash-ui-beneficiary-account-management/package.json:55-72`\n- That repository has both `jest.config.js` and `jest.config.ts`, making configuration ownership ambiguous.\n- Tests generally mock federation or generated remote types; therefore they validate local rendering but not host/remote compatibility.\n- `qcash-ui-forex` has no test script despite introducing the new Rspack architecture:\n  - `~/Development/qcash-ui-forex/package.json:5-18`\n\nRecommended minimum contract per MFE:\n\n1. unit tests,\n2. exposed-module import smoke test,\n3. generated/public type validation,\n4. remoteEntry availability test,\n5. host-mounted route test,\n6. API/auth adapter contract test.\n\n---\n\n# 6. Documentation gaps\n\nAll repositories generally contain a README, but most are cloned boilerplate rather than operational architecture documentation.\n\nTypical generic text only says “Next.js + Module Federation” and `yarn dev`; it omits remote names, exposed modules, base paths, environment variables, API ownership and host requirements.\n\nExamples:\n\n- `~/Development/qcash-ui-account-management/README.md:1-15`\n- `~/Development/qcash-ui-sistem-management/README.md:1-40`\n\nThe latter still discusses nonexistent sample API routes and Vercel deployment.\n\n`qcash-ui-forex` is especially stale:\n\n- It describes `pages/index.tsx`, but source is under `src/pages`:\n  - `~/Development/qcash-ui-forex/README.md:17-23`\n- It documents four package managers while package scripts mix Bun and npm:\n  - `~/Development/qcash-ui-forex/README.md:5-15`\n  - `~/Development/qcash-ui-forex/package.json:6-18`\n\nMissing from most READMEs:\n\n- business owner and lifecycle status;\n- shell route and `basePath`;\n- federation remote name and expose map;\n- required host-provided providers;\n- supported auth-provider version;\n- API/environment-variable matrix;\n- local shell integration instructions;\n- state persistence and storage keys;\n- deployment port and health checks;\n- test/coverage expectations;\n- deprecation or replacement status.\n\n---\n\n# 7. Repository-specific high-risk findings\n\n## `qcash-ui-user-basic-management`\n\nProduction builds explicitly ignore both lint and TypeScript errors:\n\n- `~/Development/qcash-ui-user-basic-management/next.config.js:49-56`\n\nFederated type generation is also commented out:\n\n- `~/Development/qcash-ui-user-basic-management/next.config.js:85-87`\n\n## `qcash-ui-workflow`\n\nThe development `FederatedTypesPlugin` remote URL ends at `/static/chunks/` rather than `remoteEntry.js` or a type artifact:\n\n- `~/Development/qcash-ui-workflow/next.config.js:37-47`\n\nIt also disables version requirements across a very large shared dependency surface:\n\n- `~/Development/qcash-ui-workflow/federation.config.js:20-42`\n\n## `qcash-ui-global-account-summary`\n\nIt mutates `process.env.ENV_DOMAIN` to the dev cluster regardless of the earlier environment fallback:\n\n- `~/Development/qcash-ui-global-account-summary/next.config.js:4-7`\n\nIt is coupled to both global components and the excluded main-page remote:\n\n- `~/Development/qcash-ui-global-account-summary/next.config.js:12-18`\n\n## `qcash-ui-regol`, `qcash-ui-rma-management`, `qcash-ui-dashboard-dhe`\n\nCurrent checked-out configurations create remote entries but expose no modules:\n\n- `~/Development/qcash-ui-regol/next.config.js:12-15`\n- `~/Development/qcash-ui-rma-management/next.config.js:12-17`\n- `~/Development/qcash-ui-dashboard-dhe/next.config.js:12-17`\n\nThese appear to be skeleton, dormant, or stale stable branches and should be explicitly classified.\n\n## `qcash-ui-registration-giro`\n\nThe current branch also has no federation exposures:\n\n- `~/Development/qcash-ui-registration-giro/next.config.js:12-17`\n\nHowever, `origin/dev` is 30 commits ahead and changes approximately 885 architecture/test paths, including renaming `next.config.js` to `next.config.mjs`. The current branch is therefore not a reliable picture of active development.\n\n## `qcash-ui-approval-signature`\n\n`images.domains` contains full URLs rather than hostnames, which does not match Next's domain-list contract:\n\n- `~/Development/qcash-ui-approval-signature/next.config.js:38-43`\n\n## `qcash-ui-dashboard-auto-collection`\n\nThis is the most complete modern implementation, but federation still disables webpack caching:\n\n- `~/Development/qcash-ui-dashboard-auto-collection/next.config.ts:12-14`\n\nIt mixes React 18 with `react-is` 19:\n\n- `~/Development/qcash-ui-dashboard-auto-collection/package.json:27-34`\n\n## `qcash-ui-forex`\n\nPackage-manager ownership is unclear: scripts invoke Bun, npm and bare Next, while both `yarn.lock` and `bun.lock` exist:\n\n- `~/Development/qcash-ui-forex/package.json:5-18`\n\nRemote type acquisition is tied directly to the development cluster:\n\n- `~/Development/qcash-ui-forex/next.config.ts:41-49`\n\nThere are no tests or API/service implementation yet, so this is closer to an architectural scaffold than a production-complete feature.\n\n---\n\n# 8. `dev` branch observations\n\nA local or remote `dev` ref was available for 46 repositories.\n\nImportant branch-state risks:\n\n- Many repositories are checked out on `master` while `dev` contains major architecture and test additions.\n- Particularly large dev-side changes exist in:\n  - `qcash-ui-registration-giro`\n  - `qcash-ui-digi-guarantee`\n  - `qcash-ui-scm-cu`\n  - `qcash-ui-rma-management`\n  - `qcash-ui-payroll-transfer`\n  - `qcash-ui-language-management`\n  - `qcash-ui-role-management`\n  - `qcash-ui-dashboard-dhe`\n- Conversely, several `master` branches are hundreds of commits ahead of an obsolete `origin/dev`, including:\n  - `qcash-ui-ewallet-topup`\n  - `qcash-ui-global-internal-transfer`\n- `qcash-ui-account-management` is on a release branch and has diverged 19 commits in each direction from local `dev`.\n\nTherefore, root architecture documentation should record **lifecycle branch per repository**, not state globally that `dev` is always active and `master` is always stable.\n\n---\n\n# 9. Recommended root `ARCHITECTURE.md` additions\n\nAdd:\n\n1. The complete domain grouping above.\n2. An architecture-generation field per repository:\n   - `legacy-nextjs-mf`\n   - `modern-next-rspack-mf`\n   - `skeleton/dormant`\n3. A registry table with:\n   - owner/domain,\n   - active branch,\n   - Next/federation generation,\n   - base path,\n   - remote name,\n   - exposed modules,\n   - consumed remotes,\n   - auth-provider version,\n   - state/data strategy,\n   - test runner,\n   - lifecycle status.\n4. A formal host/MFE contract covering:\n   - routing,\n   - auth context,\n   - storage keys,\n   - session expiry,\n   - dialogs/events,\n   - i18n,\n   - error shape,\n   - process IDs,\n   - CSS loading,\n   - remote type publication.\n5. A single environment-aware federation manifest instead of repository-local dev URLs.\n6. A shared API client package instead of copied `custom-axios.ts`.\n7. A migration plan from the 69 legacy MFEs to the modern Rspack pattern.\n8. CI gates prohibiting:\n   - ignored TypeScript/lint failures,\n   - empty exposure maps for active MFEs,\n   - `passWithNoTests`,\n   - hard-coded cluster remotes,\n   - incompatible Jest/transformer versions,\n   - undocumented public exposures."
+    }
+  ],
+  "source": "opencode",
+  "tags": [
+    "coding",
+    "assistant",
+    "opencode"
+  ]
+}

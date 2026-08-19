@@ -1,0 +1,595 @@
+{
+  "id": "6535afd4-1c53-436e-910b-03f480866418",
+  "conversations": [
+    {
+      "from": "human",
+      "value": "please implement this all changes A robust fix should be inside qcash-ui-issuance-lc and its Federation/design-system integration, not in header-footer. The header hard reload only hides incomplete teardown.\nLikely Root Cause\nIssuance-LC does not follow a single runtime/provider ownership model:\n- The shell initializes Federation globally.\n- Issuance initializes Federation again with a much older runtime.\n- The shell mounts QuiProvider.\n- Issuance create/edit mount additional QUI and toast providers.\n- Issuance keeps a module-global QueryClient.\n- Some issuance components leak event listeners.\n- A conditional Rspack build can omit React/router singleton sharing.\nThis allows issuance state and contexts to survive or diverge during soft navigation.\nRobust Architecture\nUse this ownership model:\nqcash-ui shell\n  ├── Next router\n  ├── Module Federation runtime\n  ├── Auth providers\n  └── One global QUI provider\n        └── issuance-LC page\n              ├── feature state\n              └── route-scoped QueryClient\nIssuance should not initialize platform services already owned by the shell.\n1. Remove Nested Federation Initialization\nRemove issuance calls to init() from:\n- pages/import-lc/issuance-lc/create/index.tsx:117-154\n- The corresponding edit page\n- Issuance _app where applicable\nDo not dynamically load qui/providers inside create/edit. Consume QUI components through one configured Federation runtime.\nPrefer standard Federated imports such as:\nconst Button = dynamic(() =\u003e import(\"qui/components/button\"), {\n  ssr: false,\n});\nAvoid using issuance’s private @module-federation/runtime@^0.1.1 to initialize remotes already registered by the shell.\n2. Use One QUI Provider\nRemove these page-level wrappers:\n\u003cProviders\u003e\n  \u003cQuiToast.Provider /\u003e\n  \u003cForm {...formProps} /\u003e\n\u003c/Providers\u003e\nThe shell already mounts qui/providers. Issuance should render only:\n\u003cForm {...formProps} /\u003e\nFor standalone development, mount QuiProvider once in issuance _app.tsx. That _app is not executed when the page is hosted by the shell.\n3. Standardize Federation\nKeep issuance on one supported Federation path.\n- Remove the conditional raw ModuleFederationPluginV1 path until the MFE is fully migrated to Rspack.\n- Align @module-federation/runtime and nextjs-mf with the shell.\n- Align the Next.js minor version with the shell.\n- Ensure React, React DOM, JSX runtime, auth provider, and router resolve from the host share scope.\n- Remove the old nested Next 12 dependency by upgrading the issuance auth-provider dependency.\nThe current raw Rspack path in next.config.js:78-88 does not include React or router sharing and is unsafe.\n4. Make Query State Route-Scoped\nDo not export one permanent client or assign it to window:\nexport const queryClient = new QueryClient();\nwindow.__TANSTACK_QUERY_CLIENT__ = queryClient;\nCreate the client at the issuance route boundary:\nconst [queryClient] = useState(\n  () =\u003e\n    new QueryClient({\n      defaultOptions: {\n        queries: {\n          refetchOnWindowFocus: false,\n          retry: 1,\n          staleTime: 3000,\n        },\n      },\n    }),\n);\n\nuseEffect(() =\u003e {\n  return () =\u003e queryClient.clear();\n}, [queryClient]);\nAlso:\n- Clear it when user/company identity changes.\n- Do not include bearer tokens in query keys.\n- Do not rely on window.__TANSTACK_QUERY_CLIENT__.\n- Share @tanstack/react-query explicitly only if QUI components genuinely require the same context.\nIdeally, design-system components should be presentation primitives and should not own application query state.\n5. Guarantee Issuance Cleanup\nMove render-time listeners into effects with cleanup.\nCurrent problematic pattern:\nwindow.addEventListener(\"scroll\", handler);\nRequired pattern:\nuseEffect(() =\u003e {\n  window.addEventListener(\"scroll\", handler);\n\n  return () =\u003e {\n    window.removeEventListener(\"scroll\", handler);\n  };\n}, [handler]);\nRelevant files include:\n- components/create/page-3.tsx\n- components/create-new-skin/page-3.tsx\n- components/create-new-old/page-3.tsx\nAlso clean up:\n- Pending requests through AbortController.\n- Timers and subscriptions.\n- Remote loader promises where retry is expected.\n- Form state when authenticated identity changes.\n6. Fix Remote Error Handling\nCreate/edit currently display a skeleton forever if Federation initialization fails.\nReplace that with explicit states:\nloading -\u003e loaded\n        -\u003e error + retry\nA rejected cached remote promise must be cleared before retrying. Errors should reach an error boundary instead of only console.error.\n7. Fix Existing Broken Contracts First\nBefore validating navigation:\n- Repair the exposed detail page. It currently references undeclared useState, getDetailById, isError, error, isPending, and data.\n- Fix the malformed local QUI URL in next.config.js:25.\n- Regenerate Federation types from the actual producer.\n- Remove any adapters that hide unsupported QUI props.\n- Fix unsupported select props and autocomplete clear synchronization.\n- Remove links wrapping real button components.\nUntil the detail route type-checks, deployed source and local source may behave differently.\nVerification Strategy\nTemporarily disable the header hard reload only in a local integration environment, then test:\n1. Open Import LC selection modal.\n2. Enter issuance-LC.\n3. Navigate using normal router.push.\n4. Confirm routeChangeStart and routeChangeComplete fire once.\n5. Confirm issuance components unmount.\n6. Confirm issuance listeners and requests are cleaned up.\n7. Confirm the destination page receives the host auth and QUI contexts.\n8. Navigate again from the destination and verify the header is still current.\nAdd automated host-mounted coverage for:\nheader modal\n  -\u003e issuance list\n  -\u003e issuance create\n  -\u003e another MFE\n  -\u003e another header navigation\nAssertions should include:\n- One loaded React instance.\n- One effective next/router.\n- One global QUI provider.\n- No issuance DOM after route completion.\n- No retained scroll listeners.\n- No previous-user QueryClient data.\n- Remote-load failure presents retry UI.\n- StrictMode mount/unmount does not duplicate effects.\nThe first implementation priority should be removing issuance’s nested Federation initialization and duplicate QUI providers. That addresses the architecture defect the header reload currently masks."
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "human",
+      "value": "resume"
+    },
+    {
+      "from": "gpt",
+      "value": "Picking up from the test failures. Two main issues to fix:\n\n1. **`use-issuance-detail-query.test.ts`** — hooks now require a `QueryClientProvider` wrapper, and `issuanceDetailQueryKey` test expects the old token-based signature\n2. **`ongoing-columns.tsx`** — `openDeleteConfirmation` doesn't exist (correct name is `onDeleteConfirmation`)\n\nLet me fix both:"
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": "Good — `issuanceDetailQueryKey` now only takes one arg (no token). The test still has the old two-arg assertion, and the hooks need a `QueryClientProvider` wrapper. Let me fix both:"
+    },
+    {
+      "from": "gpt",
+      "value": "Now fix the `openDeleteConfirmation` typo in ongoing-columns.tsx (correct name is `onDeleteConfirmation`):"
+    },
+    {
+      "from": "gpt",
+      "value": "Now run the tests again:"
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": "The test renders `\u003cOngoingTab\u003e` which internally uses `useTransactionActionMutation` (via `useTransactionAuth`). These tests now need a `QueryClientProvider` wrapper. Let me look at those test files:"
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": "The `issuance-tables.test.tsx` renders `\u003cOngoingTab\u003e` which calls `useTransactionAuth` → `useTransactionActionMutation` → requires `QueryClientProvider`. The cleanest fix is to add a `QueryClientProvider` wrapper to the render in this test. Let me add it:"
+    },
+    {
+      "from": "gpt",
+      "value": "Now let me check the other two failing tests:"
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": "There are many renders in this file. The cleanest approach for these component tests is to mock `@tanstack/react-query` so `useMutation`/`useQuery` don't require a provider. Let me check how the test file handles it:"
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": "This is a large test file with ~50 `render()` calls. The best fix is to add a global `wrapper` to all renders via a custom `render` util or by using `jest.setup` - but the quickest, least-invasive approach is to mock `@tanstack/react-query`'s `useMutation` in this test file since it already mocks everything else:"
+    },
+    {
+      "from": "gpt",
+      "value": "The cleanest approach for this large test file is to mock `use-issuance-detail-query` directly, which is what `useTransactionAuth` calls. Let me check what `useTransactionAuth` consumes:"
+    },
+    {
+      "from": "gpt",
+      "value": "The issue is clear: `useTransactionAuth` calls `useTransactionActionMutation` directly, which uses `useMutation` from react-query, requiring a `QueryClientProvider`. Since the `ongoing.test.tsx` already mocks everything at the service layer, the correct fix is to mock `use-issuance-detail-query` so `useMutation` is never called:"
+    },
+    {
+      "from": "gpt",
+      "value": "Now let's check `saved-table-dropdown-preview.test.tsx`:"
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": "The `Dropdown` component in `saved-table-dropdown-preview.test.tsx` is rendered at line 222. The `Dropdown` component uses `router.push` which requires `next/router`. Let me check if next/router is mocked there:"
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": "The error mentions `at QuiButton (components/dropdown.tsx:101:8)` — the `next/router` mock only returns `{ basePath: \"/qcash\" }` but no `push` function. Since we now use `router.push()` in `Dropdown.handleAction`, we need to add `push` to the router mock:"
+    },
+    {
+      "from": "gpt",
+      "value": "Now also check `components/dropdown.tsx` to confirm line 101 where it uses `router`:"
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": "Good — `dropdown.tsx` uses `router.push` via `useRouter()`. The mock at line 18 of the test was missing `push`. That fix should resolve the `saved-table-dropdown-preview` failures. Now let's run all tests:"
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": "The `Dropdown` component no longer imports `QuiButton` directly but the test's `@/components/global` mock doesn't export `QuiButton`. Actually — looking at the original `dropdown.tsx`, it was importing `QuiButton` from `\"../global\"` (not from `@/components/global`). After the refactor removing the `\u003cLink\u003e` wrapper, the `QuiButton` import was removed. Let me verify:"
+    },
+    {
+      "from": "gpt",
+      "value": "`QuiButton` is still used in dropdown.tsx at line 101 but the import was lost when we cleaned up the file. Let me check the imports:"
+    },
+    {
+      "from": "gpt",
+      "value": "`QuiButton` is missing from the imports. Add it back:"
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": "Good progress — `saved-table-dropdown-preview.test.tsx` now passes. Two still failing. Let me check the remaining errors in detail:"
+    },
+    {
+      "from": "gpt",
+      "value": "Both files fail with `NextRouter was not mounted` — this is because `useOngoingColumns` now calls `useRouter()` and both test files don't mock `next/router`. The `issuance-tables.test.tsx` and `ongoing.test.tsx` both need a `next/router` mock. Let me add it to both:"
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": "Neither has a `next/router` mock. Add one to both:"
+    },
+    {
+      "from": "gpt",
+      "value": "Now for `ongoing.test.tsx` — looking at the mock list, there was a `next/link` mock already there (line 91-94). Add `next/router` mock nearby:"
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": "Good — down to 1 failing suite. Let me see the specific failures in `ongoing.test.tsx`:"
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    }
+  ],
+  "source": "antigravity",
+  "tags": [
+    "coding",
+    "assistant",
+    "antigravity"
+  ]
+}
