@@ -65,6 +65,48 @@ Before any conversation is added to the repository, the engine executes a multi-
 
 ---
 
+## 📥 Installation & Global Setup
+
+### 1. Download Pre-Compiled Binary
+Grab the executable for your OS from [GitHub Releases](https://github.com/azzykesuma/rag-qcash-ui/releases/latest):
+- **Windows**: [`vault-windows-amd64.exe`](https://github.com/azzykesuma/rag-qcash-ui/releases/latest/download/vault-windows-amd64.exe) (rename to `vault.exe`)
+- **Linux**: [`vault-linux-amd64`](https://github.com/azzykesuma/rag-qcash-ui/releases/latest/download/vault-linux-amd64)
+- **macOS (Apple Silicon)**: [`vault-darwin-arm64`](https://github.com/azzykesuma/rag-qcash-ui/releases/latest/download/vault-darwin-arm64)
+- **macOS (Intel)**: [`vault-darwin-amd64`](https://github.com/azzykesuma/rag-qcash-ui/releases/latest/download/vault-darwin-amd64)
+
+### 2. Make `vault` Available Globally (Terminal & VS Code)
+
+#### 🪟 Windows (PowerShell & VS Code)
+To run `vault` from any terminal or inside VS Code:
+
+```powershell
+# 1. Add vault's directory to your User PATH permanently
+[System.Environment]::SetEnvironmentVariable('Path', [System.Environment]::GetEnvironmentVariable('Path', 'User') + ';D:\code\llm-context-vault', 'User')
+
+# 2. Add alias to PowerShell Profile (ensures instant availability in VS Code)
+if (!(Test-Path $PROFILE)) { New-Item -ItemType File -Path $PROFILE -Force }
+Add-Content -Path $PROFILE -Value 'Set-Alias -Name vault -Value "D:\code\llm-context-vault\vault.exe"'
+```
+
+#### 🐧 Linux / 🍎 macOS
+```bash
+# Move to system bin
+chmod +x vault-linux-amd64
+sudo mv vault-linux-amd64 /usr/local/bin/vault
+```
+
+### 3. (Optional) Set Central Vault Directory Environment Variable
+When running `vault scan` or `vault search` from outside the repository (e.g. inside another workspace like `my-web-app/`), `vault` automatically discovers your central repository. You can also explicitly define it:
+```powershell
+# Windows
+[System.Environment]::SetEnvironmentVariable('LLM_VAULT_DIR', 'D:\code\llm-context-vault', 'User')
+
+# Linux / macOS (in ~/.bashrc or ~/.zshrc)
+export LLM_VAULT_DIR="$HOME/code/llm-context-vault"
+```
+
+---
+
 ## 🛠️ Usage Guide
 
 ### 1. 🌟 Single Unified Scan (All Local Assistants)
