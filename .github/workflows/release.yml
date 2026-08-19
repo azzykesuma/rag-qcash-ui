@@ -19,21 +19,17 @@ jobs:
       - name: Set up Go
         uses: actions/setup-go@v5
         with:
-          go-version: 'stable'
+          go-version: '1.23'
           cache: true
 
       - name: Build Binaries
         env:
-          CGO_ENABLED: 0
+          CGO_ENABLED: '0'
         run: |
           mkdir -p dist
-          # Windows (x86_64)
           GOOS=windows GOARCH=amd64 go build -ldflags="-s -w" -o dist/vault-windows-amd64.exe ./cmd/vault
-          # Linux (x86_64)
           GOOS=linux GOARCH=amd64 go build -ldflags="-s -w" -o dist/vault-linux-amd64 ./cmd/vault
-          # macOS (Apple Silicon M1/M2/M3/M4)
           GOOS=darwin GOARCH=arm64 go build -ldflags="-s -w" -o dist/vault-darwin-arm64 ./cmd/vault
-          # macOS (Intel)
           GOOS=darwin GOARCH=amd64 go build -ldflags="-s -w" -o dist/vault-darwin-amd64 ./cmd/vault
 
       - name: Create GitHub Release
