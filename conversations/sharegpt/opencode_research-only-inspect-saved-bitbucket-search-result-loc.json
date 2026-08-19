@@ -1,0 +1,79 @@
+{
+  "id": "ses_015319ce1ffeh01qpJRa6e3gi4",
+  "conversations": [
+    {
+      "from": "human",
+      "value": "Research only. Inspect the saved Bitbucket search result ~\\.local\\share\\opencode\\tool-output\\tool_feace24c4001e6mKZg7BE0udxQ using Grep/Read. Determine the qcash-ui-design-system select component's remote module path, compound components, and minimal controlled single-selection example (value/onChange or selectedKey/onSelectionChange). Return exact code/API facts with source file paths. Do not modify files."
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": "- Remote module: `qui/components/select-field` — exposed as `./components/select-field` from `./src/components/select-field.ts`. Source: `qcash-ui-design-system/apps/producer/src/components/component-exposes.ts:48` (saved result: `~\\.local\\share\\opencode\\tool-output\\tool_feace24c4001e6mKZg7BE0udxQ`).\n- It is a React Aria `Select` wrapper (`SelectProps\u003cT\u003e`), so controlled single selection is `selectedKey` + `onSelectionChange`, not `value` + `onChange`. Source: `qcash-ui-design-system/apps/notebook/src/content/docs/forms/select-field.mdx:126,138`.\n- Compound parts identified by its implementation files: `Group`, `Trigger`, `Value`, `Indicator`, `Popover`, `ClearButton`, `Prefix`, `Suffix`, `Separator`, `CurrencyItem`, and `SelectionSummary`. Implementation root: `qcash-ui-design-system/packages/components/src/components/select-field/index.ts`.\n\n```tsx\nconst [selectedKey, setSelectedKey] = useState\u003cstring | null\u003e(null);\n\n\u003cSelectField selectedKey={selectedKey} onSelectionChange={setSelectedKey}\u003e\n  \u003cSelectField.Group\u003e\n    \u003cSelectField.Trigger\u003e\n      \u003cSelectField.Value /\u003e\n      \u003cSelectField.Indicator /\u003e\n    \u003c/SelectField.Trigger\u003e\n  \u003c/SelectField.Group\u003e\n\n  \u003cSelectField.Popover\u003e\n    \u003cListBox\u003e\n      \u003cListBox.Item id=\"one\"\u003eOne\u003c/ListBox.Item\u003e\n      \u003cListBox.Item id=\"two\"\u003eTwo\u003c/ListBox.Item\u003e\n    \u003c/ListBox\u003e\n  \u003c/SelectField.Popover\u003e\n\u003c/SelectField\u003e\n```\n\n`ListBox` is shared rather than a `SelectField` part; the documentation explicitly says the field is built with React Aria `Select`, `Button`, `Popover`, and the shared `ListBox`."
+    }
+  ],
+  "source": "opencode",
+  "tags": [
+    "coding",
+    "assistant",
+    "opencode"
+  ]
+}

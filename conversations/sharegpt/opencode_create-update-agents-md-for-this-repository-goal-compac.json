@@ -1,0 +1,67 @@
+{
+  "id": "ses_000f0da1affe3zk8DZz5HsB4RL",
+  "conversations": [
+    {
+      "from": "human",
+      "value": "Create or update `AGENTS.md` for this repository.\n\nThe goal is a compact instruction file that helps future OpenCode sessions avoid mistakes and ramp up quickly. Every line should answer: \"Would an agent likely miss this without help?\" If not, leave it out.\n\nUser-provided focus or constraints (honor these):\n\n\n## How to investigate\n\nRead the highest-value sources first:\n- `README*`, root manifests, workspace config, lockfiles\n- build, test, lint, formatter, typecheck, and codegen config\n- CI workflows and pre-commit / task runner config\n- existing instruction files (`AGENTS.md`, `CLAUDE.md`, `.cursor/rules/`, `.cursorrules`, `.github/copilot-instructions.md`)\n- repo-local OpenCode config such as `opencode.json`\n\nIf architecture is still unclear after reading config and docs, inspect a small number of representative code files to find the real entrypoints, package boundaries, and execution flow. Prefer reading the files that explain how the system is wired together over random leaf files.\n\nPrefer executable sources of truth over prose. If docs conflict with config or scripts, trust the executable source and only keep what you can verify.\n\n## What to extract\n\nLook for the highest-signal facts for an agent working in this repo:\n- exact developer commands, especially non-obvious ones\n- how to run a single test, a single package, or a focused verification step\n- required command order when it matters, such as `lint -\u003e typecheck -\u003e test`\n- monorepo or multi-package boundaries, ownership of major directories, and the real app/library entrypoints\n- framework or toolchain quirks: generated code, migrations, codegen, build artifacts, special env loading, dev servers, infra deploy flow\n- repo-specific style or workflow conventions that differ from defaults\n- testing quirks: fixtures, integration test prerequisites, snapshot workflows, required services, flaky or expensive suites\n- important constraints from existing instruction files worth preserving\n\nGood `AGENTS.md` content is usually hard-earned context that took reading multiple files to infer.\n\n## Questions\n\nOnly ask the user questions if the repo cannot answer something important. Use the `question` tool for one short batch at most.\n\nGood questions:\n- undocumented team conventions\n- branch / PR / release expectations\n- missing setup or test prerequisites that are known but not written down\n\nDo not ask about anything the repo already makes clear.\n\n## Writing rules\n\nInclude only high-signal, repo-specific guidance such as:\n- exact commands and shortcuts the agent would otherwise guess wrong\n- architecture notes that are not obvious from filenames\n- conventions that differ from language or framework defaults\n- setup requirements, environment quirks, and operational gotchas\n- references to existing instruction sources that matter\n\nExclude:\n- generic software advice\n- long tutorials or exhaustive file trees\n- obvious language conventions\n- speculative claims or anything you could not verify\n- content better stored in another file referenced via `opencode.json` `instructions`\n\nWhen in doubt, omit.\n\nPrefer short sections and bullets. If the repo is simple, keep the file simple. If the repo is large, summarize the few structural facts that actually change how an agent should work.\n\nIf `AGENTS.md` already exists at `D:\\code\\codex-hud`, improve it in place rather than rewriting blindly. Preserve verified useful guidance, delete fluff or stale claims, and reconcile it with the current codebase."
+    },
+    {
+      "from": "human",
+      "value": "Create or update `AGENTS.md` for this repository.\n\nThe goal is a compact instruction file that helps future OpenCode sessions avoid mistakes and ramp up quickly. Every line should answer: \"Would an agent likely miss this without help?\" If not, leave it out.\n\nUser-provided focus or constraints (honor these):\n\n\n## How to investigate\n\nRead the highest-value sources first:\n- `README*`, root manifests, workspace config, lockfiles\n- build, test, lint, formatter, typecheck, and codegen config\n- CI workflows and pre-commit / task runner config\n- existing instruction files (`AGENTS.md`, `CLAUDE.md`, `.cursor/rules/`, `.cursorrules`, `.github/copilot-instructions.md`)\n- repo-local OpenCode config such as `opencode.json`\n\nIf architecture is still unclear after reading config and docs, inspect a small number of representative code files to find the real entrypoints, package boundaries, and execution flow. Prefer reading the files that explain how the system is wired together over random leaf files.\n\nPrefer executable sources of truth over prose. If docs conflict with config or scripts, trust the executable source and only keep what you can verify.\n\n## What to extract\n\nLook for the highest-signal facts for an agent working in this repo:\n- exact developer commands, especially non-obvious ones\n- how to run a single test, a single package, or a focused verification step\n- required command order when it matters, such as `lint -\u003e typecheck -\u003e test`\n- monorepo or multi-package boundaries, ownership of major directories, and the real app/library entrypoints\n- framework or toolchain quirks: generated code, migrations, codegen, build artifacts, special env loading, dev servers, infra deploy flow\n- repo-specific style or workflow conventions that differ from defaults\n- testing quirks: fixtures, integration test prerequisites, snapshot workflows, required services, flaky or expensive suites\n- important constraints from existing instruction files worth preserving\n\nGood `AGENTS.md` content is usually hard-earned context that took reading multiple files to infer.\n\n## Questions\n\nOnly ask the user questions if the repo cannot answer something important. Use the `question` tool for one short batch at most.\n\nGood questions:\n- undocumented team conventions\n- branch / PR / release expectations\n- missing setup or test prerequisites that are known but not written down\n\nDo not ask about anything the repo already makes clear.\n\n## Writing rules\n\nInclude only high-signal, repo-specific guidance such as:\n- exact commands and shortcuts the agent would otherwise guess wrong\n- architecture notes that are not obvious from filenames\n- conventions that differ from language or framework defaults\n- setup requirements, environment quirks, and operational gotchas\n- references to existing instruction sources that matter\n\nExclude:\n- generic software advice\n- long tutorials or exhaustive file trees\n- obvious language conventions\n- speculative claims or anything you could not verify\n- content better stored in another file referenced via `opencode.json` `instructions`\n\nWhen in doubt, omit.\n\nPrefer short sections and bullets. If the repo is simple, keep the file simple. If the repo is large, summarize the few structural facts that actually change how an agent should work.\n\nIf `AGENTS.md` already exists at `D:\\code\\codex-hud`, improve it in place rather than rewriting blindly. Preserve verified useful guidance, delete fluff or stale claims, and reconcile it with the current codebase."
+    },
+    {
+      "from": "human",
+      "value": "Create or update `AGENTS.md` for this repository.\n\nThe goal is a compact instruction file that helps future OpenCode sessions avoid mistakes and ramp up quickly. Every line should answer: \"Would an agent likely miss this without help?\" If not, leave it out.\n\nUser-provided focus or constraints (honor these):\n\n\n## How to investigate\n\nRead the highest-value sources first:\n- `README*`, root manifests, workspace config, lockfiles\n- build, test, lint, formatter, typecheck, and codegen config\n- CI workflows and pre-commit / task runner config\n- existing instruction files (`AGENTS.md`, `CLAUDE.md`, `.cursor/rules/`, `.cursorrules`, `.github/copilot-instructions.md`)\n- repo-local OpenCode config such as `opencode.json`\n\nIf architecture is still unclear after reading config and docs, inspect a small number of representative code files to find the real entrypoints, package boundaries, and execution flow. Prefer reading the files that explain how the system is wired together over random leaf files.\n\nPrefer executable sources of truth over prose. If docs conflict with config or scripts, trust the executable source and only keep what you can verify.\n\n## What to extract\n\nLook for the highest-signal facts for an agent working in this repo:\n- exact developer commands, especially non-obvious ones\n- how to run a single test, a single package, or a focused verification step\n- required command order when it matters, such as `lint -\u003e typecheck -\u003e test`\n- monorepo or multi-package boundaries, ownership of major directories, and the real app/library entrypoints\n- framework or toolchain quirks: generated code, migrations, codegen, build artifacts, special env loading, dev servers, infra deploy flow\n- repo-specific style or workflow conventions that differ from defaults\n- testing quirks: fixtures, integration test prerequisites, snapshot workflows, required services, flaky or expensive suites\n- important constraints from existing instruction files worth preserving\n\nGood `AGENTS.md` content is usually hard-earned context that took reading multiple files to infer.\n\n## Questions\n\nOnly ask the user questions if the repo cannot answer something important. Use the `question` tool for one short batch at most.\n\nGood questions:\n- undocumented team conventions\n- branch / PR / release expectations\n- missing setup or test prerequisites that are known but not written down\n\nDo not ask about anything the repo already makes clear.\n\n## Writing rules\n\nInclude only high-signal, repo-specific guidance such as:\n- exact commands and shortcuts the agent would otherwise guess wrong\n- architecture notes that are not obvious from filenames\n- conventions that differ from language or framework defaults\n- setup requirements, environment quirks, and operational gotchas\n- references to existing instruction sources that matter\n\nExclude:\n- generic software advice\n- long tutorials or exhaustive file trees\n- obvious language conventions\n- speculative claims or anything you could not verify\n- content better stored in another file referenced via `opencode.json` `instructions`\n\nWhen in doubt, omit.\n\nPrefer short sections and bullets. If the repo is simple, keep the file simple. If the repo is large, summarize the few structural facts that actually change how an agent should work.\n\nIf `AGENTS.md` already exists at `D:\\code\\codex-hud`, improve it in place rather than rewriting blindly. Preserve verified useful guidance, delete fluff or stale claims, and reconcile it with the current codebase."
+    },
+    {
+      "from": "gpt",
+      "value": "I’ll inspect the repository’s executable configuration and existing guidance first, then update `AGENTS.md` only with verified, high-signal instructions and run a focused sanity check."
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": "The repo is a single Vite + React + Electron app, with no CI or existing instruction file found. I’m checking the Electron bridge and renderer entrypoints now because the process boundary and local Codex data flow are the main non-obvious constraints."
+    },
+    {
+      "from": "gpt",
+      "value": "The verified guidance is limited to setup, commands, process boundaries, and Codex filesystem prerequisites. I’ll add those without documenting obvious React/TypeScript conventions or speculative workflow rules."
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": "Created compact `AGENTS.md` covering:\n\n- Verified npm commands and build workflow\n- Electron/main/preload/renderer boundaries\n- Local Codex data paths and session requirements\n- Authentication and security constraints\n- Windows-specific reauthorization behavior\n\n`git diff --check` passes."
+    },
+    {
+      "from": "human",
+      "value": "hell0"
+    },
+    {
+      "from": "gpt",
+      "value": "Hi! Ready to help with the codex-hud repo. What would you like to do?"
+    }
+  ],
+  "source": "opencode",
+  "tags": [
+    "coding",
+    "assistant",
+    "opencode"
+  ]
+}

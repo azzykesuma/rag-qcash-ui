@@ -1,0 +1,83 @@
+{
+  "id": "8157ccb5-b7eb-4cf2-ac41-506c4e1796f2",
+  "conversations": [
+    {
+      "from": "human",
+      "value": "is it possible for you to grab the google spreadhseets mcp?"
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": "**Yes, it is possible.** You can connect a Google Sheets MCP server to Antigravity so that tools to read, write, and manage sheets become available in your sessions.\n\n---\n\n### Key Requirements\n\nBecause Google Sheets data is private, the MCP server requires authentication with Google Cloud:\n\n1. **Google Cloud Project**:\n   - Enable the **Google Sheets API** (and **Google Drive API** if browsing/creating files).\n2. **Credentials**:\n   - Create a **Service Account** in the Google Cloud Console and download the key as a JSON file (e.g., `service_account.json`).\n   - Share the relevant Google Spreadsheet(s) with the service account email (giving it *Viewer* or *Editor* permissions).\n\n---\n\n### Available MCP Servers\n\nThere are a few popular community packages available:\n\n- **Node / npm**: [`mcp-google-sheets-server`](https://www.npmjs.com/package/mcp-google-sheets-server) (runs via `npx`)\n- **Python**: [`mcp-google-sheets`](https://github.com/xing5/mcp-google-sheets) (runs via `uvx`)\n\n---\n\n### Configuration Example\n\nMCP servers in Antigravity are configured in your global configuration file (`~/.gemini/config/mcp_config.json`):\n\n```json\n{\n  \"mcpServers\": {\n    \"google-sheets\": {\n      \"command\": \"npx\",\n      \"args\": [\"-y\", \"mcp-google-sheets-server\"],\n      \"env\": {\n        \"GOOGLE_SERVICE_ACCOUNT_KEY_PATH\": \"C:/path/to/your/service_account.json\"\n      }\n    }\n  }\n}\n```\n\n---\n\n### Next Steps\n\nIf you would like to proceed:\n1. Do you already have a Google Cloud Service Account JSON key, or would you like step-by-step guidance on creating one?\n2. Which package or authentication method (Service Account vs. OAuth) do you prefer?"
+    },
+    {
+      "from": "human",
+      "value": "okay for step one, i want you to guide me step by step"
+    },
+    {
+      "from": "gpt",
+      "value": "Here is the step-by-step guide to setting up a Google Cloud Service Account and getting your JSON key:\n\n---\n\n### Step 1: Create or Select a Google Cloud Project\n1. Open the [Google Cloud Console](https://console.cloud.google.com/).\n2. At the top-left (next to the Google Cloud logo), click the **Project Dropdown**.\n3. Click **New Project** (top right of the modal).\n4. Give it a name (e.g., `mcp-sheets-agent`) and click **Create**.\n5. Ensure your newly created project is selected in the top bar.\n\n---\n\n### Step 2: Enable Google Sheets \u0026 Drive APIs\n1. In the left navigation menu (or search bar at the top), go to **APIs \u0026 Services \u003e Library**.\n2. Search for **Google Sheets API**, click on it, and click **Enable**.\n3. *(Recommended)* Return to the Library, search for **Google Drive API**, and click **Enable** (this allows the MCP to list and search for spreadsheets by name).\n\n---\n\n### Step 3: Create a Service Account\n1. In the left menu, go to **APIs \u0026 Services \u003e Credentials** (or **IAM \u0026 Admin \u003e Service Accounts**).\n2. Click **+ Create Credentials** at the top and select **Service account**.\n3. Enter details:\n   - **Service account name**: e.g., `sheets-mcp-user`\n   - **Service account ID**: will auto-populate.\n4. Click **Create and Continue**.\n5. *(Optional)* You can skip the role and access grant steps by clicking **Done**.\n\n---\n\n### Step 4: Generate and Download the JSON Key\n1. In the **Service Accounts** list, click on the email address of the service account you just created.\n2. Go to the **Keys** tab.\n3. Click **Add Key** \u003e **Create new key**.\n4. Choose **JSON** as the key type and click **Create**.\n5. A `.json` credentials file will download to your computer.\n6. Move this file to a safe location (for example: `~\\credentials\\google-sheets-key.json`).\n\n---\n\n### Step 5: Share your Google Spreadsheet with the Service Account\nBecause service accounts don't automatically see your private Google Drive files:\n1. Copy the **Service Account email address** (it looks like `[REDACTED_EMAIL]`).\n2. Open the Google Sheet you want to interact with in your browser.\n3. Click the **Share** button in the top-right corner.\n4. Paste the service account email, set the permission to **Editor** (or **Viewer**), and click **Share**.\n\n---\n\nOnce you have the `.json` key downloaded and placed in a folder on your machine, let me know the file path and we can move on to configuring the MCP server in Antigravity!"
+    },
+    {
+      "from": "human",
+      "value": "okay , check the download file,i already downloaded the keys, move it to a safe folder that you just mentioned"
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": "I have found your downloaded key file and moved it to a safe credentials directory:\n\n📁 **Key Location**: `~\\credentials\\google-sheets-key.json`  \n📧 **Service Account Email**: `[REDACTED_EMAIL]`\n\n---\n\n### Next Steps:\n\n#### 1. Share your Spreadsheet\n1. Open the Google Spreadsheet you want to work with.\n2. Click **Share** (top-right corner).\n3. Add the email:\n   ```text\n   [REDACTED_EMAIL]\n   ```\n4. Set permission to **Editor** (or **Viewer**) and confirm.\n\n---\n\n#### 2. Configure the MCP Server in Antigravity\nTo register this MCP server in Antigravity, add the following to your global MCP configuration (`~/.gemini/config/mcp_config.json`):\n\n```json\n{\n  \"mcpServers\": {\n    \"google-sheets\": {\n      \"command\": \"npx\",\n      \"args\": [\"-y\", \"mcp-google-sheets-server\"],\n      \"env\": {\n        \"SERVICE_ACCOUNT_PATH\": \"C:\\\\Users\\\\90181271\\\\credentials\\\\google-sheets-key.json\"\n      }\n    }\n  }\n}\n```\n\n\u003e **Note**: If your MCP server setup asks for the raw JSON contents rather than the path, you can paste the contents of `~\\credentials\\google-sheets-key.json` into the `GOOGLE_SERVICE_ACCOUNT_KEY` environment variable.\n\nAfter updating the configuration and restarting/reloading Antigravity, the Google Sheets tools will be ready to use!"
+    }
+  ],
+  "source": "antigravity",
+  "tags": [
+    "coding",
+    "assistant",
+    "antigravity"
+  ]
+}

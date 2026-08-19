@@ -1,0 +1,27 @@
+name: Security & Privacy Audit
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  audit:
+    name: Audit Datasets for Secrets & Sensitive Paths
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.24'
+          cache: true
+
+      - name: Build Vault Tool
+        run: go build -o vault ./cmd/vault
+
+      - name: Run Privacy & Secret Audit
+        run: ./vault audit

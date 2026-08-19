@@ -1,0 +1,71 @@
+{
+  "id": "ses_00617ebb8ffejyuujc40TLeSvy",
+  "conversations": [
+    {
+      "from": "human",
+      "value": "switch to dev"
+    },
+    {
+      "from": "gpt",
+      "value": "I’ll check the worktree and available branches before switching, preserving any local changes."
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": "Switched to `dev`, up to date with `origin/dev`."
+    },
+    {
+      "from": "human",
+      "value": "Start a new task branch using these arguments: ` use this NQLA-58914 ticket, make a subtask under this, the subticket is for fixing the summary graph api endpoint`\n\n1. Verify the current directory is a Git repository with an `origin/dev` ref.\n2. Parse the branch type (`feat`, `fix`, `hotfix`, or `chore`), Jira ticket, and optional description. Ask one concise question for anything missing; do not guess.\n3. Run `git status --short --branch`. If the worktree has changes or Git is mid-operation, stop without modifying anything and explain the blocker.\n4. Fetch the ticket through Jira. If no description was supplied, derive a short slug from its summary. If Jira is unavailable, continue only when the user supplied a description.\n5. Fetch `origin dev`, then create `\u003ctype\u003e/\u003cticket-lower\u003e-\u003cdescription-slug\u003e` directly from `origin/dev`. Use a lowercase ASCII kebab-case slug.\n6. If that branch already exists locally or on `origin`, stop and report it rather than deleting, resetting, or reusing it.\n7. Verify the new branch and report its name and base commit.\n\nNever stash, discard, commit, push, or alter local `dev` as part of this command."
+    },
+    {
+      "from": "gpt",
+      "value": "Which branch type should I use: `feat`, `fix`, `hotfix`, or `chore`?"
+    },
+    {
+      "from": "human",
+      "value": "fix"
+    },
+    {
+      "from": "gpt",
+      "value": "I’ll verify the repository is clean and inspect `NQLA-58914` before creating its Jira subtask and branch."
+    },
+    {
+      "from": "gpt",
+      "value": "The repository is clean and the parent is available. I’ll create a `[FE] Fix summary graph API endpoint` subtask, then use its key for the task branch."
+    },
+    {
+      "from": "gpt",
+      "value": "Jira requires the parent’s `New Qlola Squad` value on new subtasks. I’ll read that field from `NQLA-58914` and retry without changing Git."
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": "Created Jira subtask `NQLA-63775` under `NQLA-58914`.\n\nBranch: `fix/nqla-63775-fix-summary-graph-api-endpoint`  \nBase: `origin/dev` at `d53012293dd4f6ca9586a05ffc11a22ce55e5e68`"
+    }
+  ],
+  "source": "opencode",
+  "tags": [
+    "coding",
+    "assistant",
+    "opencode"
+  ]
+}

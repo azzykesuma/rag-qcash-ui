@@ -1,0 +1,91 @@
+{
+  "id": "ses_081a30cdbffeKj4F0D4tZcNUcg",
+  "conversations": [
+    {
+      "from": "human",
+      "value": "Inspect saved qcash-global-component remoteEntry at ~\\.local\\share\\opencode\\tool-output\\tool_f7e59d660001v4w1j2q566IOke. Find exact module map entry for `./table`, its exposed module ID, chunk IDs, chunk filename mappings, and public path. Return exact expected chunk URLs and whether default export is likely present if visible. Do not edit."
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": "Inspected:\n\n`~\\.local\\share\\opencode\\tool-output\\tool_f7e59d660001v4w1j2q566IOke`\n\n### `./table` entry\n\n```js\n\"./table\":()=\u003eu.e(844).then(()=\u003e()=\u003eu(60741))\n```\n\n- Expose chunk ID: `844`\n- Exposed module ID: `60741`\n- Chunk name: `__federation_expose_table`\n- Hash: `3832870ac6823c3c`\n- Filename:\n\n```text\nstatic/chunks/__federation_expose_table.3832870ac6823c3c.js\n```\n\n### Public path and expected URL\n\nThe runtime derives the public path from the current remoteEntry script:\n\n```js\n__webpack_require__.p=r+\"../../\"\n```\n\nTherefore the exact request is:\n\n```text\nnew URL(\n  \"../../static/chunks/__federation_expose_table.3832870ac6823c3c.js\",\n  remoteEntryURL\n).href\n```\n\nFor the standard `.../_next/static/chunks/remoteEntry.js` placement, this normalizes to:\n\n```text\n.../_next/static/chunks/__federation_expose_table.3832870ac6823c3c.js\n```\n\nThe saved artifact contains no origin or original remoteEntry URL, so the scheme/host cannot be recovered.\n\n### Conditional local-share fallback chunks\n\nChunk `844` has this consume map:\n\n```text\n[81883,73884,83150,87228,10297,53508,10486,47151,65101,88681,30554,83903,53132,79934,22676,7935,30212,52301,44701]\n```\n\nIf the host does not provide those shares, their immediate local fallback chunk mappings are:\n\n```text\n4848 → static/chunks/4848.9a50365e8369374f.js\n1933 → static/chunks/__federation_expose_react.4843920833bea08b.js\n7255 → static/chunks/7255.6c115f991d90d4b5.js\n2885 → static/chunks/2885.87f2ac74b90472ef.js\n6715 → static/chunks/6715.6243c1edad9941c5.js\n8386 → static/chunks/8386.b0ae1fb2a524e53f.js\n8884 → static/chunks/__federation_expose_react_dom.89ca1a5924f38b87.js\n5284 → static/chunks/5284.d0e18ced8907cc0b.js\n3589 → static/chunks/3589.7092a894e37487a1.js\n7005 → static/chunks/7005.799c10cec0b9df05.js\n1489 → static/chunks/1489.490ae0679ef82d63.js\n4903 → static/chunks/4903.5b261bdee7b2f83a.js\n5004 → static/chunks/5004.65289bad0159087e.js\n8140 → static/chunks/8140.6f49faf366f650d8.js\n4760 → static/chunks/4760.023f7ac73ea588f1.js\n1439 → static/chunks/1439.3c64e1e192cac0e8.js\n4295 → static/chunks/4295.9c1a71a19d95e976.js\n6035 → static/chunks/6035.0ea4e5c8ad74f780.js\n2664 → static/chunks/2664.8f7e60ceeadaa042.js\n```\n\nEach uses the same `new URL(\"../../\" + filename, remoteEntryURL)` public-path calculation.\n\n### Default export\n\nNot directly visible: module `60741` occurs only in the container factory; its implementation is in chunk `844`.\n\nA default export is likely because:\n\n`D:\\work\\qcash-ui-dashboard-auto-collection\\src\\components\\ui\\index.tsx:102`\n\nloads it as:\n\n```ts\nloadRemote\u003c{ default: ComponentType\u003cGlobalTableProps\u003e }\u003e(\n  \"qcash-global-component/table\"\n)\n```\n\nThat is host-side expectation, not proof from the saved remoteEntry alone."
+    }
+  ],
+  "source": "opencode",
+  "tags": [
+    "coding",
+    "assistant",
+    "opencode"
+  ]
+}

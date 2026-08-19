@@ -1,0 +1,227 @@
+{
+  "id": "ses_00245b2bcffe4rkLR1jmdBTiKG",
+  "conversations": [
+    {
+      "from": "human",
+      "value": "Investigate D:\\work\\qcash-global-component thoroughly, read-only. Trace its _app provider, components exposed through Module Federation, useAuth imports in exposed components, next.config shared dependencies, package version, and whether its own AuthProvider wraps exposed components when consumed remotely. Explain whether remote load timing could matter versus duplicate React context/package instances. Return exact file:line references and concrete failure paths. Thoroughness: very thorough."
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": "# Investigation result\n\n## Executive conclusion\n\n1. **`qcash-global-component` has an `AuthProvider`, but only in its own Next.js `_app`.** It wraps locally rendered pages, not Module Federation exports consumed by another application.\n2. **A remotely consumed component is wrapped only by the consuming host’s React tree.** Loading `remoteEntry.js` does not boot the remote’s `_app`.\n3. **Thirteen exposed entry points have a direct or transitive path to `useAuth`.** A fourteenth, `./modal-single-action`, uses `useGlobalStore` from the same package.\n4. The remote correctly declares `@ordentco/addons-auth-provider` as a singleton, and explicitly makes client React/ReactDOM singletons. However, singleton behavior is only guaranteed within a correctly shared and initialized share scope.\n5. **Ordinary remote network/load timing is not a convincing explanation for permanently receiving Guest/null/false values.** All `useAuth()` calls happen during render, so a lazily loaded component rendered under the correct provider sees the current context and later updates.\n6. Timing can still matter in two narrower ways:\n   - auth hydration is asynchronous, producing transient default values;\n   - share-container initialization can affect which package version is selected.\n7. **Permanent default auth values strongly indicate one of:**\n   - no host `AuthProvider` ancestor;\n   - a separate `@ordentco/addons-auth-provider` instance/share scope;\n   - a separate React instance;\n   - only `AuthProvider` but no matching `GlobalStoreProvider`.\n8. There is meaningful version/lock drift:\n   - remote manifest: auth `0.9.140-mfe`;\n   - remote `yarn.lock`: stale `0.9.126-mfe`;\n   - current host manifest/lock: `0.9.138-mfe`;\n   - host does not explicitly mark the auth package singleton.\n\n---\n\n# 1. Remote `_app` provider trace\n\nThe remote imports both providers from the same package:\n\n- `D:\\work\\qcash-global-component\\pages\\_app.tsx:6-9`\n\nIts local page tree is:\n\n- `D:\\work\\qcash-global-component\\pages\\_app.tsx:49-53`\n\n```tsx\n\u003cAuthProvider apiUrl={config.baseUrl as string}\u003e\n  \u003cGlobalStoreProvider\u003e\n    {getLayout(\u003cComponent {...pageProps} /\u003e)}\n  \u003c/GlobalStoreProvider\u003e\n\u003c/AuthProvider\u003e\n```\n\nTherefore:\n\n- `AuthProvider` is outside `GlobalStoreProvider`;\n- `GlobalStoreProvider` is outside the page/layout;\n- local Next pages get both contexts.\n\nThe exported app is then wrapped by i18n:\n\n- `D:\\work\\qcash-global-component\\pages\\_app.tsx:58`\n\n### Important local-provider issue\n\n`AuthProviderProps.router` is declared required:\n\n- `D:\\work\\qcash-global-component\\node_modules\\@ordentco\\addons-auth-provider\\src\\auth.tsx:225-232`\n\nBut `_app` supplies only `apiUrl`:\n\n- `D:\\work\\qcash-global-component\\pages\\_app.tsx:49`\n\nThe package falls back to a no-op router:\n\n- `D:\\work\\qcash-global-component\\node_modules\\@ordentco\\addons-auth-provider\\src\\auth.tsx:234-249`\n\nTypeScript build errors are ignored:\n\n- `D:\\work\\qcash-global-component\\next.config.js:13-15`\n\nThus local auth redirects and route listeners can silently use the no-op router. This does not affect remote consumption because this `_app` is bypassed there.\n\nThe only local page is a welcome message:\n\n- `D:\\work\\qcash-global-component\\pages\\index.tsx:3-5`\n\nSo the local Next app does not exercise most exposed auth-sensitive components.\n\n---\n\n# 2. Why the remote’s provider does not wrap remote consumers\n\nThe Module Federation configuration exposes component files directly:\n\n- remote name and entry: `D:\\work\\qcash-global-component\\federation.config.js:2-4`\n- exposure map: `D:\\work\\qcash-global-component\\federation.config.js:37-145`\n- no configured remotes: `D:\\work\\qcash-global-component\\federation.config.js:147`\n\nThere is no exposure for:\n\n- `pages/_app.tsx`;\n- `AuthProvider`;\n- a provider-wrapped component factory.\n\nWhen a host requests, for example, `qcash-global-component/header`, the container returns the module rooted at:\n\n- `D:\\work\\qcash-global-component\\federation.config.js:71`\n\nIt does not render that module through:\n\n- `D:\\work\\qcash-global-component\\pages\\_app.tsx`.\n\nLoading `remoteEntry.js` only initializes the container and shared modules. It does not mount the remote’s Next application or its provider tree.\n\n**Therefore the answer is definitive: the remote’s own `AuthProvider` does not wrap exposed components when they are consumed remotely.** The host must supply the matching provider(s).\n\n---\n\n# 3. Module Federation exports\n\nThere are **107 explicit source-configured exposures**, one per line at:\n\n- `D:\\work\\qcash-global-component\\federation.config.js:38-144`\n\nCompact inventory:\n\n- `:38-65`: `accordion`, `activity-log-new`, `activity-log-v2`, `activity-log`, `advanced-table`, `alert`, `arrow`, `async-paginate-select`, `beneficiary-favorite`, `beneficiary-info`, `box`, `breadcrumb`, `button-group`, `button`, `bulk-operation-modal`, `checkbox`, `circle-pie`, `company-select-modal`, `confirm-modal`, `const`, `container`, `currency-flag`, `date-picker-new`, `date-picker`, `date-range-picker`, `dialog`, `error-dialog`, `external-transfer-modal`.\n- `:66-94`: `files-files`, `files-new`, `footer`, `form-wrapper`, `globals`, `header`, `helper-text`, `icons`, `input`, `item-card-action`, `item-card`, `label-status`, `label`, `layout`, `layouts`, `limit-card`, `ListContainer`, `ListItem`, `loading-overlay`, `menu`, `message`, the modal icons, `modal-single-action`, `modal-success-icon`, `modal-trash-icon`.\n- `:95-119`: `modal-view-pdf`, `modal`, `money-input`, `multiple-input`, `new-input`, `new-qlola-input`, `not-found`, `percentage-input`, `popover-menu`, `preview-download-modal`, `preview`, `radio`, `rename`, both response modals, both rich-text-editor entries, `search`, `select`, `select-option`, both separators, `status-alert`, both status-badge entries.\n- `:120-144`: all stepper/tab entries, `table-beneficiary`, `table-foot`, `table`, `template-card`, `template-modal`, both text entries, `textarea`, `tooltip`, `transaction-modal-const`, `transaction-modal`, `transaction-modal/qr-otp-bundle`, `unauthorized`, `workflow-modal`, `workflow-stepper`, `welcome-onboarding-tour`.\n\nThe current generated build also has four Next Federation internal exposures—`./noop`, `./react`, `./react-dom`, and `./next/router`—in addition to the 107 source entries:\n\n- `D:\\work\\qcash-global-component\\.next\\static\\chunks\\federated-stats.json:1`\n\nThat `.next` directory is generated/untracked evidence, not a source-of-truth deployment guarantee.\n\n---\n\n# 4. Exposed entries that reach `useAuth`\n\n## Directly auth-sensitive exposure roots\n\n| Exposed key | Auth path |\n|---|---|\n| `./activity-log` | Exposure at `federation.config.js:41`; direct import/call at `components\\activity-log\\activity-log.tsx:2,44` |\n| `./confirm-modal` | Exposure at `federation.config.js:56`; direct import/call at `components\\confirm-modal\\index.tsx:1,63` |\n| `./external-transfer-modal` | Exposure at `federation.config.js:65`; direct call at `components\\external-transfer-modal\\external-transfer-modal.tsx:7,40`, plus its hook below |\n| `./menu` | Exposure at `federation.config.js:85`; direct and multiple transitive calls |\n| `./transaction-modal` | Exposure at `federation.config.js:139`; direct import/call at `components\\transaction-modal\\index.tsx:12,151` |\n\n## Transitively auth-sensitive roots\n\n| Exposed key | Transitive path |\n|---|---|\n| `./activity-log-new` | `federation.config.js:39` → wrapper import/render at `components\\activity-log-new\\activity-log-new.tsx:1,11-12` → `activity-log-self.tsx:15,37` → `use-activity-log.ts:4,18` |\n| `./activity-log-v2` | `federation.config.js:40` → wrapper import/render at `components\\activity-log-v2\\activity-log-v2.tsx:1,11-12` → same hook |\n| `./beneficiary-favorite` | `federation.config.js:46` → `components\\beneficiary-favorite\\index.tsx:23,163` → `ConfirmModal.useAuth`; it also reaches `Table` via `index.tsx:18` |\n| `./header` | `federation.config.js:71` → `components\\layouts\\header\\header.tsx:3,45-50` → avatar/ListItem auth calls |\n| `./layouts` | `federation.config.js:80` → `components\\layouts\\index.tsx:2,15` → auth-sensitive header |\n| `./table-beneficiary` | `federation.config.js:129` → `table-beneficiary.tsx:14,480` → `Table` → conditional `BulkActionModal` |\n| `./table` | `federation.config.js:131` → `components\\table\\table.tsx:4,52-81` → conditional `BulkActionModal.useAuth` |\n| `./template-modal` | `federation.config.js:133` → `components\\template-modal\\index.tsx:12,202-208` → `ConfirmModal.useAuth` |\n\n`./modal-single-action` at `federation.config.js:92` does not call `useAuth`, but it calls `useGlobalStore` from the same package:\n\n- `D:\\work\\qcash-global-component\\components\\advanced-table\\modal-single-action.tsx:18,86`\n\n## Exhaustive reachable `useAuth` import/call sites\n\n- `D:\\work\\qcash-global-component\\components\\activity-log\\activity-log.tsx:2,44`\n- `D:\\work\\qcash-global-component\\components\\activity-log\\use-activity-log.ts:4,18`\n- `D:\\work\\qcash-global-component\\components\\confirm-modal\\index.tsx:1,63`\n- `D:\\work\\qcash-global-component\\components\\external-transfer-modal\\external-transfer-modal.tsx:7,40`\n- `D:\\work\\qcash-global-component\\components\\external-transfer-modal\\use-external-transfer-methods.ts:3,29`\n- `D:\\work\\qcash-global-component\\components\\transaction-modal\\index.tsx:12,151`\n- `D:\\work\\qcash-global-component\\components\\table\\bulk-action-modal.tsx:13,171`\n- `D:\\work\\qcash-global-component\\components\\layouts\\header\\components\\avatar-dropdown.tsx:3,15`\n- `D:\\work\\qcash-global-component\\components\\layouts\\header\\components\\ListItem.tsx:3,14`\n- `D:\\work\\qcash-global-component\\components\\layouts\\menu\\components\\Menu.tsx:1,32`\n- `D:\\work\\qcash-global-component\\components\\layouts\\menu\\components\\MultipaymentModal.tsx:1,21`\n- `D:\\work\\qcash-global-component\\components\\layouts\\menu\\components\\ExternalTransferModal.tsx:7,27`\n- `D:\\work\\qcash-global-component\\components\\layouts\\menu\\components\\InternalTransferModal.tsx:5,24`\n- `D:\\work\\qcash-global-component\\components\\layouts\\menu\\components\\AccountReceivableUploadMandateModal.tsx:2,22`\n- `D:\\work\\qcash-global-component\\hooks\\use-menu.ts:4,16`\n- `D:\\work\\qcash-global-component\\utils\\transform-menu.ts:6,13`\n\nOne additional source component uses `useAuth` but is **not exposed and not reached by another exposed root**:\n\n- `D:\\work\\qcash-global-component\\components\\pending-task-list\\pending-task-list.tsx:7,29`\n\n---\n\n# 5. Context identity and default behavior\n\nThe installed runtime package’s main entry is:\n\n- `D:\\work\\qcash-global-component\\node_modules\\@ordentco\\addons-auth-provider\\package.json:5`\n- re-exports: `D:\\work\\qcash-global-component\\node_modules\\@ordentco\\addons-auth-provider\\dist\\src\\index.js:4-10`\n\nIt creates one module-local context:\n\n- `D:\\work\\qcash-global-component\\node_modules\\@ordentco\\addons-auth-provider\\dist\\src\\auth.js:219`\n\nThe provider writes to that exact context:\n\n- `D:\\work\\qcash-global-component\\node_modules\\@ordentco\\addons-auth-provider\\dist\\src\\auth.js:1112`\n\nThe hook reads that exact context:\n\n- `D:\\work\\qcash-global-component\\node_modules\\@ordentco\\addons-auth-provider\\dist\\src\\auth.js:1115-1116`\n\nThe default context is deliberately usable rather than throwing immediately:\n\n- null token/company/holding/user type and Guest username: `dist\\src\\auth.js:96-116`\n- several default methods throw only when invoked: `dist\\src\\auth.js:118-193`\n- default logout throws: `dist\\src\\auth.js:140-143`\n\nConsequently, a missing or mismatched provider often produces silent Guest/null/false behavior rather than a clear “hook used outside provider” exception.\n\nA separate global-store context is similarly created and has defaults:\n\n- creation: `D:\\work\\qcash-global-component\\node_modules\\@ordentco\\addons-auth-provider\\dist\\src\\global-store\\index.js:61`\n- provider: `...global-store\\index.js:62-70,195`\n- hook: `...global-store\\index.js:198-199`\n\nSharing `AuthProvider` alone is therefore insufficient for components that also call `useGlobalStore`.\n\n---\n\n# 6. Shared dependency configuration\n\nThe remote’s base shared list is:\n\n- `D:\\work\\qcash-global-component\\federation.config.js:5-35`\n\nNotable singleton entries include:\n\n- `@ordentco/addons-auth-provider`: `federation.config.js:8`\n- `next`: `federation.config.js:20`\n- `i18next`, `react-i18next`, `ni18n`: `federation.config.js:16,21,27`\n- Formik, Framer Motion, Headless UI and several UI libraries.\n\nAll are configured with `requiredVersion: false`.\n\n`next.config.js` spreads that list into the plugin:\n\n- `D:\\work\\qcash-global-component\\next.config.js:47-50`\n\nOn the client it explicitly adds:\n\n- React singleton: `D:\\work\\qcash-global-component\\next.config.js:54`\n- ReactDOM singleton: `D:\\work\\qcash-global-component\\next.config.js:55`\n\nThe explicit branch is client-only:\n\n- `D:\\work\\qcash-global-component\\next.config.js:51-57`\n\nNext Federation also has internal React sharing defaults. The current generated client and server stats both show React, ReactDOM and the auth package as singleton, non-eager shares:\n\n- `D:\\work\\qcash-global-component\\.next\\static\\chunks\\federated-stats.json:1`\n- `D:\\work\\qcash-global-component\\.next\\server\\federated-stats.json:1`\n\n### What singleton does and does not guarantee\n\n`singleton: true` helps only when:\n\n- host and remote use the same share key;\n- the remote container receives the host’s correct share scope;\n- both are in the same Module Federation runtime/share scope;\n- no custom loader bypasses container initialization.\n\nIt does not merge contexts across:\n\n- separate runtime instances;\n- different share scopes;\n- an unshared host bundle and a remote fallback;\n- different package names such as `@bri/addons-auth-provider` versus `@ordentco/addons-auth-provider`.\n\n---\n\n# 7. Version findings\n\n## Remote versions\n\n- application `package.json` version: `0.1.0`  \n  `D:\\work\\qcash-global-component\\package.json:2-4`\n- deployment/release marker: `1.0.622`  \n  `D:\\work\\qcash-global-component\\version:1`\n- auth dependency: `0.9.140-mfe`  \n  `D:\\work\\qcash-global-component\\package.json:27`\n- package-lock resolution: `0.9.140-mfe`  \n  `D:\\work\\qcash-global-component\\package-lock.json:8983-8997`\n- installed package: `0.9.140-mfe`  \n  `D:\\work\\qcash-global-component\\node_modules\\@ordentco\\addons-auth-provider\\package.json:2-3`\n- current generated `remoteEntry` registers `0.9.140-mfe`  \n  `D:\\work\\qcash-global-component\\.next\\static\\chunks\\remoteEntry.js:1`\n- Next Federation plugin: `8.2.5`  \n  `D:\\work\\qcash-global-component\\package.json:25`\n- declared React/ReactDOM: `^18`  \n  `D:\\work\\qcash-global-component\\package.json:55,60`\n- resolved React/ReactDOM: `18.2.0`  \n  `D:\\work\\qcash-global-component\\package-lock.json:26193-26203` and `:26568-26579`\n\nThe auth package itself uses React and ReactDOM as peers, reducing ordinary nested npm copies:\n\n- `D:\\work\\qcash-global-component\\node_modules\\@ordentco\\addons-auth-provider\\package.json:19-22`\n\n## Lock drift\n\nThe tracked `yarn.lock` still contains only `0.9.126-mfe`:\n\n- `D:\\work\\qcash-global-component\\yarn.lock:3163-3173`\n\nProduction Docker builds use Yarn:\n\n- copies `package.json` and `yarn.lock`: `D:\\work\\qcash-global-component\\Dockerfile:28-31`\n- runs non-frozen `yarn install`: `D:\\work\\qcash-global-component\\Dockerfile:33-34`\n- builds with Yarn: `D:\\work\\qcash-global-component\\Dockerfile:94-95`\n\nBecause the manifest requests exact `0.9.140-mfe`, the stale `0.9.126-mfe` lock key does not satisfy it; non-frozen Yarn can resolve and rewrite the lock inside the image. That is a reproducibility problem, not proof that current builds use `0.9.126`.\n\nThe npm lock also has stale root metadata naming the app `app1`:\n\n- `D:\\work\\qcash-global-component\\package-lock.json:2-9`\n\n---\n\n# 8. Current `qcash-ui` host corroboration\n\nI inspected the current workspace as the likely host.\n\nThe host does place its page tree under both an Ordent auth and global-store provider:\n\n- host `_app` nesting: `D:\\work\\qcash-ui\\pages\\_app.tsx:163-194`\n- dynamic `BriProviders`: `D:\\work\\qcash-ui\\pages\\_app.tsx:65-67`\n- Ordent provider definition: `D:\\work\\qcash-ui\\components\\providers\\BRIProviders.tsx:20-36`\n- Auth → GlobalStore → children nesting: `D:\\work\\qcash-ui\\components\\providers\\BRIProviders.tsx:25-32,46-50`\n\nThus normally rendered route components are not mounted before that provider wrapper resolves.\n\nHowever, the host’s federation config shares the auth package **without `singleton: true`**:\n\n- `D:\\work\\qcash-ui\\next.config.js:15-22`\n\nThe host source versions also differ:\n\n- auth `0.9.138-mfe`: `D:\\work\\qcash-ui\\package.json:27`\n- locked `0.9.138-mfe`: `D:\\work\\qcash-ui\\yarn.lock:522-530`\n- React/ReactDOM `18.3.1`: `D:\\work\\qcash-ui\\package.json:42-43`\n- Next Federation `8.2.6`: `D:\\work\\qcash-ui\\package.json:24`\n\nThe local host `node_modules` currently contains auth `0.9.140-mfe`, conflicting with its tracked manifest and lock:\n\n- `D:\\work\\qcash-ui\\node_modules\\@ordentco\\addons-auth-provider\\package.json:2-3`\n\nTherefore the workstation install is not reliable evidence of the deployed host version.\n\nThe host initializes remotes dynamically:\n\n- runtime initialization: `D:\\work\\qcash-ui\\services\\federation\\init.ts:32-68`\n- global remote styles are loaded before app startup finishes: `init.ts:72-84`\n- that style load calls `loadRemote(\"\u003cremote\u003e/globals\")`: `D:\\work\\qcash-ui\\services\\federation\\utils\\loader.ts:19-37`\n\nThis can initialize the global-component container before the host auth provider module is consumed. In a correct common share scope that merely influences which shared version is selected. If the runtime and webpack share scopes are disconnected, it can instead cause the remote fallback package to be used.\n\nThe host’s directly visible global-component imports are currently `modal`, `welcome-onboarding-tour`, `input`, and `new-qlola-input`:\n\n- `D:\\work\\qcash-ui\\components\\onboarding-tour\\notif-onboarding-tour.tsx:28-34`\n- `D:\\work\\qcash-ui\\components\\ui\\SessionExpired.tsx:11-14`\n- `D:\\work\\qcash-ui\\components\\ui\\SessionExpiredNewQlola.tsx:10-13`\n\nThose particular entries are not among the auth-sensitive roots above. An actual auth-sensitive failure may therefore originate in another consuming MFE.\n\n---\n\n# 9. Load timing versus duplicate package/context\n\n## Ordinary remote loading timing\n\nEvery identified `useAuth()` occurs inside a component or hook at render time. None is evaluated at module top level.\n\nTherefore:\n\n1. remote JavaScript can load before the provider;\n2. the component can later be rendered below the provider;\n3. `useContext` then reads the provider’s current value.\n\nThe import does not permanently capture the default context value.\n\nIn the current host, children are underneath dynamically loaded provider components, so they are not rendered first and wrapped later:\n\n- `D:\\work\\qcash-ui\\pages\\_app.tsx:169-192`\n- `D:\\work\\qcash-ui\\components\\providers\\BRIProviders.tsx:46-50`\n\n## Auth hydration timing\n\nThis can matter transiently.\n\nThe provider synchronously initializes only the token from local storage:\n\n- `D:\\work\\qcash-global-component\\node_modules\\@ordentco\\addons-auth-provider\\dist\\src\\auth.js:234-239`\n\nUsername, user type, company IDs and authorities initially remain defaults:\n\n- `...dist\\src\\auth.js:241-252`\n\n`guard()` later hydrates them and sets readiness:\n\n- cached hydration: `...dist\\src\\auth.js:275-303`\n- validation starts with readiness false: `...dist\\src\\auth.js:320-330`\n- completed authorities become ready: `...dist\\src\\auth.js:446-449`\n\nThe remote project itself does not call `guard()` from `_app`. The current host calls it asynchronously through `AuthBridgeSync`:\n\n- `D:\\work\\qcash-ui\\components\\providers\\AuthBridgeSync.ts:271-287`\n\nNone of the remote’s exposed auth consumers checks `isAuthoritiesReady`. Thus they can briefly render Guest/disabled/hidden states before hydration. With the correct context instance they should rerender afterward.\n\n## Duplicate auth-package instance\n\nIf the host has package instance A and the remote consumes package instance B:\n\n```text\nHost AuthProvider_A\n  └─ Remote component\n       └─ useAuth_B() → AuthContext_B default\n```\n\nReact ancestry alone cannot bridge `AuthContext_A` to `AuthContext_B`; the context object identity is different. This produces persistent Guest/null/false values and default callbacks even after host auth is ready.\n\n## Duplicate React instance\n\nIf the host renderer uses React A while the remote hook uses React B, the common outcome is an invalid-hook-call/null-dispatcher error rather than merely Guest defaults.\n\nThus:\n\n- **Guest/null/false without an invalid-hook error:** suspect duplicate auth context or no provider.\n- **Invalid hook call:** suspect duplicate React.\n- **Defaults that later correct themselves:** suspect normal auth hydration timing.\n- **Behavior changing according to which remote initializes first:** suspect share-version/scope negotiation.\n\n---\n\n# 10. Concrete failure paths\n\n## 10.1 Header permanently shows Guest; logout throws\n\nPath:\n\n1. `./header` exposes `layouts/header/header.tsx`:  \n   `D:\\work\\qcash-global-component\\federation.config.js:71`\n2. Header renders `AvatarDropdown`:  \n   `D:\\work\\qcash-global-component\\components\\layouts\\header\\header.tsx:3,45-50`\n3. Avatar reads username/company through `useAuth`:  \n   `...\\avatar-dropdown.tsx:3,15`\n4. It displays those values:  \n   `...\\avatar-dropdown.tsx:58-74`\n5. Dropdown renders `ListItem`:  \n   `...\\avatar-dropdown.tsx:76`\n6. `ListItem` reads default logout and invokes it:  \n   `...\\ListItem.tsx:3,14,104`\n7. The unmatched context’s default logout throws `\"Function not implemented.\"`:  \n   `...\\node_modules\\@ordentco\\addons-auth-provider\\dist\\src\\auth.js:140-143`\n\n## 10.2 Menu remains in loading state\n\nPath:\n\n1. `./menu`: `federation.config.js:85`\n2. Menu calls `useAuth`:  \n   `components\\layouts\\menu\\components\\Menu.tsx:1,32`\n3. It invokes `useMenu`:  \n   `Menu.tsx:13,34`\n4. `useMenu` reads `userType`:  \n   `D:\\work\\qcash-global-component\\hooks\\use-menu.ts:4,16`\n5. With default `userType === null`, neither request starts:  \n   `use-menu.ts:31-36`\n6. The hook reports loading while `!userType`:  \n   `use-menu.ts:38-41`\n7. Menu passes that state to `MenuMapper`:  \n   `Menu.tsx:72`\n\nThis is a persistent symptom under an isolated context, but only transient during correct auth hydration.\n\n## 10.3 External transfer modal reports missing company\n\nPath:\n\n1. Modal calls its data hook:  \n   `components\\external-transfer-modal\\external-transfer-modal.tsx:20,47`\n2. Hook reads `companyID` and menus:  \n   `components\\external-transfer-modal\\use-external-transfer-methods.ts:3,28-29`\n3. Opening triggers fetch:  \n   `use-external-transfer-methods.ts:141-143`\n4. Default `companyID === null` throws `\"Company ID Not Found\"`:  \n   `use-external-transfer-methods.ts:68-74`\n5. It is converted into modal error state:  \n   `use-external-transfer-methods.ts:117-120`\n6. Modal renders that error:  \n   `external-transfer-modal.tsx:144-150`\n\nDefault false authorities additionally disable KLIRING/RTGS methods:\n\n- `external-transfer-modal.tsx:165-175`\n\n## 10.4 Activity log disappears or loses download permission\n\n`./activity-log-new` and `./activity-log-v2` obtain product authorities through:\n\n- `D:\\work\\qcash-global-component\\components\\activity-log\\use-activity-log.ts:4,18,30-36`\n\nInitial authorities are all false:\n\n- `D:\\work\\qcash-global-component\\node_modules\\@ordentco\\addons-auth-provider\\utils\\auth.ts:26-35`\n\nConsequences:\n\n- new variant gates the entire component on `viewOnlineActivity`:  \n  `activity-log-self.tsx:155-158`\n- new download is gated on `downloadReport`:  \n  `activity-log-self.tsx:185-190`\n- v2 download is gated similarly:  \n  `activity-log-self.tsx:121-132`\n\nThe legacy `./activity-log` can mask a bad context because its download button falls back to local storage when context token is null:\n\n- token read: `activity-log.tsx:44`\n- token passed: `activity-log.tsx:149-157`\n- local-storage fallback: `activity-log\\download-button.tsx:72-93`\n\nTherefore a successful legacy download does not prove that context sharing works.\n\n## 10.5 Table bulk approval stays disabled\n\n`./table` renders `BulkActionModal` only if `bulkActionColumns` is defined:\n\n- `D:\\work\\qcash-global-component\\components\\table\\table.tsx:52-81`\n\nThe modal reads company/holding IDs:\n\n- `components\\table\\bulk-action-modal.tsx:170-172`\n\nIt tries auth values, row values, and local-storage fallbacks:\n\n- `components\\table\\table-util-trf.ts:85-140`\n\nIf none exists:\n\n- it waits/retries for identity ten times at 300 ms:  \n  `bulk-action-modal.tsx:1186-1208`\n- missing company ID makes company limit unavailable:  \n  `table-util-trf.ts:416-447`\n- unavailable company limit disables approve:  \n  `table-util-trf.ts:451-481`\n\n`./table-beneficiary` statically reaches this code, but its current invocation does not pass `bulkActionColumns`:\n\n- `components\\beneficiary-favorite\\table-beneficiary.tsx:480-517`\n\nSo its `BulkActionModal.useAuth` normally is not mounted.\n\n## 10.6 Confirm/transaction modals silently make wrong token decisions\n\n`ConfirmModal` reads user type and global store:\n\n- `D:\\work\\qcash-global-component\\components\\confirm-modal\\index.tsx:63-75`\n\nA default user type and empty `bricamsUser` alter OTP/company-token decisions:\n\n- `confirm-modal\\index.tsx:76,84-91`\n\n`TransactionModal` similarly reads auth and global store:\n\n- `D:\\work\\qcash-global-component\\components\\transaction-modal\\index.tsx:151-169`\n\nDefault empty company level is treated as `ADVANCE`:\n\n- `transaction-modal\\index.tsx:197-200`\n\nDefault user type changes token requirements:\n\n- `transaction-modal\\index.tsx:202-217`\n\nAn empty global store reports products as non-transactional:\n\n- `D:\\work\\qcash-global-component\\utils\\products\\get-is-transactional.ts:2-13`\n- used for task/transaction labeling at `transaction-modal\\index.tsx:243-248`\n\nThese are silent logic failures, not necessarily crashes.\n\n## 10.7 `useGlobalStore`-only exposure renders the wrong OTP branch\n\n`./modal-single-action` reads default `bricamsUser`:\n\n- `D:\\work\\qcash-global-component\\components\\advanced-table\\modal-single-action.tsx:18,86`\n\nWith default `{}`, `bricamsUser?.idToken` is `undefined`. Since `undefined !== \"\"`, the component can enter the “token exists” branch:\n\n- warning branch: `modal-single-action.tsx:458-464`\n- OTP-input branch: `modal-single-action.tsx:466-490`\n\nThis is a concrete reason that both Auth and GlobalStore contexts must match.\n\n---\n\n# Recommended interpretation and corrective actions\n\n1. **Do not rely on the remote `_app`; it never wraps remote consumers.**\n2. Ensure the host provides both `AuthProvider` and `GlobalStoreProvider` from the same shared package factory.\n3. Mark `@ordentco/addons-auth-provider` as `singleton: true` in the host as well as the remote.\n4. Align host and remote auth versions instead of relying on `requiredVersion: false`.\n5. Align React/ReactDOM versions and verify they resolve from one share scope.\n6. Ensure runtime-loaded remotes are initialized with the same webpack/default share scope.\n7. Gate authority-sensitive components on `isAuthoritiesReady` to prevent transient authorization UI.\n8. Remove lock drift and use one package manager with a frozen lock.\n9. Add a host-level integration test that renders an exposed auth-sensitive component under the real shared providers; current component tests largely mock `useAuth`, so they do not validate Module Federation context identity.\n\nThe strongest diagnostic distinction is: **persistent defaults indicate missing/duplicate context; transient defaults indicate hydration; invalid-hook errors indicate duplicate React.**"
+    }
+  ],
+  "source": "opencode",
+  "tags": [
+    "coding",
+    "assistant",
+    "opencode"
+  ]
+}
