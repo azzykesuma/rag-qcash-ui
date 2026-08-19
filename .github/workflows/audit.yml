@@ -17,10 +17,12 @@ jobs:
       - name: Set up Go
         uses: actions/setup-go@v5
         with:
-          go-version: '1.24'
+          go-version: 'stable'
           cache: true
 
       - name: Build Vault Tool
+        env:
+          CGO_ENABLED: 0
         run: go build -o vault ./cmd/vault
 
       - name: Run Privacy & Secret Audit
