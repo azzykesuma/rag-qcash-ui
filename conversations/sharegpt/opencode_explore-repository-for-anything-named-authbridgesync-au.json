@@ -1,0 +1,43 @@
+{
+  "id": "ses_0059c1dbdffej40FwVbMcxZt7l",
+  "conversations": [
+    {
+      "from": "human",
+      "value": "Explore the repository for anything named authbridgesync, AuthBridgeSync, auth bridge sync, or close variants. Assess the implementation's correctness by tracing definitions, callers, data flow, lifecycle/concurrency behavior, and tests. Do not edit files. Return concise findings ordered by severity, with exact file paths and line numbers, plus any testing gaps. Thoroughness: very thorough."
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": "## Findings\n\n### High\n\n1. **Logout/null-token synchronization preserves stale credentials**\n   - `~/Development/qcash-ui-header-footer/hooks/useAuthBridge.ts:8-13`\n   - `~/Development/qcash-ui-header-footer/hooks/useMenu.tsx:192`\n   - The bridge writes non-null tokens but deliberately does nothing when the host publishes `token: null`. `useMenu` then falls back to the old `access-token`, retaining the previous user’s menu and making requests with stale credentials.\n   - The claimed interceptor cleanup is incomplete: `~/Development/qcash-ui-header-footer/services/custom-axios.ts:50-55,74-89` only clears tokens for particular error/navigation paths, not ordinary host logout or expiry events.\n\n2. **A present but partial bridge is accepted as valid and can crash consumers**\n   - `~/Development/qcash-ui-header-footer/layouts/default/AuthBridge.tsx:84-99`\n   - `~/Development/qcash-ui-header-footer/layouts/default/container/index.tsx:37-39`\n   - `getAuthBridge()` neither validates nor merges host data with `FALLBACK`; any truthy value, including `{}`, activates bridge mode. Required properties can therefore be undefined.\n   - Immediate crash examples:\n     - `~/Development/qcash-ui-header-footer/hooks/useLocalTaxMenu.tsx:17,25` calls `authorities.size` and `.get`.\n     - `~/Development/qcash-ui-header-footer/layouts/default/container/menu/components/LcExportModal.tsx:18,38,61`\n     - `~/Development/qcash-ui-header-footer/layouts/default/container/menu/components/LocalTaxesModal.tsx:14,51`\n     - `~/Development/qcash-ui-header-footer/layouts/default/container/menu/components/GlobalExternalTransferModal.tsx:29,104,116`\n     - These index `productAuthorities` without guarding the object itself.\n\n### Medium\n\n3. **Bridge updates can be lost between render and effect subscription**\n   - `~/Development/qcash-ui-header-footer/hooks/useAuthBridge.ts:5,7-27`\n   - State is read during render, but the event listener is installed later. If the host replaces the bridge and emits `qc-bridge-sync` in that interval, the mount effect reads the new bridge only to copy its token; it does not update `data`. Consumers remain stale until another event occurs.\n   - This can also leave bridge selection stale at `~/Development/qcash-ui-header-footer/layouts/default/container/index.tsx:37-39`.\n\n4. **Advertised legacy-auth fallback is applied inconsistently**\n   - Layout and LC Import explicitly fall back to Ordent auth:\n     - `~/Development/qcash-ui-header-footer/layouts/default/container/index.tsx:34-39`\n     - `~/Development/qcash-ui-header-footer/layouts/default/container/menu/components/LcImportModal.tsx:41-48`\n   - Other consumers always use bridge fallback data:\n     - `~/Development/qcash-ui-header-footer/hooks/useMenu.tsx:184-192`\n     - `~/Development/qcash-ui-header-footer/layouts/default/container/menu/components/MenuModalProvider.tsx:38`\n     - The other authority modals listed above.\n   - With no bridge, `userType` remains null, menu loading can remain true (`useMenu.tsx:305`), authority-driven options are disabled, and leave-state actions become fallback no-ops despite a working legacy provider.\n\n5. **Shallow snapshots do not safely support in-place host mutations**\n   - `~/Development/qcash-ui-header-footer/hooks/useAuthBridge.ts:19-23`\n   - The outer object is copied, but nested `authorities`, `products`, and similar data retain their identity. Consumers memoize by those references:\n     - `~/Development/qcash-ui-header-footer/layouts/default/container/menu/components/LcImportModal.tsx:82-95`\n     - `~/Development/qcash-ui-header-footer/hooks/useMenu.tsx:251-273`\n   - If the host mutates nested bridge collections in place and emits the event, components rerender but these memoized computations can remain stale. Correctness currently depends on an undocumented immutable-update contract.\n\n6. **Each consumer creates an independent external-store subscription**\n   - `~/Development/qcash-ui-header-footer/hooks/useAuthBridge.ts:4-28`\n   - There are nine production callers. Each maintains separate state and listener, causing repeated token writes and snapshots for every event. React event batching reduces—but does not formally eliminate—cross-consumer tearing and mounting races. A single provider or `useSyncExternalStore` subscription would better model this global mutable source.\n\n### Low\n\n7. **Event constant is unused, allowing protocol-name drift**\n   - Defined at `~/Development/qcash-ui-header-footer/layouts/default/AuthBridge.tsx:4`\n   - Listener hard-codes the same string at `~/Development/qcash-ui-header-footer/hooks/useAuthBridge.ts:26-27`.\n\n8. **Possible SSR hydration mismatch**\n   - `~/Development/qcash-ui-header-footer/layouts/default/AuthBridge.tsx:85`\n   - `~/Development/qcash-ui-header-footer/hooks/useAuthBridge.ts:5`\n   - SSR always renders fallback data, while the hydration initializer can immediately read host data. If this federated layout is server-rendered and the bridge exists before hydration, header/menu output can disagree with server markup.\n\n## Testing gaps\n\n- No direct test file exists for `AuthBridge.tsx` or `useAuthBridge.ts`; coverage marks the token-write path uncovered.\n- Existing consumer tests mostly mock `useAuthBridge`, so they do not exercise actual listener registration, event delivery, rehydration, cleanup, or localStorage flow.\n- Missing cases:\n  - Initial bridge read and array-to-`Map` conversion.\n  - Event-driven updates and listener removal on unmount.\n  - Null-token logout and token rotation.\n  - Event occurring between render and effect installation.\n  - Partial/malformed bridge objects.\n  - In-place versus immutable nested updates.\n  - Multiple simultaneous subscribers and Strict Mode mount/unmount cycles.\n  - Real no-bridge legacy-provider behavior.\n  - SSR/hydration behavior.\n  - End-to-end proof that requests use the newly bridged token and never a prior user’s token."
+    }
+  ],
+  "source": "opencode",
+  "tags": [
+    "coding",
+    "assistant",
+    "opencode"
+  ]
+}

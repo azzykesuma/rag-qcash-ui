@@ -1,0 +1,182 @@
+# Raise online transfer coverage (@general subagent)
+
+- **ID**: `ses_006315a0bffeuEz6M2bmZpSud8`
+- **Source Tool**: `opencode`
+- **Date**: `2026-08-13 13:28:17`
+- **Tags**: `coding`, `assistant`, `opencode`
+
+---
+
+## Turn 1: User
+
+Work only on Online Transfer form unit tests in ~/Development/qcash-ui-fund-transfer. Expand utils/test/forms/online-transfer-form.test.tsx (and only production code if a genuine bug is found) so components/form/online-transfer/index.tsx reaches >65% statements, branches, functions, and lines under Jest. Preserve existing user changes and do not modify unrelated files. Follow repo testing conventions. Use apply_patch for edits. Run focused coverage with: yarn test utils/test/forms/online-transfer-form.test.tsx --runInBand --coverage --collectCoverageFrom='components/form/online-transfer/index.tsx' --coverageThreshold='{}'. Return exact final metrics, test count, and files changed. Existing React DOM warnings may be cleaned up if practical, but test behavior/coverage is priority.
+
+---
+
+## Turn 2: Assistant
+
+<details><summary>🔧 Tool Invocations (3)</summary>
+
+- **read**: Tool: read
+- **read**: Tool: read
+- **bash**: Tool: bash
+
+</details>
+
+I’ll inspect the Online Transfer form and its existing test/mocks, then add focused behavior tests and run the exact coverage command. I’ll limit edits to the requested test unless the exercised code reveals a real production defect.
+
+---
+
+## Turn 3: Assistant
+
+<details><summary>🔧 Tool Invocations (2)</summary>
+
+- **read**: Tool: read
+- **grep**: Tool: grep
+
+</details>
+
+
+
+---
+
+## Turn 4: Assistant
+
+<details><summary>🔧 Tool Invocations (1)</summary>
+
+- **bash**: Tool: bash
+
+</details>
+
+
+
+---
+
+## Turn 5: Assistant
+
+<details><summary>🔧 Tool Invocations (1)</summary>
+
+- **apply_patch**: Tool: apply_patch
+
+</details>
+
+Baseline coverage is 30.38% statements, 22.47% branches, 14.70% functions, and 31.41% lines. The main gap is that existing global-component mocks do not invoke most form callbacks, so I’ll extend those test-only mocks and add scenarios for account validation, scheduling, beneficiary favorites, remarks, and submission.
+
+---
+
+## Turn 6: Assistant
+
+<details><summary>🔧 Tool Invocations (1)</summary>
+
+- **apply_patch**: Tool: apply_patch
+
+</details>
+
+
+
+---
+
+## Turn 7: Assistant
+
+<details><summary>🔧 Tool Invocations (1)</summary>
+
+- **bash**: Tool: bash
+
+</details>
+
+
+
+---
+
+## Turn 8: Assistant
+
+<details><summary>🔧 Tool Invocations (1)</summary>
+
+- **apply_patch**: Tool: apply_patch
+
+</details>
+
+The first expanded run reached 81.71% statements, 61.95% branches, 74.50% functions, and 83.65% lines, with 28 of 29 tests passing. It also exposed a real submit bug: the edit draft flag is React state updated in the submit button click, so the same submit event can read the previous value; I’ll replace that flag with a ref and cover the remaining beneficiary/immediate/modal branches to push branch coverage above 65%.
+
+---
+
+## Turn 9: Assistant
+
+<details><summary>🔧 Tool Invocations (1)</summary>
+
+- **apply_patch**: Tool: apply_patch
+
+</details>
+
+
+
+---
+
+## Turn 10: Assistant
+
+<details><summary>🔧 Tool Invocations (1)</summary>
+
+- **apply_patch**: Tool: apply_patch
+
+</details>
+
+
+
+---
+
+## Turn 11: Assistant
+
+<details><summary>🔧 Tool Invocations (1)</summary>
+
+- **apply_patch**: Tool: apply_patch
+
+</details>
+
+
+
+---
+
+## Turn 12: Assistant
+
+<details><summary>🔧 Tool Invocations (1)</summary>
+
+- **bash**: Tool: bash
+
+</details>
+
+
+
+---
+
+## Turn 13: Assistant
+
+<details><summary>🔧 Tool Invocations (2)</summary>
+
+- **bash**: Tool: bash
+- **bash**: Tool: bash
+
+</details>
+
+The focused suite now passes all 33 tests and exceeds every requested threshold. Final verification shows 90.56% statements, 69.16% branches, 87.25% functions, and 92.62% lines; I’m checking the scoped diff to ensure only the test and genuine edit-submit fix are included.
+
+---
+
+## Turn 14: Assistant
+
+Expanded Online Transfer form coverage and fixed the edit draft submission race using a ref.
+
+- Statements: **90.56%**
+- Branches: **69.16%**
+- Functions: **87.25%**
+- Lines: **92.62%**
+- Tests: **33 passed**
+- Suites: **1 passed**
+
+Files changed:
+- `utils/test/forms/online-transfer-form.test.tsx`
+- `components/form/online-transfer/index.tsx`
+
+The exact requested coverage command passed. Existing React DOM and `act()` warnings remain non-failing.
+
+---
+

@@ -1,0 +1,35 @@
+{
+  "id": "16ec3318-e5a7-40ac-ba32-bec026688552",
+  "conversations": [
+    {
+      "from": "human",
+      "value": "In the file `~/Development/qcash-ui-issuance-lc/utils/copy-text-button.tsx`, replace `QuiButton` with `Button` from `@/components/global`.\n\nCurrent file:\n```tsx\nimport { Icon, QuiButton, toast } from \"@/components/global\";\nimport copy from \"copy-to-clipboard\";\nimport React, { useEffect, useRef, useState } from \"react\";\n// ... rest of file\n  return (\n    \u003cdiv className=\"il-relative il-inline-flex\"\u003e\n      \u003cQuiButton\n        type=\"button\"\n        isIconOnly={true}\n        size={\"sm\"}\n        onClick={handleCopy}\n        variant={variant || \"outlined\"}\n        aria-label={isCopied ? \"Copied\" : \"Copy\"}\n        className=\"il-p-2\"\n      \u003e\n        \u003cIcon name=\"Copy\" className=\"il-text-primary-40\" /\u003e\n      \u003c/QuiButton\u003e\n    \u003c/div\u003e\n  );\n```\n\nThe global `Button` (from `qcash-global-component/button`) has these props:\n- `variant`: \"blue-new\" | \"blue\" | \"danger\" | \"ghost-danger\" | \"ghost-dark\" | \"ghost-info\" | \"ghost-primary\" | \"ghost-secondary\" | \"ghost-success\" | \"ghost\" | \"grey-blue\" | \"grey\" | \"info\" | \"inverted\" | \"link\" | \"primary\" | \"secondary\" | \"success\"\n- `size`: \"sm\" | \"md\" | \"lg\" | \"custom\"\n- `disabled`, `type`, `onClick`, `className`, `aria-label` (all standard HTML button props)\n- `isLoading`\n\nReplace:\n- `QuiButton` → `Button`\n- Remove `isIconOnly={true}` (not supported by global Button)\n- Keep `size={\"sm\"}`, `onClick`, `aria-label`, `className`\n- Map `variant=\"outlined\"` → `variant=\"ghost\"` or just remove variant\n- `isDisabled` → `disabled`\n\nRead the current full file content first, then write the complete updated file to `~/Development/qcash-ui-issuance-lc/utils/copy-text-button.tsx`."
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": "Done. Here's a summary of what changed in [`copy-text-button.tsx`](file://~/Development/qcash-ui-issuance-lc/utils/copy-text-button.tsx):\n\n| Change | Before | After |\n|---|---|---|\n| Import | `{ Icon, QuiButton, toast }` | `{ Button, Icon, toast }` |\n| Component | `\u003cQuiButton\u003e` | `\u003cButton\u003e` |\n| Removed prop | `isIconOnly={true}` | *(removed)* |\n| Variant fallback | `variant \\|\\| \"outlined\"` | `(variant as any) \\|\\| \"ghost\"` |\n\nThe `as any` cast is kept on `variant` since the caller can pass arbitrary strings and the global `Button`'s variant union doesn't include `\"outlined\"`. If callers only ever pass known global variants you can tighten that type later."
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": "The file has been updated successfully. The key changes were:\n\n1. **Import** — swapped `QuiButton` for `Button`\n2. **Component tag** — `\u003cQuiButton\u003e` → `\u003cButton\u003e`\n3. **Removed** `isIconOnly={true}` (unsupported)\n4. **Variant** — fallback `\"outlined\"` mapped to `\"ghost\"`"
+    }
+  ],
+  "source": "antigravity",
+  "tags": [
+    "coding",
+    "assistant",
+    "antigravity"
+  ]
+}

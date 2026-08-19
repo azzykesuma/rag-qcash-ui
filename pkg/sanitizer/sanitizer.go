@@ -106,18 +106,13 @@ func (s *Sanitizer) initRules() {
 			Replacement: "$1$2:[PASSWORD_REDACTED]@",
 		},
 		{
-			Name:        "Bitbucket Server PAT",
-			Pattern:     regexp.MustCompile(`\b([A-Za-z0-9+/=]{10,}:[A-Za-z0-9+/=]{20,})\b`),
-			Replacement: "[BITBUCKET_PAT_REDACTED]",
-		},
-		{
-			Name:        "Atlassian / Bitbucket Base64 Token",
-			Pattern:     regexp.MustCompile(`\b((?:BBDC-|squ_|ctx7sk-|jam_pat_)[A-Za-z0-9_\-\+\/=]{20,}|\b(?:MTk2|Mzcx|NzYz|MTAy|MTEy|MDEy)[A-Za-z0-9\+\/=]{30,})\b`),
+			Name:        "Bitbucket / Atlassian Server PAT",
+			Pattern:     regexp.MustCompile(`(?i)\b(?:[A-Za-z0-9+/=]{10,}:[A-Za-z0-9+/=]{20,}|(?:BBDC-|squ_|ctx7sk-|jam_pat_)[A-Za-z0-9_\-\+\/=]{20,}|(?:MT[0-9A-Za-z]{2}|MD[0-9A-Za-z]{2}|OT[0-9A-Za-z]{2}|Mz[0-9A-Za-z]{2}|Nz[0-9A-Za-z]{2}|Mj[0-9A-Za-z]{2})[A-Za-z0-9\+\/=]{25,})`),
 			Replacement: "[ATLASSIAN_TOKEN_REDACTED]",
 		},
 		{
 			Name:        "Token Prompt Assignment",
-			Pattern:     regexp.MustCompile(`(?i)\b(use this token|token is|bearer token|my token is|api token)\s*[:=]?\s*([A-Za-z0-9\+\/=]{20,})`),
+			Pattern:     regexp.MustCompile(`(?i)\b(use this token|token is|bearer token|my token is|api token|access token|using token|using this(?: [a-zA-Z0-9_\-]+)* token)\s*[:=]?\s*([A-Za-z0-9\+\/=_]{20,})`),
 			Replacement: "$1: [TOKEN_REDACTED]",
 		},
 		{
