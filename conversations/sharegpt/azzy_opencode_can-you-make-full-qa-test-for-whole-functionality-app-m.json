@@ -1,0 +1,72 @@
+{
+  "id": "ses_010473ab6ffe8erBGYkmJanbm4",
+  "author": "azzy",
+  "conversations": [
+    {
+      "from": "human",
+      "value": "can you make a full qa test for the whole functionality of the app? make a .md"
+    },
+    {
+      "from": "gpt",
+      "value": "I’ll map the app’s user flows, permissions, API behavior, validation, and failure states, then turn them into an executable QA checklist with preconditions and expected results."
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": "## Objective\n- Create a comprehensive Markdown manual QA test plan covering the app’s full functionality.\n\n## Important Details\n- QA scope: user flows, authorization, APIs, validation, loading/error/empty states, filters, pagination, downloads, localization, accessibility, responsive behavior, and host/MFE integration.\n- Functional route: `/dashboard-auto-collection-v2/dashboard`; root route only shows a welcome heading.\n- Access requires `userType === \"cu\"`, `DASHBOARD_AUTO_COLLECTION.anyAuthority === true`, and menu text `\"Dashboard Auto Collection\"`.\n- Main features: account/month filters, refresh timestamp, summary cards, trend chart, searchable paginated transaction table, row selection, and CSV/XLSX/PDF downloads.\n- Recommended local command: `yarn proxy`; URL: `http://localhost:3001/dashboard-auto-collection-v2/dashboard`.\n- Static inspection only; external APIs and federated components have not been executed.\n\n## Work State\n### Completed\n- Inventoried user-facing routes, states, permissions, controls, and dashboard flows.\n- Mapped backend integrations, request lifecycle, cancellation, table behavior, and downloads.\n- Reviewed localization, accessibility, configuration, deployment, and README guidance.\n- Confirmed available scripts: `yarn build`, `yarn lint`, `yarn test`, and `yarn test:coverage`.\n\n### Active\n- Converting repository findings into executable QA scenarios with preconditions, steps, expected results, and test data.\n- Selecting and creating the final `.md` QA document.\n\n### Blocked\n- None.\n\n## Next Move\n1. Draft the comprehensive QA matrix covering happy paths, permissions, failures, edge cases, accessibility, responsive behavior, localization, APIs, and downloads.\n2. Create the Markdown file and verify coverage against all discovered functionality.\n\n## Relevant Files\n- `README.md`: setup, `yarn proxy`, scripts, and local dashboard URL.\n- `package.json`: build, lint, test, coverage, and runtime scripts.\n- `src/pages/dashboard/index.tsx`: authentication gate and dashboard route.\n- `src/pages/index.tsx`: placeholder root route.\n- `src/containers/dashboard/index.tsx`: dashboard initialization and filter/request flow.\n- `src/containers/dashboard/components/dashboard-header.tsx`: account, month, and refresh controls.\n- `src/containers/dashboard/components/summary-cards.tsx`: payment, hold, and release summaries.\n- `src/containers/dashboard/components/trend-chart.tsx`: daily amount chart.\n- `src/containers/dashboard/components/transaction-table.tsx`: search, pagination, selection, and downloads.\n- `src/services/dashboard.ts`: dashboard API integrations.\n- `src/services/customAxios.ts`: shared Axios behavior.\n- `src/utils/auth.ts`: authorization requirements.\n- `src/hooks/useDashboardAutoCollectionTranslation.ts`: localization behavior.\n- `src/components/ui/splash-screen/new-qlola.tsx`: loading UI and fallback behavior.\n- `TRANSLATION_KEYS_MAPPING.md`: translation-key history and localization context."
+    },
+    {
+      "from": "human",
+      "value": "where's the list of the test case?"
+    },
+    {
+      "from": "gpt",
+      "value": "The test-case list was not created; the previous response only summarized planned work. I’m creating `QA_TEST_PLAN.md` now with executable cases rather than another status report."
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": "The source confirms three transaction modes, account and 13-month period filters, server-side table search/pagination, page-scoped selection, and three download formats. I’m encoding these plus authorization, API failures, localization, accessibility, responsive, and MFE checks into one QA matrix."
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": "I’m writing the document at the repository root. The expected results describe user-visible acceptance criteria and include API payload checks where behavior depends on account scope, period conversion, or selected-row downloads."
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": "The full list is now in [`QA_TEST_PLAN.md`](QA_TEST_PLAN.md).\n\nIt contains 89 test cases covering authorization, filters, charts, tables, downloads, localization, accessibility, responsive behavior, API resilience, security, and MFE integration. `git diff --check` passed."
+    }
+  ],
+  "source": "opencode",
+  "tags": [
+    "coding",
+    "assistant",
+    "opencode"
+  ]
+}

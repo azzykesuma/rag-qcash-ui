@@ -1,0 +1,124 @@
+{
+  "id": "ses_00245b384ffekQjUuqyxMLF49j",
+  "author": "azzy",
+  "conversations": [
+    {
+      "from": "human",
+      "value": "Investigate D:\\work\\addons-auth-provider thoroughly. This is read-only diagnosis; do not edit files. Trace the AuthContext creation, default values, AuthProvider implementation, real guard function, useAuth export, package build/output, and any conditions under which useAuth can return the default throwing `Function not implemented.` guard despite an AuthProvider apparently existing. Check package name/version and git history if useful. Return concise findings with exact file:line references and a concrete runtime call path. Thoroughness: very thorough."
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": "## Verdict\n\n`useAuth()` can return the throwing default only when React cannot find the **same `AuthContext` object** above the consumer. There is no token, cache, API, loading, or provider-state path that replaces the real guard with the default guard.\n\nTherefore, if the stack resolves to `dist/src/auth.js:126` or source-maps to `src/auth.tsx:169`, the consumer is either:\n\n1. Outside the matching provider’s React ancestry, or\n2. Using a second evaluation/copy of the auth package: `Context_A !== Context_B`.\n\nThe second case is the strongest risk in the current Module Federation setup.\n\n## Package trace\n\n- Package is `@bri/addons-auth-provider` version `0.10.8-mfe`; runtime entry is `dist/src/index.js`:  \n  `D:\\work\\addons-auth-provider\\package.json:2-6`\n- Root entry requires one CJS auth module and re-exports its provider and hook:  \n  `D:\\work\\addons-auth-provider\\dist\\src\\index.js:4-7`\n- Defaults include guest/null/empty state and throwing implementations for guard, login/logout, permission methods and setters:  \n  `D:\\work\\addons-auth-provider\\src\\auth.tsx:146-281`  \n  `D:\\work\\addons-auth-provider\\dist\\src\\auth.js:96-263`\n- The default guard is asynchronous, so it returns a rejected promise containing the error:  \n  `D:\\work\\addons-auth-provider\\src\\auth.tsx:168-170`  \n  `D:\\work\\addons-auth-provider\\dist\\src\\auth.js:118-129`\n- That object is passed directly to `createContext`; the context itself is private:  \n  `D:\\work\\addons-auth-provider\\src\\auth.tsx:287`  \n  `D:\\work\\addons-auth-provider\\dist\\src\\auth.js:267`\n- `useAuth` is only `useContext(AuthContext)` and performs no missing-provider check:  \n  `D:\\work\\addons-auth-provider\\src\\auth.tsx:1284`  \n  `D:\\work\\addons-auth-provider\\dist\\src\\auth.js:1195-1196`\n\n### Real provider and guard\n\n- `AuthProvider` initializes its state immediately; no effect is required before a real guard exists:  \n  `D:\\work\\addons-auth-provider\\src\\auth.tsx:309-360`\n- The real guard is created with `useCallback`:  \n  `D:\\work\\addons-auth-provider\\src\\auth.tsx:362-613`  \n  `D:\\work\\addons-auth-provider\\dist\\src\\auth.js:318-524`\n- Its path is:\n  - Restore a fresh session cache when requested: `src\\auth.tsx:364-400`\n  - Reuse in-memory freshness: `src\\auth.tsx:403-411`\n  - With no token, route to login: `src\\auth.tsx:413-417`\n  - Validate `/auth/me`: `src\\auth.tsx:424-443`, `services\\auth.ts:20-28`\n  - Validate `/menu/me`: `src\\auth.tsx:444-453`, `services\\auth.ts:49-61`\n  - Refresh/clear invalid credentials and populate authorities: `src\\auth.tsx:455-612`\n- The memoized provider value explicitly contains the real `guard`:  \n  `D:\\work\\addons-auth-provider\\src\\auth.tsx:1143-1207`, especially `:1164`  \n  `D:\\work\\addons-auth-provider\\dist\\src\\auth.js:1066-1129`, especially `:1086`\n- Children are always under that context provider whenever `AuthProvider` renders:  \n  `D:\\work\\addons-auth-provider\\src\\auth.tsx:1273-1281`  \n  `D:\\work\\addons-auth-provider\\dist\\src\\auth.js:1192`\n\nThus even `token === null` yields the **real** guard, which redirects; it does not yield `\"Function not implemented.\"`.\n\n## Concrete failing runtime path\n\nNormal package path:\n\n1. Resolve `@bri/addons-auth-provider` through `package.json:5`.\n2. `dist/src/index.js:4-7` loads/re-exports `dist/src/auth.js`.\n3. Module evaluation creates `AuthContext_A` at `dist/src/auth.js:267`.\n4. `AuthProvider_A` supplies `valueMemoized.guard` at `:1086`, through the provider at `:1192`.\n5. A descendant’s `useAuth_A()` at `:1195` receives that value and calls the real guard at `:318`.\n\nFailure path:\n\n1. Provider renders `AuthContext_A.Provider`.\n2. Consumer imports another package/module evaluation and executes `useAuth_B()`.\n3. React searches for `AuthContext_B.Provider`; `AuthContext_A.Provider` is irrelevant.\n4. No `B` provider is found, so React returns `AUTH_INITIAL_VALUES_B`.\n5. `guard()` executes the default at `dist/src/auth.js:118-126` and rejects with `Function not implemented.`\n\nOrdinary Node resolution of the root entry and `dist/src/auth` was verified to produce identical `AuthProvider` and `useAuth` exports. The mismatch therefore needs distinct physical modules, source-versus-dist imports, federation containers/share scopes, aliases/symlinks, HMR duplication, or separate package names.\n\n## Conditions that can produce it\n\n- Consumer is a sibling/ancestor of the provider, or invokes `useAuth` in the same component that later returns `\u003cAuthProvider\u003e`.\n- Provider is conditionally omitted or an error-boundary fallback containing the consumer is outside it.\n- Consumer is mounted through another `createRoot`, iframe, or independently bootstrapped MFE. DOM containment does not carry React context; ordinary React portals do.\n- Provider and hook come from different package copies or versions.\n- One side imports published `dist`, while another aliases/transpiles the included `src/auth.tsx`.\n- Module Federation does not enforce the auth package as a singleton.\n- `@bri/addons-auth-provider` and `@ordentco/addons-auth-provider` are mixed. They are always distinct contexts even if their implementation is nearly identical.\n- Dev HMR/module reset preserves an old provider while a newly evaluated hook references a new context.\n\nAPI rejection, no token, session-cache parsing, or an uninitialized provider cannot produce this exact guard stub.\n\n## Evidence in `qcash-ui`\n\nThe checked-in JSX ancestry appears correct:\n\n- BRI provider is dynamically imported and wraps its children:  \n  `D:\\work\\qcash-ui\\components\\providers\\BRIProviders.tsx:7-18`\n- Ordent provider is dynamically imported inside it:  \n  `D:\\work\\qcash-ui\\components\\providers\\BRIProviders.tsx:20-37`\n- Final nesting is BRI → Ordent → children:  \n  `D:\\work\\qcash-ui\\components\\providers\\BRIProviders.tsx:43-51`\n- `_app` places `AuthBridgeSync` and application consumers beneath this wrapper:  \n  `D:\\work\\qcash-ui\\pages\\_app.tsx:163-193`\n\nHowever, the providers are obtained through dynamic imports while hooks are statically imported elsewhere. More importantly, both auth packages are shared without `singleton: true`:\n\n- `D:\\work\\qcash-ui\\next.config.js:15-22`\n\nThat configuration permits separate package instances across federation containers. The repository even contains runtime share-scope/version monitoring:\n\n- `D:\\work\\qcash-ui\\components\\federation\\monitor\\auth\\provider-versions.ts:8-49`\n\nThe host’s direct guard calls are currently **Ordent**, not BRI:\n\n- `AuthBridgeSync` imports both hooks but invokes only `ordentAuth.guard()`:  \n  `D:\\work\\qcash-ui\\components\\providers\\AuthBridgeSync.ts:44-46`, `:248-285`\n- Onboarding calls Ordent’s guard:  \n  `D:\\work\\qcash-ui\\components\\onboarding-tour\\notif-onboarding-tour.tsx:4`, `:38`, `:86`\n- Session re-login also uses Ordent:  \n  `D:\\work\\qcash-ui\\hooks\\use-modal-session-expired.tsx:2`, `:50`, `:241-246`\n\nTherefore, an error from those host paths means an **Ordent context mismatch**, despite the BRI provider also existing. A BRI remote calling its own hook can independently suffer the equivalent BRI mismatch.\n\n## Build/version concerns\n\n- Build is plain `tsc`, CommonJS to `dist`, with declarations and source maps:  \n  `D:\\work\\addons-auth-provider\\package.json:29-31`  \n  `D:\\work\\addons-auth-provider\\tsconfig.json:3-13`\n- Runtime uses `dist`, not `src`.\n- `\"types\": \"\"` does not point at the generated `dist/src/index.d.ts`:  \n  `D:\\work\\addons-auth-provider\\package.json:5-6`\n- There is no `exports` or `files` restriction, and the installed artifact contains both source and dist. This permits alternate/deep entry paths.\n- Publish workflow neither installs nor builds before publishing, and watches `main` while the current/default Git branch is `master`:  \n  `D:\\work\\addons-auth-provider\\.github\\workflows\\publish.yml:1-13`\n- Current auth source and generated dist are dirty with uncommitted setter additions; the guard/context logic itself is unchanged. Package version remains `0.10.8-mfe`.\n- Local `qcash-ui` versions are inconsistent:\n  - Manifest requests BRI `0.10.6-mfe`: `D:\\work\\qcash-ui\\package.json:20`\n  - Lock resolves `0.10.6-mfe`: `D:\\work\\qcash-ui\\yarn.lock:98-106`\n  - Installed package is `0.10.5-mfe`: `D:\\work\\qcash-ui\\node_modules\\@bri\\addons-auth-provider\\package.json:2-5`\n  - Manifest/lock request Ordent `0.9.138-mfe`, but installed is `0.9.140-mfe`:  \n    `D:\\work\\qcash-ui\\package.json:27`  \n    `D:\\work\\qcash-ui\\yarn.lock:522-530`  \n    `D:\\work\\qcash-ui\\node_modules\\@ordentco\\addons-auth-provider\\package.json:2-5`\n\nGit history shows the throwing default dates back to initial auth implementation commit `017cc6d`; async/cache guard signature was added in `7a310fc`, with compiled output synchronized in `72e8796`. It is not introduced by the current local changes.\n\n## Bottom line\n\nThe exact default-guard error is a context-identity/ancestry signal, not a guard-validation failure. In this system, the leading diagnosis is a non-singleton Module Federation package copy or BRI/Ordent namespace mismatch, amplified by inconsistent installed versions and source/dist publication practices. Ensure every provider/hook pair resolves to one package instance in one federation share scope and one React tree."
+    }
+  ],
+  "source": "opencode",
+  "tags": [
+    "coding",
+    "assistant",
+    "opencode"
+  ]
+}

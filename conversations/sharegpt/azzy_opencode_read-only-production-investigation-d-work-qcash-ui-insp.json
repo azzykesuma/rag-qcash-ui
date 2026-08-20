@@ -1,0 +1,176 @@
+{
+  "id": "ses_00205cb91ffeg2PSEVMDJKTRYs",
+  "author": "azzy",
+  "conversations": [
+    {
+      "from": "human",
+      "value": "Read-only production investigation. In D:\\work\\qcash-ui inspect exactly git ref refs/remotes/origin/v1.630.3-release-com (commit b6ce2a6), NOT the checked-out branch and do not edit/checkout. Use git show/git grep as needed. Trace: package versions, next/module federation config including shared entries, provider tree in pages/_app and provider components, dynamic federation initialization order, all guard calls, qcash-global/header/footer/mass-transfer remote loading, and error boundaries. This production branch is Ordent-only; ignore current-branch BRI migration code. Determine how a descendant can receive the auth package's default throwing guard, and assess the user's 'remote arrives before auth code' theory. Return exact ref:path:line references and a concrete timeline."
+    },
+    {
+      "from": "gpt",
+      "value": "I’ll anchor every read to `refs/remotes/origin/v1.630.3-release-com`, verify it resolves to `b6ce2a6`, then reconstruct dependencies, provider composition, federation startup, remote imports, guards, and boundary behavior without touching the worktree."
+    },
+    {
+      "from": "gpt",
+      "value": "The ref is verified at `b6ce2a6bf3cf6564b0aa3f56dd396e4fe84b5a1b`. The initial search shows both compile-time federation configuration and a separate runtime federation layer, so I’m separating those paths before judging initialization order."
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": "Production selects `OrdentProviders` because the auth migration flag is `false` in prod, and both `AuthProvider` and `GlobalStoreProvider` come from dynamically imported Ordent package code. The key risk now is module identity: the auth package is shared with `requiredVersion: false` but not declared `singleton`, so I’m tracing whether host consumers and each remote can bind to different context instances rather than assuming a network race."
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": "The timing split is now clear: global remotes’ `/globals` exposes are awaited before `_app` can render, while the actual header/footer and mass-transfer components remain descendants and cannot render until the dynamic Ordent provider resolves. I’m verifying the exact Ordent artifact behavior and the boundary that converts a context mismatch into the production symptom, while keeping the checked-out branch out of the evidence."
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": "Investigated only `refs/remotes/origin/v1.630.3-release-com`, verified at `b6ce2a6bf3cf6564b0aa3f56dd396e4fe84b5a1b`. No checkout or worktree edits were made.\n\n**Verdict**\nA descendant can receive `\"Function not implemented.\"` only when its `useAuth()` resolves a different `AuthContext` object from the one provided by the shell:\n\n```tsx\n\u003cAuthContext_host.Provider\u003e\n  \u003cRemoteUsingAuthContext_remote /\u003e\n\u003c/AuthContext_host.Provider\u003e\n```\n\nPhysical React ancestry is insufficient when `AuthContext_host !== AuthContext_remote`.\n\nThe strongest supported cause is therefore a duplicated Ordent auth-package instance or separate share scope, not a child rendering before the provider. The host explicitly shares Ordent with `requiredVersion: false` and without `singleton: true`, allowing multiple versions/instances.\n\nThe user's timing observation is partly correct:\n\n- `qcash-global-component/globals` and `qcash-ui-header-footer/globals` are loaded before the auth provider mounts.\n- The actual `qcash-global-component/modal`, header/footer `default`, and mass-transfer page components cannot render before the auth provider.\n- Early remote arrival can influence shared-version registration or selection, but it cannot itself make `useContext` return the default. A context-identity split is still required.\n\n**Versions And Config**\n- Shell version: `1.0.562`. `refs/remotes/origin/v1.630.3-release-com:package.json:2-3`\n- Active production auth dependency: `@ordentco/addons-auth-provider@0.9.136-mfe`, pinned in both manifest and lock. `refs/remotes/origin/v1.630.3-release-com:package.json:27`, `refs/remotes/origin/v1.630.3-release-com:yarn.lock:696-704`\n- React/React DOM: `18.3.1`; Next: `13.5.11`; Webpack: `5.94.0`. `refs/remotes/origin/v1.630.3-release-com:package.json:40-43`, `refs/remotes/origin/v1.630.3-release-com:package.json:50`\n- Federation packages: `nextjs-mf@8.2.6`, runtime/retry plugin `0.18.1`. `refs/remotes/origin/v1.630.3-release-com:package.json:24-26`\n- The lock also contains `@module-federation/runtime@0.0.17` through `nextjs-mf`, alongside direct runtime `0.18.1`. `refs/remotes/origin/v1.630.3-release-com:yarn.lock:433-442`, `refs/remotes/origin/v1.630.3-release-com:yarn.lock:483-497`\n- Compile-time federation has empty `remotes` and `exposes`; all remotes are registered dynamically. `refs/remotes/origin/v1.630.3-release-com:next.config.js:8-13`\n- `NextFederationPlugin` is installed in every webpack build. `refs/remotes/origin/v1.630.3-release-com:next.config.js:154`\n\nAll 47 explicit shared entries use `requiredVersion: false`. `refs/remotes/origin/v1.630.3-release-com:next.config.js:15-63`\n\nSingleton entries are: `@hookform/error-message`, `classnames`, `cross-env`, `html2canvas`, `ni18n`, `react-circular-progressbar`, `react-currency-flags`, `react-infinite-scroll-component`, `react-laag`, and `sass`.\n\nNon-singleton entries include both auth packages, plus `@headlessui/react`, `@heroicons/react`, `@hookform/resolvers`, `ahooks`, `axios`, `chart.js`, `collect.js`, `country-flag-icons`, `crypto-js`, `dayjs`, `downloadjs`, `formik`, `framer-motion`, `i18next`, `jspdf`, `jspdf-autotable`, `lodash`, `moment`, `ramda`, `react-chartjs-2`, `react-currency-input-field`, `react-datepicker`, `react-dayjs`, `react-dropzone`, `react-hook-form`, `react-i18next`, `react-moment`, `react-number-format`, `react-select`, `react-table`, `styled-components`, `use-debounce`, `uuid`, `xlsx`, and `yup`.\n\nProduction is Ordent-only:\n\n- Auth migration flag is `false` for prod. `refs/remotes/origin/v1.630.3-release-com:config.ts:472-477`\n- Header/footer BRI flag is `false` for prod. `refs/remotes/origin/v1.630.3-release-com:config.ts:479-484`\n- Production environment selection returns the final `prod` argument. `refs/remotes/origin/v1.630.3-release-com:utils/index.ts:139-163`\n- Mass transfer is enabled in prod. `refs/remotes/origin/v1.630.3-release-com:config.ts:189-194`\n- MFE devtools are disabled in prod. `refs/remotes/origin/v1.630.3-release-com:config.ts:521-527`\n\n**Provider Tree**\n```text\nModuleFederationProvider\n  RemoteErrorBoundary\n    Head\n    ExternalScripts\n    OrdentProviders\n      Ordent AuthProvider\n        Ordent GlobalStoreProvider\n          qui/providers\n            OnboardingTourProvider\n              PromoCarouselProvider\n                ErrorModal\n                conditional SessionExpiredNewQlola\n                getLayout(page)\n                  qcash-ui-header-footer/default\n                    page remote\n                NotifOnboardingTour\n```\n\nThe shell composition is at `refs/remotes/origin/v1.630.3-release-com:pages/_app.tsx:99-136`.\n\n`OrdentProviders` dynamically resolves `AuthProvider` and `GlobalStoreProvider` from the same package, then nests global store inside auth. `refs/remotes/origin/v1.630.3-release-com:components/providers/OrdentProviders.tsx:8-22`, `refs/remotes/origin/v1.630.3-release-com:components/providers/OrdentProviders.tsx:28-38`\n\nSeveral shell descendants statically import Ordent `useAuth`:\n\n- `refs/remotes/origin/v1.630.3-release-com:components/onboarding-tour/notif-onboarding-tour.tsx:4`\n- `refs/remotes/origin/v1.630.3-release-com:components/providers/OnboardingTourProvider.tsx:3`\n- `refs/remotes/origin/v1.630.3-release-com:components/providers/PromoCarouselProvider.tsx:3`\n- `refs/remotes/origin/v1.630.3-release-com:components/ui/MFAErrorModal.tsx:3`\n- `refs/remotes/origin/v1.630.3-release-com:hooks/use-modal-session-expired.tsx:2`\n\nBecause static dependencies must resolve before `_app` executes its top-level federation initialization, the shell's auth context module is present before global remote loading begins. The provider mount is deferred, but not all auth code.\n\n**Exact Default Guard**\nThe auth source is not vendored in Git. I inspected the exact `0.9.136-mfe` package artifact whose SHA and integrity match `yarn.lock`.\n\n- Package root exports both `AuthProvider` and `useAuth` from the same `./auth` module: `@ordentco/addons-auth-provider@0.9.136-mfe:src/index.ts:1`\n- Default context guard throws `\"Function not implemented.\"`: `@ordentco/addons-auth-provider@0.9.136-mfe:src/auth.tsx:150-152`\n- Context is created with that default object: `@ordentco/addons-auth-provider@0.9.136-mfe:src/auth.tsx:221`\n- Real provider guard is created at `src/auth.tsx:295`\n- Real guard is placed in the provider value at `src/auth.tsx:1029`\n- Provider wraps children at `src/auth.tsx:1106-1113`\n- `useAuth` directly calls `useContext(AuthContext)` without validating the provider: `src/auth.tsx:1117`\n\nTherefore, a mismatched package instance silently returns default fields until `guard()` is called.\n\n**Concrete Timeline**\n1. `_app` static dependencies load. Some already statically consume Ordent `useAuth`, so the shell auth module/context is resolved before `_app` body execution. `refs/remotes/origin/v1.630.3-release-com:pages/_app.tsx:21-26`\n2. On the browser, `_app` performs a top-level `await initFederation()`. `refs/remotes/origin/v1.630.3-release-com:pages/_app.tsx:38-49`\n3. `federationInit()` collects every global and route feature, computes entries, and registers them with runtime `init`. It does not pass an explicit runtime `shared` map. `refs/remotes/origin/v1.630.3-release-com:services/federation/init.ts:32-68`, `refs/remotes/origin/v1.630.3-release-com:services/federation/utils/registry.ts:11-12`\n4. It sets `__FEDERATION_LOADED = true`, then concurrently awaits `/globals` from `qcash-global-component`, `qcash-ui-header-footer`, and `qui`. `refs/remotes/origin/v1.630.3-release-com:services/federation/init.ts:70-88`\n5. Those global remotes are defined at `refs/remotes/origin/v1.630.3-release-com:constants/features/registry.ts:37-53`. Their remote entries are `/global-component/_next/static/chunks/remoteEntry.js` and `/header-footer/_next/static/chunks/remoteEntry.js`. `refs/remotes/origin/v1.630.3-release-com:constants/features/registry.ts:30-46`\n6. Only after all global `/globals` loads or fallbacks complete does `_app` render. `ModuleFederationProvider` loads first, then starts the dynamic Ordent provider subtree. `refs/remotes/origin/v1.630.3-release-com:pages/_app.tsx:66-79`, `refs/remotes/origin/v1.630.3-release-com:pages/_app.tsx:103-109`\n7. On a mass-transfer route, `ModuleFederationProvider`'s post-commit effect triggers route preloading. `refs/remotes/origin/v1.630.3-release-com:components/federation/provider.tsx:143-158`\n8. Route preloading starts `qcash-ui-mass-transfer/globals`; it can overlap the dynamic provider request and may finish first. `refs/remotes/origin/v1.630.3-release-com:components/federation/hooks/useModuleLoading.ts:81-95`, `refs/remotes/origin/v1.630.3-release-com:components/federation/hooks/useModuleLoading.ts:121-129`\n9. The mass-transfer remote URL follows the standard `/mass-transfer-v2/_next/static/chunks/remoteEntry.js` rule. `refs/remotes/origin/v1.630.3-release-com:constants/features/registry.ts:249-253`, `refs/remotes/origin/v1.630.3-release-com:services/federation/utils/registry.ts:81-83`, `refs/remotes/origin/v1.630.3-release-com:services/federation/utils/name.ts:1-3`\n10. Once Ordent AuthProvider, GlobalStoreProvider, and `qui/providers` have resolved, the page layout renders `qcash-ui-header-footer/default`. The mass-transfer page is its child and renders afterward. Representative: `refs/remotes/origin/v1.630.3-release-com:pages/mass-transfer/maker-confirmation/index.tsx:13-28`\n11. Mass-transfer exposes cover maker confirmation, transaction action, transfer inquiry, their view/detail variants, and upload transaction. The corresponding loaders are at `pages/mass-transfer/**:10` or `:13`; every page loads header/footer at `:16` or `:20`.\n12. `NotifOnboardingTour` then loads `qcash-global-component/modal`; its welcome component is nested beneath it. `refs/remotes/origin/v1.630.3-release-com:components/onboarding-tour/notif-onboarding-tour.tsx:28-34`, `refs/remotes/origin/v1.630.3-release-com:pages/_app.tsx:130-131`\n\n**All Shell Guard Calls**\nThere are exactly three call expressions in this ref:\n\n- Onboarding notification close: `await guard()`. It is enclosed by the handler's catch. `refs/remotes/origin/v1.630.3-release-com:components/onboarding-tour/notif-onboarding-tour.tsx:73-95`\n- Session-expiration production path: `await guard()`, locally caught and logged. `refs/remotes/origin/v1.630.3-release-com:hooks/use-modal-session-expired.tsx:239-246`\n- Session-expiration alternate path: unawaited `guard()`. `refs/remotes/origin/v1.630.3-release-com:hooks/use-modal-session-expired.tsx:247-249`\n\nThe alternate path is inactive in production because `toggleUpdateLoginService` is `true`. `refs/remotes/origin/v1.630.3-release-com:config.ts:676-681`\n\nThis inventory cannot include guard calls compiled inside separately deployed remote repositories.\n\n**Error Handling**\n- The root auth/page subtree is wrapped by `RemoteErrorBoundary`. `refs/remotes/origin/v1.630.3-release-com:components/federation/provider.tsx:171-176`\n- In production it renders the generic full-page error because MFE devtools are off. `refs/remotes/origin/v1.630.3-release-com:components/ui/RemoteErrorBoundary.tsx:75-113`\n- Federation load failures are handled separately by `fallbackPlugin`; header/footer gets a special fallback. `refs/remotes/origin/v1.630.3-release-com:services/federation/fallbackPlugin.tsx:19-47`, `refs/remotes/origin/v1.630.3-release-com:services/federation/fallbackPlugin.tsx:123-127`\n- That plugin cannot handle a guard thrown after a remote loaded successfully. A synchronous render/commit error reaches `RemoteErrorBoundary`; async event-handler errors do not.\n- Mass-transfer pages have no local `RemoteErrorBoundary`; they use raw `next/dynamic(loadRemote)` wrappers.\n- `pages/_error.tsx` is a Next error page, not a React error boundary. `refs/remotes/origin/v1.630.3-release-com:pages/_error.tsx:7-16`\n\n**Theory Assessment**\n“Remote arrives before auth code” is not the direct cause:\n\n- Shell auth context code is statically consumed before `initFederation()` can run.\n- Dynamic auth wrappers do not render their children while loading, so there is no transient render outside the provider.\n- Context propagation does not depend on fetch completion order when provider and consumer share the same context object.\n\nEarly remote arrival is still a plausible trigger for the actual problem:\n\n- Global remote containers initialize before the provider mounts.\n- Mass-transfer `/globals` can overlap provider initialization.\n- The Ordent package is non-singleton with unrestricted version acceptance.\n- A remote can therefore consume or bundle a different Ordent instance, or operate in another runtime/share scope. Its `useAuth()` then sees its own default context and returns the throwing guard.\n\nThis ref proves that configuration permits the failure, but it cannot identify which deployed remote/version caused it because remote build configs and production share-scope contents are external. The built-in diagnostic already reads all runtime share maps and groups auth versions by remote at `refs/remotes/origin/v1.630.3-release-com:components/federation/monitor/auth/provider-versions.ts:10-56`; a production share-scope snapshot is the missing confirmation."
+    }
+  ],
+  "source": "opencode",
+  "tags": [
+    "coding",
+    "assistant",
+    "opencode"
+  ]
+}

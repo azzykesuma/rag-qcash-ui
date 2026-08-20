@@ -1,0 +1,44 @@
+{
+  "id": "ses_07d1f3812ffeOzbe0x0lgPY8UK",
+  "author": "azzy",
+  "conversations": [
+    {
+      "from": "human",
+      "value": "Inspect D:\\work\\qcash-ui thoroughly enough to explain the exact integration contract for displaying a new microfrontend module at a URL like /v2/dashboard-auto-collection/dashboard. Find route handling, feature/module registry, runtime federation discovery, remote URL construction, API/config dependencies, error fallback trigger, and deployment-related configuration. Do not edit files. Return concise findings with absolute paths and line numbers, including the required module name, exposed module key, remote entry/assets expectations, and likely causes of the shown 'Feature temporarily unavailable' page."
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": "## Exact integration contract\n\n- **Browser URL:** `/v2/dashboard-auto-collection/dashboard`. `/v2` is the shell’s Next.js `basePath`; the page route itself is `/dashboard-auto-collection/dashboard`.  \n  `D:\\work\\qcash-ui\\next.config.js:66-69`  \n  `D:\\work\\qcash-ui\\pages\\dashboard-auto-collection\\dashboard.tsx:20-35`\n\n- **Registry identity:** `qcash-ui-dashboard-auto-collection`, always enabled because it has no `toggleKey`. Its route defaults to prefix matching.  \n  `D:\\work\\qcash-ui\\constants\\features\\registry.ts:680-686`  \n  `D:\\work\\qcash-ui\\services\\federation\\utils\\registry.ts:104-120,160-187`\n\n- **Required component expose:** host calls  \n  `qcash-ui-dashboard-auto-collection/dashboard`, so the remote must expose **`./dashboard`**, returning a React component/default module compatible with `next/dynamic`. The shell passes one prop: Next’s `router`.  \n  `D:\\work\\qcash-ui\\pages\\dashboard-auto-collection\\dashboard.tsx:14-24`\n\n- **Required/expected style expose:** route preloading calls  \n  `qcash-ui-dashboard-auto-collection/globals`, so the remote is expected to expose **`./globals`**. Missing globals are replaced with empty CSS rather than the full-page fallback.  \n  `D:\\work\\qcash-ui\\services\\federation\\utils\\loader.ts:19-37`  \n  `D:\\work\\qcash-ui\\services\\federation\\fallbackPlugin.tsx:21-39`\n\n- **Layout dependency:** page content is wrapped by `qcash-ui-header-footer/default`. A failure here uses a special header/footer indicator, not normally the shown generic page.  \n  `D:\\work\\qcash-ui\\pages\\dashboard-auto-collection\\dashboard.tsx:8-12,27-33`  \n  `D:\\work\\qcash-ui\\services\\federation\\fallbackPlugin.tsx:41-47`\n\n## Discovery and URLs\n\nThere is no manifest/API-based remote discovery. The shell statically enumerates the registry, calculates every entry URL, and registers them with `@module-federation/runtime` under the registry name.  \n`D:\\work\\qcash-ui\\services\\federation\\init.ts:32-50`\n\nFor this module, the deployed entry is:\n\n```text\n{baseFederation}/dashboard-auto-collection-v2/_next/static/chunks/remoteEntry.js\n```\n\n`baseFederation` is the selected `NEXT_PUBLIC_API_URL_*` with `/api` removed.  \n`D:\\work\\qcash-ui\\constants\\features\\registry.ts:26-32,680-686`  \n`D:\\work\\qcash-ui\\config.ts:16-26`\n\nThe deployment must therefore serve not only `remoteEntry.js`, but all chunk/static URLs referenced by it under the **`/dashboard-auto-collection-v2/_next/static/...`** service prefix. Incorrect remote `basePath`/`publicPath` is a likely chunk-load failure.\n\nFor local development, the hard-coded mapping rewrites the entry to:\n\n```text\nhttp://localhost:3001/dashboard-auto-collection-v2/_next/static/chunks/remoteEntry.js\n```\n\n`D:\\work\\qcash-ui\\constants\\features\\registry-dev.ts:6-10`  \n`D:\\work\\qcash-ui\\services\\federation\\utils\\module-entry.ts:5-25`\n\n## Configuration/API dependencies\n\n- Environment selection is hostname-based; unknown hostnames default to production Indonesia. Missing or wrongly baked `NEXT_PUBLIC_API_URL_*` can therefore point federation at the wrong origin.  \n  `D:\\work\\qcash-ui\\utils\\index.ts:24-59,65-109`\n- These public URLs are build arguments in the standalone Docker build, so changing runtime container environment alone will not reliably change the browser bundle.  \n  `D:\\work\\qcash-ui\\Dockerfile:81-114,124-136`\n- Namespace `dashboard-auto-collection` is requested, but no corresponding shell locale JSON exists and it is not in the migrated-language set. Loading falls through among shell `/v2/locales/...`, the language API, and remote `/dashboard-auto-collection-v2/locales/...`; locale failures are swallowed and should not cause the shown page.  \n  `D:\\work\\qcash-ui\\constants\\features\\registry.ts:683-685`  \n  `D:\\work\\qcash-ui\\ni18n.config.ts:18-52,80-97`  \n  `D:\\work\\qcash-ui\\services\\federation\\utils\\i18n.ts:38-57,117-142,162-219`\n- Production routing must expose the shell under `/v2` and the remote under the separate `/dashboard-auto-collection-v2` prefix.  \n  `D:\\work\\qcash-ui\\next.config.js:68-80`\n\n## Why “Feature temporarily unavailable” appears\n\nThat exact page is returned by the runtime `errorLoadRemote` hook for a **non-CSS regular remote request**.  \n`D:\\work\\qcash-ui\\services\\federation\\fallbackPlugin.tsx:89-127`\n\nMost likely causes:\n\n1. Local remote is not running on port `3001`, or it serves `remoteEntry.js` at a different path.\n2. Deployed entry returns 404/HTML, is unreachable, or the selected environment points at the wrong host.\n3. Remote federation name/build is incompatible, or **`./dashboard` is absent/misnamed**.\n4. `remoteEntry.js` loads, but one of its referenced JS chunks uses the wrong service prefix/public path or returns 404.\n5. TLS, CSP, proxy/ingress, authentication redirect, or stale/cached entry serves invalid JavaScript.\n6. Less likely, another regular global remote such as `qui/providers` fails and produces the same generic fallback.\n\nThe runtime config retries script loading three times before fallback handling. The console logs the precise failing module ID via `FallbackPlugin: Providing fallback for module ...`.  \n`D:\\work\\qcash-ui\\services\\federation\\init.ts:48-65`  \n`D:\\work\\qcash-ui\\services\\federation\\fallbackPlugin.tsx:17-20`\n\nA missing `./globals` or translation bundle alone should not generate this exact page; federation initialization timeout or a component render exception uses a different error boundary UI.  \n`D:\\work\\qcash-ui\\components\\federation\\provider.tsx:143-158,190-198`  \n`D:\\work\\qcash-ui\\components\\ui\\RemoteErrorBoundary.tsx:64-102`"
+    }
+  ],
+  "source": "opencode",
+  "tags": [
+    "coding",
+    "assistant",
+    "opencode"
+  ]
+}

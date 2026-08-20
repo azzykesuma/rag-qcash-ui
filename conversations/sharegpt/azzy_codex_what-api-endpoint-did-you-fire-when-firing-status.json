@@ -1,0 +1,45 @@
+{
+  "id": "019ff961-92e6-7bd1-9bbc-f0c3b3c0a650",
+  "author": "azzy",
+  "conversations": [
+    {
+      "from": "human",
+      "value": "what api endpoint did you fire when firing /status ?"
+    },
+    {
+      "from": "gpt",
+      "value": "I’ll trace the `/status` usage through the API client and report the exact resolved endpoint, including any environment-based base URL logic."
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": "This repo does not fire an API endpoint ending in `/status`.\n\nThe dashboard API calls are:\n\n- `POST http://internal-service.example.com/api/dashboard-auto-collection/accounts`\n- `POST .../dashboard-auto-collection/summary-graph`\n- `POST .../dashboard-auto-collection/data`\n- `POST .../dashboard-auto-collection/download`\n\nThe `/status` occurrences are only HTML accessibility roles (`role=\"status\"`), not network requests."
+    }
+  ],
+  "source": "codex",
+  "tags": [
+    "coding",
+    "assistant",
+    "codex",
+    "gpt-5"
+  ]
+}

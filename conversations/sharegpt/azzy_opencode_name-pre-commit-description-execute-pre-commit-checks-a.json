@@ -1,0 +1,60 @@
+{
+  "id": "ses_0356bad83ffec996XWy9i8Ciqj",
+  "author": "azzy",
+  "conversations": [
+    {
+      "from": "human",
+      "value": "---\nname: pre-commit\ndescription: Execute pre-commit checks: ask for the Jira ticket number, run yarn lint, run yarn build, inspect uncommitted code for potential Sonar issues (\"I'm about to commit, will this create sonar issues?\"), and perform a quality gateway check for new code. Triggered when preparing for a git commit or running pre-commit checks.\n---\n\n# Pre-Commit Check Skill\n\nThis skill guides the agent through a comprehensive pre-commit routine before committing code changes to Git.\n\n## Workflow \u0026 Steps\n\n### Step 1: Prompt for Jira Ticket Number\n- Ask the user for the relevant Jira ticket number (e.g., `QCASH-1234` or `JIRA-5678`).\n- If the ticket number is already provided in the prompt or conversation history, confirm and use it.\n- Store the Jira ticket number to reference in the pre-commit report and commit message format.\n\n### Step 2: Run Code Quality Checks \u0026 Build\nExecute the project verification scripts:\n1. **Lint Check**: Run `yarn lint` to check for ESLint, style, or formatting errors.\n2. **Build Check**: Run `yarn build` to verify Next.js/TypeScript compilation.\n\nIf any command fails, summarize the error log, stop the pre-commit process, and request fix before proceeding.\n\n### Step 3: Sonar Issue Check \u0026 Quality Gateway Scan for New Code\nPerform a scan/check on newly added or modified code (`git status`, `git diff`):\n1. **Check Current Code for Sonar Issues**: Inspect staged and uncommitted code to answer: *\"I'm about to commit, will this create sonar issues?\"*\n2. **Evaluate Quality Gate Conditions for New Code**:\n   - **Bugs \u0026 Vulnerabilities**: Check for potential null dereferences, unhandled exceptions, or security risks. (Threshold: 0 Blocker/Critical)\n   - **Code Smells**: Check for unused variables, console statements, or dead code. (Threshold: 0 High/Critical)\n   - **Duplicated Lines**: Ensure no duplicate logic added. (Threshold: \u003c 3%)\n   - **Security Hotspots**: 0 unreviewed hotspots.\n3. **Generate Pre-Commit \u0026 Sonar Verification Report**: Present a structured summary in Markdown:\n\n```markdown\n### 🛡️ Pre-Commit Verification Report\n\n- **Jira Ticket**: [TICKET-ID]\n- **Yarn Lint**: ✅ Passed / ❌ Failed\n- **Yarn Build**: ✅ Passed / ❌ Failed\n- **Sonar Issues Check**: 🟢 NO NEW ISSUES / 🔴 NEW ISSUES DETECTED\n- **Sonar Quality Gate (New Code)**: 🟢 PASSED / 🔴 FAILED\n\n#### Sonar Quality Gate Breakdown\n| Metric | Threshold | Scan Result | Status |\n| :--- | :--- | :--- | :--- |\n| **New Bugs** | 0 | 0 | 🟢 OK |\n| **Vulnerabilities** | 0 | 0 | 🟢 OK |\n| **Code Smells** | 0 | 0 | 🟢 OK |\n| **Duplications** | \u003c 3% | 0.0% | 🟢 OK |\n| **Security Hotspots** | 0 | 0 | 🟢 OK |\n```\n\n4. If all checks pass, notify the user that the codebase is ready for commit. add this into your skill.md"
+    },
+    {
+      "from": "gpt",
+      "value": "I’ll update the existing `pre-commit` skill definition, preserving its current structure while incorporating the expanded Sonar inspection and report requirements."
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": "The existing skill already contains the base workflow. I’m replacing its mock-only Sonar step with an explicit uncommitted-code issue review, adding the separate issue status to the report, and updating the trigger description."
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": "Updated `~\\.config\\opencode\\skills\\pre-commit\\SKILL.md` with the expanded Sonar issue and quality-gate checks.\n\nRestart OpenCode for the updated skill to take effect."
+    },
+    {
+      "from": "human",
+      "value": "{\n  \"mcpServers\": {\n    \"context7\": {\n      \"serverUrl\": \"https://mcp.context7.com/mcp\",\n      \"headers\": {\n        \"CONTEXT7_API_KEY\": \"[ATLASSIAN_TOKEN_REDACTED]\"\n      }\n    },\n    \"playwright\": {\n      \"command\": \"npx.cmd\",\n      \"args\": [\n        \"@playwright/mcp@latest\"\n      ],\n      \"env\": {\n        \"npm_config_registry\": \"https://registry.npmjs.org/\"\n      }\n    },\n    \"sonarqube\": {\n      \"command\": \"node\",\n      \"args\": [\n        \"C:\\\\Users\\\\90181271\\\\.gemini\\\\antigravity-cli\\\\scratch\\\\node_modules\\\\sonarqube-mcp-server\\\\dist\\\\index.js\"\n      ],\n      \"env\": {\n        \"NODE_TLS_REJECT_UNAUTHORIZED\": \"0\",\n        \"SONARQUBE_ORG\": \"apps.sonarqube.user-vendor\",\n        \"SONARQUBE_TOKEN\": \"[ATLASSIAN_TOKEN_REDACTED]\",\n        \"SONARQUBE_URL\": \"https://internal-service.example.com\"\n      }\n    },\n    \"atlassian-bitbucket-dc\": {\n      \"command\": \"node\",\n      \"args\": [\n        \"C:\\\\Users\\\\90181271\\\\AppData\\\\Local\\\\npm-cache\\\\_npx\\\\8ed5ea13b8a1daeb\\\\node_modules\\\\@atlassian-dc-mcp\\\\bitbucket\\\\build\\\\index.js\"\n      ],\n      \"env\": {\n        \"BITBUCKET_HOST\": \"https://internal-service.example.com\",\n        \"BITBUCKET_API_TOKEN\": \"[ATLASSIAN_TOKEN_REDACTED]\",\n        \"NODE_TLS_REJECT_UNAUTHORIZED\": \"0\"\n      }\n    },\n    \"atlassian-jira-dc\": {\n      \"command\": \"npx\",\n      \"args\": [\n        \"-y\",\n        \"@atlassian-dc-mcp/jira\"\n      ],\n      \"env\": {\n        \"BITBUCKET_HOST\": \"https://internal-service.example.com/\",\n        \"BITBUCKET_API_TOKEN\": \"[ATLASSIAN_TOKEN_REDACTED]\",\n        \"NODE_TLS_REJECT_UNAUTHORIZED\": \"0\"\n      }\n    }\n  }\n}  add these into mcp config as well"
+    },
+    {
+      "from": "gpt",
+      "value": "I’ll translate these server definitions into OpenCode’s `mcp` schema, merge them into the existing global config, and preserve unrelated settings. Local server commands will become command arrays, while Context7 will use the remote server shape."
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": "The global config currently contains only the schema declaration, so there are no existing MCP entries to reconcile. I’m adding all five servers now using OpenCode’s required `type`, `url`, `command`, and `environment` fields."
+    },
+    {
+      "from": "gpt",
+      "value": "The config has been written. I’m validating it through OpenCode itself so schema or startup errors are caught before you restart; this may also reveal server-specific connection failures without changing the configuration."
+    },
+    {
+      "from": "gpt",
+      "value": "Added all five MCP servers to `~\\.config\\opencode\\opencode.jsonc`.\n\n`opencode mcp list` confirms all five connect successfully:\n\n- Context7\n- Playwright\n- SonarQube\n- Atlassian Bitbucket DC\n- Atlassian Jira DC\n\nRestart the current OpenCode session to load them. Credentials are stored as plaintext in the config."
+    }
+  ],
+  "source": "opencode",
+  "tags": [
+    "coding",
+    "assistant",
+    "opencode"
+  ]
+}

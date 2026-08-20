@@ -1,0 +1,44 @@
+{
+  "id": "f7bd4d0d-02d9-4181-b291-c40f1986517d",
+  "author": "azzy",
+  "conversations": [
+    {
+      "from": "human",
+      "value": "run yarn dev"
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": "The `yarn dev` server has been launched in the background. I will monitor its output and notify you if any issues arise."
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": "Because the `dev` script in [package.json](file:///D:/work/qcash-ui/package.json#L9) uses POSIX environment variable syntax (`NEXT_PRIVATE_LOCAL_WEBPACK=true`), running `yarn dev` directly in Windows CMD/PowerShell failed.\n\nTo resolve this on Windows, the development server has been launched in the background using PowerShell environment variable syntax:\n\n```powershell\n$env:NEXT_PRIVATE_LOCAL_WEBPACK=\"true\"; npx next dev\n```\n\nThe dev server is running as a background task. I will monitor it and notify you if any issues occur."
+    }
+  ],
+  "source": "antigravity",
+  "tags": [
+    "coding",
+    "assistant",
+    "antigravity"
+  ]
+}

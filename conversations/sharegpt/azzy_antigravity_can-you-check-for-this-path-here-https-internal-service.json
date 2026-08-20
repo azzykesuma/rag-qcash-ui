@@ -1,0 +1,640 @@
+{
+  "id": "b18bd02a-52f4-4f16-bd9f-def202f78452",
+  "author": "azzy",
+  "conversations": [
+    {
+      "from": "human",
+      "value": "can you check for this path here\nhttps://internal-service.example.com/v2/dashboard-auto-collection\nthis should return the correct breadcrumb\nhome \u003e ecosystem\nbut instead, it renders nothing\nall of the console.logs return empty arrays\n\nactiveModule undefined\nhost-console-events-document-start.js:1 baseRoutes []\nhost-console-events-document-start.js:1 prefix \nhost-console-events-document-start.js:1 currentRoutes []\ncan you check why this happens? this happens only on this prerelease env, on dev, it's correct"
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": "This issue happens because **the route and breadcrumb mappings for `dashboard-auto-collection` exist in `dev`, but were never merged or cherry-picked into the `prerelease` branch**.\n\n---\n\n### Root Cause Analysis\n\n1. **Missing Commit on `prerelease`**:\n   The feature was implemented in commit [`5918f6c3`](file:///D:/work/qcash-ui-header-footer) / **PR #535** (`52122a9c`: *feat: add dashboard auto collection route and breadcrumb mapping*) and merged into `dev`.\n   \n   The following changes exist in `dev`, but are **missing from `prerelease`**:\n   - [`features/other-modules/dashboard-auto-collection.route.ts`](file:///D:/work/qcash-ui-header-footer/features/other-modules/dashboard-auto-collection.route.ts) (new route definition)\n   - [`features/other-modules/index.ts`](file:///D:/work/qcash-ui-header-footer/features/other-modules/index.ts) (exporting `dashboardAutoCollectionRoutes`)\n   - [`features/routeMappings.tsx`](file:///D:/work/qcash-ui-header-footer/features/routeMappings.tsx) (mapping `{ paths: [\"/dashboard-auto-collection\"], breadcrumb: \"Ecosystem\" }`)\n\n2. **Runtime Execution on `prerelease`**:\n   When navigating to `/v2/dashboard-auto-collection` on `prerelease`:\n   - In [`getCurrentRoutes`](file:///D:/work/qcash-ui-header-footer/layouts/default/container/breadcrumb/utils/useRouterPathV2.tsx#L30-L43):\n     - `routeModules.find(...)` cannot find any module handling `/dashboard-auto-collection` $\\rightarrow$ **`activeModule: undefined`**, **`baseRoutes: []`**.\n     - [`renderBreadcrumbs`](file:///D:/work/qcash-ui-header-footer/layouts/default/container/breadcrumb/utils/useRouterPathV2.tsx#L15-L22) checks [`routeMappings`](file:///D:/work/qcash-ui-header-footer/features/routeMappings.tsx), which has no entry for `/dashboard-auto-collection` $\\rightarrow$ **`prefix: \"\"`**.\n     - `getCurrentRoutes` returns **`currentRoutes: []`**.\n   - In [`Breadcrumb.tsx`](file:///D:/work/qcash-ui-header-footer/layouts/default/container/breadcrumb/components/Breadcrumb.tsx#L37-L39):\n     ```tsx\n     if (!currentRoutes.length) {\n       return null;\n     }\n     ```\n     Since `currentRoutes` is empty, the component returns `null` and renders nothing.\n\n---\n\n### Solution\n\nTo resolve this on the prerelease environment, cherry-pick commit `5918f6c3df6b150cd8ae9927c22d5ee56ecdb024` into `prerelease`:\n\n```bash\ngit checkout prerelease\ngit cherry-pick 5918f6c3df6b150cd8ae9927c22d5ee56ecdb024\n```"
+    },
+    {
+      "from": "human",
+      "value": "go ahead cherry pick"
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": "I am finalizing the cherry-pick merge..."
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": "### Cherry-Pick Completed Successfully\n\nCommit [`5918f6c3`](file:///D:/work/qcash-ui-header-footer) has been cherry-picked onto **`prerelease`** as commit **`826a2b8e`**.\n\n---\n\n### Conflict Resolution Summary\n\nDuring cherry-pick, conflicts occurred on two files:\n\n1. **[`features/other-modules/index.ts`](file:///D:/work/qcash-ui-header-footer/features/other-modules/index.ts)**:\n   - **Current (`HEAD` on `prerelease`)**: imported `multipaymentRoutes`.\n   - **Incoming (`5918f6c3`)**: imported `dashboardAutoCollectionRoutes` (and references to other branches).\n   - **Resolution**: Kept existing `multipaymentRoutes` and included `dashboardAutoCollectionRoutes`.\n\n2. **[`features/routeMappings.tsx`](file:///D:/work/qcash-ui-header-footer/features/routeMappings.tsx)**:\n   - **Current (`HEAD` on `prerelease`)**: ended at `/credit-card`.\n   - **Incoming (`5918f6c3`)**: added mappings for `/rma-management`, `/multipayment`, and `/dashboard-auto-collection` (`\"Ecosystem\"`).\n   - **Resolution**: Added the route prefix mappings including `{ paths: [\"/dashboard-auto-collection\"], breadcrumb: \"Ecosystem\" }`.\n\n---\n\n### Changes Applied to `prerelease`\n\n- [`features/other-modules/dashboard-auto-collection.route.ts`](file:///D:/work/qcash-ui-header-footer/features/other-modules/dashboard-auto-collection.route.ts)\n- [`features/other-modules/index.ts`](file:///D:/work/qcash-ui-header-footer/features/other-modules/index.ts)\n- [`features/routeMappings.tsx`](file:///D:/work/qcash-ui-header-footer/features/routeMappings.tsx)"
+    },
+    {
+      "from": "human",
+      "value": "ahh sorry2 , don't use this branch directly, instead, make a new branch from prerelease, cherry pick, then make pr to prerelease"
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": "Pushing branch `feat/dashboard-auto-collection-prerelease` to origin..."
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": "The cherry-pick has been moved to a new branch, and the Pull Request to `prerelease` has been created:\n\n- **New Branch:** `feat/dashboard-auto-collection-prerelease`\n- **Target Branch:** `prerelease`\n- **Pull Request:** [**PR #596: feat: add dashboard auto collection route and breadcrumb mapping**](https://internal-service.example.com/projects/NEWFE/repos/qcash-ui-header-footer/pull-requests/596)\n\nLocal `prerelease` branch has been reset back to `origin/prerelease`.\n\n---\n\n### WhatsApp Notification\n\n👉 [**Send Message on WhatsApp**](https://api.whatsapp.com/send?text=Halo%20%40Cikal%20SL%2C%20izin%20menginfokan%20bahwa%20saya%20sudah%20membuat%20PR%20untuk%20repositori%20%2Aqcash-ui-header-footer%2A%3A%0A%0A%2APR%20Title%3A%2A%20feat%3A%20add%20dashboard%20auto%20collection%20route%20and%20breadcrumb%20mapping%0A%2ATarget%20Branch%3A%2A%20prerelease%0A%2APR%20Link%3A%2A%20https%3A%2F%internal-service.example.com%2Fprojects%2FNEWFE%2Frepos%2Fqcash-ui-header-footer%2Fpull-requests%2F596%0A%0A%2ASummary%3A%2A%0A-%20Menambahkan%20route%20dan%20breadcrumb%20mapping%20dashboard%20auto%20collection%20%28%2Fdashboard-auto-collection%29%20ke%20prerelease.%0A%0AMohon%20bantuannya%20untuk%20review%20ya%20Mba%2FMas.%20Terima%20kasih%21%20%F0%9F%99%8F)\n\n```text\nHalo @Cikal SL, izin menginfokan bahwa saya sudah membuat PR untuk repositori *qcash-ui-header-footer*:\n\n*PR Title:* feat: add dashboard auto collection route and breadcrumb mapping\n*Target Branch:* prerelease\n*PR Link:* https://internal-service.example.com/projects/NEWFE/repos/qcash-ui-header-footer/pull-requests/596\n\n*Summary:*\n- Menambahkan route dan breadcrumb mapping dashboard auto collection (/dashboard-auto-collection) ke prerelease.\n\nMohon bantuannya untuk review ya Mba/Mas. Terima kasih! 🙏\n```"
+    },
+    {
+      "from": "human",
+      "value": "5918f6c3df6b150cd8ae9927c22d5ee56ecdb024 i see you are resolving conflict for the sha \ndon't add any other routes except   { paths: [\"/dashboard-auto-collection\"], breadcrumb: \"Ecosystem\" }, inside the routemapping.tsx"
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": "Amending commit on `feat/dashboard-auto-collection-prerelease`..."
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": "Pushing updated commit to `origin/feat/dashboard-auto-collection-prerelease`..."
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": "The conflict resolution in [`features/routeMappings.tsx`](file:///D:/work/qcash-ui-header-footer/features/routeMappings.tsx) has been updated so that **only** `{ paths: [\"/dashboard-auto-collection\"], breadcrumb: \"Ecosystem\" }` is added.\n\nThe commit has been amended and force-pushed to the branch.\n\n### Pull Request Details\n\n- **Branch:** `feat/dashboard-auto-collection-prerelease`\n- **Target Branch:** `prerelease`\n- **Pull Request:** [**PR #596: feat: add dashboard auto collection route and breadcrumb mapping**](https://internal-service.example.com/projects/NEWFE/repos/qcash-ui-header-footer/pull-requests/596)\n\n---\n\n### Final PR Diff Summary\n\n1. **[`features/other-modules/dashboard-auto-collection.route.ts`](file:///D:/work/qcash-ui-header-footer/features/other-modules/dashboard-auto-collection.route.ts)** *(Added)*\n   ```ts\n   import { createRoute } from \"@/features/route-factory\";\n   import { bc } from \"@/features/route-helpers\";\n\n   const ROOT_PATH = \"/dashboard-auto-collection\";\n   const ROOT_LABEL = \"Port Solution\";\n\n   export const dashboardAutoCollectionRoutes = createRoute({\n     rootPath: ROOT_PATH,\n     subPaths: [\"/dashboard-auto-collection/dashboard\"],\n     routes: [\n       {\n         path: \"/dashboard-auto-collection/dashboard\",\n         breadcrumb: () =\u003e bc(ROOT_PATH, ROOT_LABEL).view(\"Dashboard Auto Collection\"),\n       },\n     ],\n   });\n   ```\n\n2. **[`features/other-modules/index.ts`](file:///D:/work/qcash-ui-header-footer/features/other-modules/index.ts)** *(Modified)*\n   - Added import and export for `dashboardAutoCollectionRoutes`.\n\n3. **[`features/routeMappings.tsx`](file:///D:/work/qcash-ui-header-footer/features/routeMappings.tsx)** *(Modified)*\n   ```diff\n      { paths: [\"/credit-card\"], breadcrumb: \"navigation.breadcrumb.prefix.creditCard\" },\n   +  { paths: [\"/dashboard-auto-collection\"], breadcrumb: \"Ecosystem\" },\n    ];\n   ```"
+    },
+    {
+      "from": "human",
+      "value": "push our change, and make pr again"
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": "Checking git status..."
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": "Fetching latest `origin/prerelease`..."
+    },
+    {
+      "from": "human",
+      "value": "sorry, make the pr to dev first, then to prerelease"
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": "Fetching latest `origin/dev`..."
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": "Stashing local changes..."
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": "Applying changes from stash..."
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": "Pushing branch `feat/auto-collection-registration-dev` to origin..."
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": "Completing cherry-pick for `feat/auto-collection-registration-prerelease`..."
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": "Checking diff against origin/prerelease..."
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": "Pushing branch `feat/auto-collection-registration-prerelease` to origin..."
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": "Checking status..."
+    },
+    {
+      "from": "gpt",
+      "value": "Both Pull Requests have been created:\n\n### 1. Pull Request to `dev`\n- **Branch:** `feat/auto-collection-registration-dev`\n- **Target Branch:** `dev`\n- **Pull Request:** [**PR #599: feat: add auto-collection-registration route**](https://internal-service.example.com/projects/NEWFE/repos/qcash-ui-header-footer/pull-requests/599)\n\n### 2. Pull Request to `prerelease`\n- **Branch:** `feat/auto-collection-registration-prerelease`\n- **Target Branch:** `prerelease`\n- **Pull Request:** [**PR #600: feat: add auto-collection-registration route**](https://internal-service.example.com/projects/NEWFE/repos/qcash-ui-header-footer/pull-requests/600)\n\n---\n\n### Files Changed in PRs\n- [`features/other-modules/auto-collection-registration.route.ts`](file:///D:/work/qcash-ui-header-footer/features/other-modules/auto-collection-registration.route.ts) *(Added)*\n- [`features/other-modules/index.ts`](file:///D:/work/qcash-ui-header-footer/features/other-modules/index.ts) *(Registered `autoCollectionRegistrationRoutes`)*\n\n---\n\n### WhatsApp Notification\n\n👉 [**Send Message on WhatsApp**](https://api.whatsapp.com/send?text=Halo%20%40Cikal%20SL%2C%20izin%20menginfokan%20bahwa%20saya%20sudah%20membuat%20PR%20untuk%20repositori%20%2Aqcash-ui-header-footer%2A%3A%0A%0A%2APR%20dev%3A%2A%20https%3A%2F%internal-service.example.com%2Fprojects%2FNEWFE%2Frepos%2Fqcash-ui-header-footer%2Fpull-requests%2F599%0A%2APR%20prerelease%3A%2A%20https%3A%2F%internal-service.example.com%2Fprojects%2FNEWFE%2Frepos%2Fqcash-ui-header-footer%2Fpull-requests%2F600%0A%0A%2ASummary%3A%2A%0A-%20Menambahkan%20route%20auto-collection-registration%20%28%2Fauto-collection-registration%29%20ke%20dev%20dan%20prerelease.%0A%0AMohon%20bantuannya%20untuk%20review%20ya%20Mba%2FMas.%20Terima%20kasih%21%20%F0%9F%99%8F)\n\n```text\nHalo @Cikal SL, izin menginfokan bahwa saya sudah membuat PR untuk repositori *qcash-ui-header-footer*:\n\n*PR dev:* https://internal-service.example.com/projects/NEWFE/repos/qcash-ui-header-footer/pull-requests/599\n*PR prerelease:* https://internal-service.example.com/projects/NEWFE/repos/qcash-ui-header-footer/pull-requests/600\n\n*Summary:*\n- Menambahkan route auto-collection-registration (/auto-collection-registration) ke dev dan prerelease.\n\nMohon bantuannya untuk review ya Mba/Mas. Terima kasih! 🙏\n```"
+    },
+    {
+      "from": "human",
+      "value": "okay, i have pr update , push the changes both to dev and prerelease branch you just used"
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": "Committing changes to `feat/auto-collection-registration-prerelease`..."
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": "Pushing changes to `feat/auto-collection-registration-prerelease`..."
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": "Switching to branch `feat/auto-collection-registration-dev`..."
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": "Pushing changes to `feat/auto-collection-registration-dev`..."
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": "The updates to [`features/routeMappings.tsx`](file:///D:/work/qcash-ui-header-footer/features/routeMappings.tsx) have been committed and pushed to both branches:\n\n### 1. PR to `dev`\n- **Branch:** `feat/auto-collection-registration-dev`\n- **Target Branch:** `dev`\n- **Pull Request:** [**PR #599: feat: add auto-collection-registration route**](https://internal-service.example.com/projects/NEWFE/repos/qcash-ui-header-footer/pull-requests/599)\n\n### 2. PR to `prerelease`\n- **Branch:** `feat/auto-collection-registration-prerelease`\n- **Target Branch:** `prerelease`\n- **Pull Request:** [**PR #600: feat: add auto-collection-registration route**](https://internal-service.example.com/projects/NEWFE/repos/qcash-ui-header-footer/pull-requests/600)\n\n---\n\n### Updated Changes in Both PRs\n- [`features/other-modules/auto-collection-registration.route.ts`](file:///D:/work/qcash-ui-header-footer/features/other-modules/auto-collection-registration.route.ts) *(Added)*\n- [`features/other-modules/index.ts`](file:///D:/work/qcash-ui-header-footer/features/other-modules/index.ts) *(Registered `autoCollectionRegistrationRoutes`)*\n- [`features/routeMappings.tsx`](file:///D:/work/qcash-ui-header-footer/features/routeMappings.tsx) *(Added `{ paths: [\"/auto-collection-registration\"], breadcrumb: \"Ecosystem\" }`)*\n\n---\n\n### WhatsApp Notification\n\n👉 [**Send Message on WhatsApp**](https://api.whatsapp.com/send?text=Halo%20%40Cikal%20SL%2C%20izin%20menginfokan%20update%20PR%20untuk%20repositori%20%2Aqcash-ui-header-footer%2A%3A%0A%0A%2APR%20dev%3A%2A%20https%3A%2F%internal-service.example.com%2Fprojects%2FNEWFE%2Frepos%2Fqcash-ui-header-footer%2Fpull-requests%2F599%0A%2APR%20prerelease%3A%2A%20https%3A%2F%internal-service.example.com%2Fprojects%2FNEWFE%2Frepos%2Fqcash-ui-header-footer%2Fpull-requests%2F600%0A%0A%2ASummary%3A%2A%0A-%20Menambahkan%20route%20dan%20breadcrumb%20mapping%20auto-collection-registration%20%28%2Fauto-collection-registration%29%20ke%20dev%20dan%20prerelease.%0A%0AMohon%20bantuannya%20untuk%20review%20ya%20Mba%2FMas.%20Terima%20kasih%21%20%F0%9F%99%8F)\n\n```text\nHalo @Cikal SL, izin menginfokan update PR untuk repositori *qcash-ui-header-footer*:\n\n*PR dev:* https://internal-service.example.com/projects/NEWFE/repos/qcash-ui-header-footer/pull-requests/599\n*PR prerelease:* https://internal-service.example.com/projects/NEWFE/repos/qcash-ui-header-footer/pull-requests/600\n\n*Summary:*\n- Menambahkan route dan breadcrumb mapping auto-collection-registration (/auto-collection-registration) ke dev dan prerelease.\n\nMohon bantuannya untuk review ya Mba/Mas. Terima kasih! 🙏\n```"
+    }
+  ],
+  "source": "antigravity",
+  "tags": [
+    "coding",
+    "assistant",
+    "antigravity"
+  ]
+}

@@ -1,0 +1,80 @@
+{
+  "id": "ses_081be81a4ffeQyrxKtTgjiSZ01",
+  "author": "azzy",
+  "conversations": [
+    {
+      "from": "human",
+      "value": "Perform a VERY THOROUGH whole-tree over-engineering audit of D:\\work\\qcash-ui-dashboard-auto-collection\\src only. This is NOT a correctness/security/performance review and do not edit. Hunt only dead code, speculative features, wrappers that only delegate, one-implementation abstractions, repeated logic reducible substantially, hand-rolled stdlib/native behavior, unused exports/types/props/functions. Trace references repo-wide before claiming dead code. Exclude generated src/styles/globals.bundle.css. Return ranked candidate findings with exact paths, what can be cut, replacement, and defensible estimated net lines removed. Use tags delete/stdlib/native/yagni/shrink. Also explicitly list areas checked with no finding so coverage is clear."
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": "# Whole-tree over-engineering audit\n\nAudited all 23 non-excluded files under `src`; `src/styles/globals.bundle.css` was excluded as requested. References were traced through tests, configuration, scripts, generated federation declarations, locales, and documentation. `tsc --noUnusedLocals --noUnusedParameters` reported no compiler-detectable locals. No files were edited.\n\nNet-line estimates are source lines, independent unless noted.\n\n## Ranked candidates\n\n### 1. Replace the hand-built account search/menu state with Select’s built-in behavior\n**Tags:** `shrink` `native`  \n**Estimated net removal:** **65–75 lines**\n\n**Path:**\n- `D:\\work\\qcash-ui-dashboard-auto-collection\\src\\containers\\dashboard\\components\\dashboard-header.tsx:26-36,88-117,199-236,271-301`\n\n**Cut:**\n- `AccountMenuListProps`\n- `AccountMenuList` and its separate `\u003cinput type=\"search\"\u003e`\n- `accountSearch`, `accountMenuOpen`, `accountFilterRef`, `keepAccountMenuOpen`\n- Manual outside-click listener\n- `visibleAccountOptions`, `closeAccountMenu`\n- `menuSearchValue` and `onMenuSearch*` plumbing\n- Multi-select configuration that is reduced back to one selected account with `options.at(-1)`\n\n**Replacement:**\nUse the existing remote Select as a normal searchable single-select:\n\n- `isSearchable`\n- `options={accountOptions}`\n- `value={selectedAccount}`\n- direct single-option `onChange`\n\nThe generated declaration confirms that the remote Select extends react-select’s `StateManagerProps`:\n\n- `D:\\work\\qcash-ui-dashboard-auto-collection\\@mf-types\\qcash-global-component\\_types\\components\\form\\select\\select.d.ts:9-24`\n\nThe custom `AccountOption` renderer and style overrides can remain if their visuals are required.\n\n---\n\n### 2. Delete hand-maintained mirrors of generated remote component types\n**Tags:** `delete` `shrink`  \n**Estimated net removal:** **68–78 lines**\n\n**Path:**\n- `D:\\work\\qcash-ui-dashboard-auto-collection\\src\\components\\ui\\index.tsx:6-86`\n\n**Cut:**\n- `SelectOption`\n- `GlobalSelectProps`\n- `GlobalTableProps`\n- `MessageProps`\n- `LoadingOverlayProps`\n- `UnauthorizedDialogProps`\n\nThese duplicate generated declarations already present at:\n\n- `D:\\work\\qcash-ui-dashboard-auto-collection\\@mf-types\\qcash-global-component\\select.d.ts`\n- `D:\\work\\qcash-ui-dashboard-auto-collection\\@mf-types\\qcash-global-component\\table.d.ts`\n- `D:\\work\\qcash-ui-dashboard-auto-collection\\@mf-types\\qcash-global-component\\message.d.ts`\n- `D:\\work\\qcash-ui-dashboard-auto-collection\\@mf-types\\qcash-global-component\\loading-overlay.d.ts`\n- `D:\\work\\qcash-ui-dashboard-auto-collection\\@mf-types\\qcash-global-component\\unauthorized.d.ts`\n\n**Replacement:**\nType each loader from its generated module, for example with `typeof import(\"qcash-global-component/table\")`, or import the generated prop type. Retain a small intersection only for runtime props missing from stale generated declarations.\n\nKeep the local `SkeletonProps` and provider typing: no corresponding `qui` declarations were found.\n\nThis overlaps candidate 1 by roughly five custom Select-property lines.\n\n---\n\n### 3. Register i18n resources once per actual instance, not repeatedly everywhere\n**Tags:** `delete` `shrink`  \n**Estimated net removal:** **17–21 lines**\n\n**Paths:**\n- `D:\\work\\qcash-ui-dashboard-auto-collection\\src\\utils\\i18n.ts:53-78`\n- `D:\\work\\qcash-ui-dashboard-auto-collection\\src\\components\\providers\\i18n-provider.tsx:1-14`\n\n**Current duplication:**\n- The local instance is initialized with complete `resources`.\n- It is then populated again immediately.\n- It is populated again from the initialization promise.\n- The provider populates it again on mount.\n- Language synchronization repeats the population.\n- `ensureDashboardAutoCollectionResources` always touches the local instance, global singleton, and optional target.\n\n**Replacement:**\n- Let `i18nInstance.init({ resources: ... })` initialize the standalone instance.\n- Make `ensureDashboardAutoCollectionResources(target)` populate only its required target.\n- Keep the dashboard translation hook’s target registration because the Module Federation page can be consumed without local `_app.tsx`.\n- Make `I18nProvider` a plain `I18nextProvider`; its stored language was already selected during browser-side instance initialization.\n\nThe hook itself should remain—it handles the externally supplied host i18n context.\n\n---\n\n### 4. Remove unused response metadata and one-use DTO abstractions\n**Tags:** `delete` `yagni` `shrink`  \n**Estimated net removal:** **14–17 lines**\n\n**Path:**\n- `D:\\work\\qcash-ui-dashboard-auto-collection\\src\\services\\dashboard.ts:12-17,27-30,41-66`\n\n**Cut:**\n- Unread `error`, `code`, and `message` fields from all three response interfaces\n- Unread `totalPage`\n- One-use `DashboardAccountsResponse`; inline `{ data: DashboardAccount[] }`\n- One-use `DashboardGraphItem`; inline its two-field graph item shape\n- Unneeded exports from `DashboardTableItem` and remaining internal-only response types\n\nTypeScript response types do not need to enumerate wire fields no consumer reads. Repo-wide search found no reads of these fields.\n\nAlso remove the unused `export` from:\n\n- `D:\\work\\qcash-ui-dashboard-auto-collection\\src\\utils\\i18n.ts:13` — `SupportedLanguage` is internal only.\n\nThat export-surface reduction removes no physical line by itself.\n\n---\n\n### 5. Use a native select for the fixed twelve-month period\n**Tags:** `native` `shrink`  \n**Estimated net removal:** **10–14 lines**\n\n**Path:**\n- `D:\\work\\qcash-ui-dashboard-auto-collection\\src\\containers\\dashboard\\components\\dashboard-header.tsx:58-61,189-196,207,303-314`\n\n**Cut:**\n- Object-based `periodOptions`\n- `PeriodSingleValue`\n- `selectedPeriod`\n- Remote Select configuration for twelve static choices\n\n**Replacement:**\nA controlled `\u003cselect value={period}\u003e` with twelve `\u003coption\u003e` elements generated from `monthNames`. This retains the fixed month selection without a federated component plus a custom value renderer.\n\n---\n\n### 6. Delete proven-unused dashboard content fields\n**Tags:** `delete` `yagni`  \n**Estimated net removal:** **6 lines**\n\n**Path:**\n- `D:\\work\\qcash-ui-dashboard-auto-collection\\src\\containers\\dashboard\\components\\dashboard-config.ts:8-9,19-20,30-31`\n\n**Cut:**\n- `amountTitle`\n- `countTitle`\n\nBoth occur once per transaction type and have zero references repo-wide. The used fields are `cardTitle`, `totalTitle`, `detailTitle`, `amountHeader`, keys, and tooltip.\n\n---\n\n### 7. Reduce the exposed stylesheet module to its side-effect contract\n**Tags:** `delete` `yagni` `shrink`  \n**Estimated net removal:** **6–8 lines**  \n**Confidence:** Conditional on confirming the external Module Federation contract.\n\n**Path:**\n- `D:\\work\\qcash-ui-dashboard-auto-collection\\src\\styles\\global.exposes.ts:4-25`\n\n**Cut candidates:**\n- `styleId`\n- `cssText`\n- Named `ensureGlobalsStylesheet` export\n- Default export\n- Returned CSS text\n- Reassigning identical CSS when the style ID already exists\n\n**Replacement:**\nKeep a local injection function plus its module-level invocation; consumers load `./globals` for its side effect.\n\nRepo-wide there are no consumers of the named/default exports. The module is externally exposed at:\n\n- `D:\\work\\qcash-ui-dashboard-auto-collection\\next.config.ts:49`\n\nThe project’s own loading convention ignores the returned module:\n\n- `D:\\work\\qcash-ui-dashboard-auto-collection\\src\\pages\\_app.tsx:18-20`\n\nBecause external host repositories cannot be searched here, this is not an unconditional dead-code claim. The generator must also be adjusted to prevent regeneration:\n\n- `D:\\work\\qcash-ui-dashboard-auto-collection\\scripts\\build-globals-expose.mjs:10-34`\n\n---\n\n### 8. Remove the unused Tailwind theme color\n**Tags:** `delete`  \n**Estimated net removal:** **1 line**\n\n**Path:**\n- `D:\\work\\qcash-ui-dashboard-auto-collection\\src\\styles\\globals.css:6`\n\n**Cut:** `--color-danger`\n\nNo `danger` utility or variable reference exists under `src`. `--font-sans` and `--color-neutral` are both used.\n\n---\n\n### 9. Collapse the one-line constant module into its only owning service\n**Tags:** `shrink`  \n**Estimated net removal:** **1 line and one file**\n\n**Paths:**\n- `D:\\work\\qcash-ui-dashboard-auto-collection\\src\\utils\\constant.ts`\n- `D:\\work\\qcash-ui-dashboard-auto-collection\\src\\services\\dashboard.ts:1,19-24`\n\n**Cut:** The dedicated `constant.ts` module.\n\n**"
+    }
+  ],
+  "source": "opencode",
+  "tags": [
+    "coding",
+    "assistant",
+    "opencode"
+  ]
+}

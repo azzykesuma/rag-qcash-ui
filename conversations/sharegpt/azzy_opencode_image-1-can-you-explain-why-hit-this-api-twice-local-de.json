@@ -1,0 +1,48 @@
+{
+  "id": "ses_034701e76ffeIJ8ovm0p6DTA3P",
+  "author": "azzy",
+  "conversations": [
+    {
+      "from": "human",
+      "value": "[Image 1]can you explain why i hit this api twice in local developement?"
+    },
+    {
+      "from": "gpt",
+      "value": "I’ll trace the request caller and the local React/Next development settings to identify whether this is Strict Mode behavior or duplicate application logic."
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": "The trace confirms one logical caller, not two: `DashboardPage` starts the request in a mount effect, and its cleanup aborts it. The canceled first row followed by a successful second row matches React’s development-only effect remount check."
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": "This is caused by React Strict Mode in local development:\n\n- `next.config.ts:8` enables `reactStrictMode: true`.\n- `src/containers/dashboard/index.tsx:52` calls the API inside `useEffect`.\n- React development mode runs `setup → cleanup → setup` to detect unsafe effects.\n- Cleanup at `src/containers/dashboard/index.tsx:85` aborts the first request, explaining `(canceled)`.\n- The second request is the real one and returns `200`.\n\nProduction runs the effect once. Your cleanup is correct, so disabling Strict Mode is unnecessary. Note that cancellation happens client-side after dispatch, so the backend may still briefly receive the first request."
+    }
+  ],
+  "source": "opencode",
+  "tags": [
+    "coding",
+    "assistant",
+    "opencode"
+  ]
+}

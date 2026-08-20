@@ -1,0 +1,72 @@
+{
+  "id": "ses_0165ce7f5ffeD6bIO0kaTqPHJW",
+  "author": "azzy",
+  "conversations": [
+    {
+      "from": "human",
+      "value": "Inspect the downloaded Bamboo 9.6.4 Swagger JSON at ~\\.local\\share\\opencode\\tool-output\\tool_fe9a297d800146Fy548PcUsIMq. Research only; do not edit files. Return the exact GET endpoint paths, query parameters, response media types, and relevant response structure names for: searching plans, listing latest results for a plan or branch, fetching one result expanded with stages/jobs, and downloading result/job logs. Also note Bearer PAT authentication if represented. Be concise but exact."
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": "The spec’s server base is `/rest/`; paths below include that prefix.\n\n### Search plans\n`GET /rest/api/latest/search/plans`\n\nOptional query parameters:\n\n- `max-result`: integer\n- `searchTerm`: string\n- `start-index`: integer\n- `permission`: `READ | WRITE | BUILD | CLONE | VIEW_CONFIGURATION | ADMINISTRATION` — default described as `READ`\n- `type`: `CHAIN | JOB | CHAIN_BRANCH`\n- `fuzzy`: boolean — default described as `false`\n\n`200 Content-Type: application/json`\n\nStructure: `SearchResultsList` → `searchResults[]: SearchResult` → `entity: SearchResultEntity`.\n\n### Latest results\n\n**Plan or job plan**\n\n`GET /rest/api/latest/result/{projectKey}-{buildKey}`\n\n**Named branch**\n\n`GET /rest/api/latest/result/{projectKey}-{buildKey}/branch/{branchName}`\n\nShared optional query parameters:\n\n- `includeAllStates`: boolean\n- `continuable`: boolean\n- `issueKey`: comma-separated string\n- `max-results`: integer\n- `start-index`: integer, zero-based\n- `label`: comma-separated string\n- `buildstate`: `Unknown | Successful | Failed`\n- `favourite`: string\n- `lifeCycleState`: comma-separated `Pending | Queued | InProgress | Finished | NotBuilt`\n- `expand`: string; documented expansions include `artifacts`, `comments`, `labels`, `jiraIssues`, `stages`, prefixed with `results.result`\n\n`200/403/404 Content-Type: application/json`\n\nStructure: `RestResults` → `results: RestResultList` → `results[]: Result`.\n\n### One result, expanded through stages/jobs\n`GET /rest/api/latest/result/{projectKey}-{buildKey}-{buildNumber}`\n\nOptional query parameters:\n\n- `expand`: string\n- `buildPositions`: string\n\nFor stages and job results:\n\n```text\nexpand=stages.stage.results.result\n```\n\nOther documented expansions: `changes`, `metadata`, `artifacts`, `comments`, `labels`, `jiraIssues`, `stages`, `logEntries`. `logEntries` is job-result-only. `buildNumber` may be `latest`.\n\n`200/403/404 Content-Type: application/json`\n\nStructure: `Result` → `stages: RestStageResultList` → `stages[]: RestStageResult` → `results: RestResultList` → `results[]: Result` (jobs).\n\nAlias also represented:\n\n`GET /rest/api/latest/result/{projectKey}-{buildKey}/{buildNumber}` with optional `expand`; response is `Result`.\n\n### Result/job logs\nNo dedicated result/job log-download GET path is represented in this Swagger. The represented API mechanism is the single-result endpoint above with:\n\n```text\nexpand=logEntries\n```\n\nfor a job result, returning `application/json`. Although documented by the operation, `Result` does not declare a `logEntries` property/schema. Consequently, no `/download/...` path or downloadable-log media type can be established from this JSON.\n\n### Authentication\nBearer/PAT authentication is **not represented**. The only declared security scheme is HTTP Basic (`basic`), and the document has no global or operation-level security requirement.\n\nSource: `~\\.local\\share\\opencode\\tool-output\\tool_fe9a297d800146Fy548PcUsIMq`"
+    }
+  ],
+  "source": "opencode",
+  "tags": [
+    "coding",
+    "assistant",
+    "opencode"
+  ]
+}

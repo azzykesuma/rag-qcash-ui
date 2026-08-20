@@ -1,0 +1,44 @@
+{
+  "id": "ses_07212e958ffePUo0mg5uCLjpiQ",
+  "author": "azzy",
+  "conversations": [
+    {
+      "from": "human",
+      "value": "./pages/_app.tsx:50:55\n23-Jul-2026 14:21:28\tType error: Type '{ children: Element; apiUrl: string; router: any; }' is not assignable to type 'IntrinsicAttributes \u0026 AuthProviderProps'.\n23-Jul-2026 14:21:28\t  Property 'router' does not exist on type 'IntrinsicAttributes \u0026 AuthProviderProps'.\n23-Jul-2026 14:21:28 when i tried building this in my pipeline, i got this error, can you explain what is happening here?"
+    },
+    {
+      "from": "gpt",
+      "value": "I’ll inspect `_app.tsx`, the `AuthProvider` definition, and dependency versions to trace why the pipeline’s TypeScript check rejects `router`."
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": "The installed contract is the key: this project pins `@ordentco/addons-auth-provider` to `0.9.140-mfe`, while `_app.tsx` still passes a `router` prop. I’m checking the recent version/cast changes to determine whether this is an API-version mismatch or only an invalid workaround."
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": "TypeScript is validating the JSX props passed to `AuthProvider` at `pages/_app.tsx:50`:\n\n```tsx\n\u003cAuthProvider apiUrl={config.baseUrl as string} router={router}\u003e\n```\n\nAt the time of the failed pipeline, `yarn.lock` resolved `@ordentco/addons-auth-provider` to `0.9.137`. That version defines `AuthProviderProps` roughly as:\n\n```ts\ninterface AuthProviderProps {\n  children?: React.ReactNode;\n  cookieName?: string;\n  apiUrl: string;\n}\n```\n\nBecause it has no `router` property, TypeScript rejects the extra JSX prop. `IntrinsicAttributes` is React’s internal JSX typing and is not the underlying problem.\n\nThe cast introduced here did not fix the version mismatch:\n\n```tsx\nrouter={router as AuthProviderProps[\"router\"]}\n```\n\nA cast can change the type of a value, but it cannot add a missing property to `AuthProviderProps`.\n\nThe repository history shows the cause and subsequent fix:\n\n- Pipeline failure: 14:21\n- Package was subsequently pinned to `0.9.140-mfe`: 14:34\n- That exact package version does define `router: AuthRouter` in `AuthProviderProps`\n- The current `package.json` and `yarn.lock` both resolve `0.9.140-mfe`\n\nThis was therefore a dependency/API contract mismatch, likely exposed because the pipeline performed a clean installation while a local environment had different or cached package contents. With the current exact version and lockfile committed, a clean pipeline install should recognize the `router` prop."
+    }
+  ],
+  "source": "opencode",
+  "tags": [
+    "coding",
+    "assistant",
+    "opencode"
+  ]
+}

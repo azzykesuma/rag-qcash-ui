@@ -1,0 +1,544 @@
+{
+  "id": "42bf200e-00f3-4830-b8b2-cceaafdca9dd",
+  "author": "azzy",
+  "conversations": [
+    {
+      "from": "human",
+      "value": "run the vault.exe"
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": "[`vault.exe`](file:///D:/code/llm-context-vault/vault.exe) has been executed successfully.\n\n### Output:\n\n```text\nllm-context-vault: Open-source repository for sanitized local LLM conversations\n\nUSAGE:\n  vault \u003ccommand\u003e [arguments]\n\nCOMMANDS:\n  import \u003cpath\u003e          Extract, sanitize, and add a conversation file/folder to vault\n  scan-agy [brain_dir]   Auto-scan and import Antigravity (AGY) sessions from local brain\n  search \u003cquery\u003e         Search indexed conversations for solutions or keywords\n  context \u003cquery\u003e        Generate context snippet to inject into a local LLM prompt\n  audit                  Audit all stored conversations for secrets / leaked paths\n  stats                  Display statistics about stored conversations\n\nOPTIONS for 'import':\n  --tool \u003cname\u003e          Explicitly specify tool (agy, aider, generic)\n  --redact-words \u003cw1,w2\u003e Comma-separated list of custom words/company names to redact\n```\n\nLet me know if you would like to run any specific command (such as `scan-agy`, `stats`, `audit`, `search`, etc.)."
+    },
+    {
+      "from": "human",
+      "value": "okay we already have the repo setup, can you recommend me a feature that will make the uploading process easier? or any other useful feature?"
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": "Here are several recommended features designed to make uploading, curating, and sharing conversations effortless, secure, and valuable for the community:\n\n---\n\n### 1. 🚀 One-Command Upload (`vault publish` / `vault push`)\n**The Problem:** After running `vault scan`, developers currently have to manually run [`vault audit`](file:///D:/code/llm-context-vault/cmd/vault/main.go#L338), check git status, resolve any `dataset.jsonl` merge conflicts, write commit messages, and push.\n**The Feature:**\n* Adds a `vault publish` or `vault push` command that orchestrates the entire release in one step:\n  1. Runs `AuditAll()` via [`sanitizer`](file:///D:/code/llm-context-vault/pkg/sanitizer/sanitizer.go) to guarantee zero leaked secrets.\n  2. Merges and de-duplicates [`conversations/dataset.jsonl`](file:///D:/code/llm-context-vault/conversations/dataset.jsonl).\n  3. Auto-generates a clean Git commit message (e.g. `chore(vault): add 14 sanitized sessions from AGY \u0026 Codex`).\n  4. Pushes directly to the configured remote branch or creates a contribution PR.\n\n```bash\nvault publish --branch main --message \"Add recent debugging sessions\"\n```\n\n---\n\n### 2. 🛡️ Git Pre-Commit / Pre-Push Hook Installer (`vault hook install`)\n**The Problem:** Contributors might accidentally commit un-redacted test files, raw database dumps, or API keys directly to Git.\n**The Feature:**\n* Adds `vault hook install` to configure `.git/hooks/pre-commit` and `.git/hooks/pre-push`.\n* Prevents any `git commit` or `git push` if secrets or un-sanitized raw chat logs are detected.\n\n```bash\nvault hook install\n```\n\n---\n\n### 3. 🖥️ Interactive Web UI / TUI Preview (`vault ui` or `vault serve`)\n**The Problem:** Users want to visually review what conversations were captured and see redaction highlights (e.g., verify that sensitive internal domain names or keys were cleanly redacted) before publishing.\n**The Feature:**\n* Launches a lightweight local web interface (or terminal dashboard) displaying:\n  * List of harvested sessions with search and tags.\n  * Side-by-side diff of **Raw vs. Redacted** messages.\n  * Checkbox toggles to approve, exclude, or redact custom words with one click.\n  * Direct \"Publish to Git / Export\" button.\n\n```bash\nvault ui --port 8080\n```\n\n---\n\n### 4. 🤖 Quality \u0026 Signal Scoring (Auto-Filtering Boilerplate)\n**The Problem:** Generic AI conversations often include trivial commands (`\"ls\"`, `\"kill 3000\"`, `\"re-run test\"`). While basic greetings are skipped, low-signal or failed loops may still slip in.\n**The Feature:**\n* Adds heuristic / embedding-based **Signal Scoring** in [`pkg/vault/vault.go`](file:///D:/code/llm-context-vault/pkg/vault/vault.go):\n  * Identifies high-value debugging patterns (e.g. root cause analysis, architecture decisions, bug-fixes with code diffs).\n  * Auto-tags conversations with categories (e.g., `#docker`, `#auth`, `#module-federation`, `#go`, `#performance`).\n  * Flags or excludes repetitive, non-resolving sessions automatically.\n\n---\n\n### 5. ☁️ One-Click Hugging Face / Open-Source Dataset Push (`vault export --target hf`)\n**The Problem:** Fine-tuning and RAG communities often consume data from Hugging Face Datasets rather than raw Git markdown.\n**The Feature:**\n* Allows users to push the sanitized [`dataset.jsonl`](file:///D:/code/llm-context-vault/conversations/dataset.jsonl) directly to a Hugging Face Dataset repository using the HF Hub API:\n\n```bash\nvault export --target hf:your-org/developer-conversations-corpus\n```\n\n---\n\n### 6. 🧠 Local Vector Index \u0026 Semantic Search (`vault index` / `vault query`)\n**The Problem:** Current [`Search()`](file:///D:/code/llm-context-vault/cmd/vault/main.go#L300) relies on exact substring matching. If a user asks *\"authentication middleware bug\"* but the chat discusses *\"JWT bearer token validation failure\"*, substring search might miss it.\n**The Feature:**\n* Generates a local lightweight vector index (e.g. using a local embedding model via Ollama or embedded SQLite-VSS / LanceDB).\n* Enables semantic search and instant RAG context generation for local LLM tools.\n\n---\n\n### Summary of Suggested Next Steps\n\n| Feature | Primary Benefit | Implementation Effort |\n| :--- | :--- | :--- |\n| **`vault publish`** | Complete one-step scan $\\rightarrow$ audit $\\rightarrow$ commit $\\rightarrow$ push | 🟢 Low / Fast |\n| **`vault hook install`** | Foolproof safety guard against secret leaks | 🟢 Low / Fast |\n| **`vault ui` / Dashboard** | Visual inspection and interactive redaction control | 🟡 Medium |\n| **Semantic Vector Indexing** | Deep semantic search across all indexed sessions | 🟡 Medium |\n| **Hugging Face Hub Sync** | Instant community dataset sharing | 🟡 Medium |\n\nWould you like to proceed with implementing any of these features, or is there a specific upload workflow you have in mind?"
+    },
+    {
+      "from": "human",
+      "value": "okay i want the command vault publish, hook install, ui and semantic vector indexing. no need to integrate to hugging face"
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": "The build process for [`vault.exe`](file:///D:/code/llm-context-vault/vault.exe) is currently executing. Once the compilation completes, I will test and verify the new commands."
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": "The build is compiling [`vault.exe`](file:///D:/code/llm-context-vault/vault.exe). I will verify execution as soon as compilation finishes."
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": "The build is in progress. Once complete, I will verify the new commands."
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": "Indexing is in progress. I will inspect the output once complete."
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": "The semantic search is running. I will inspect the output."
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": "The publish dry-run is verifying all privacy and git staging checks. I will report the result once complete."
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": "Recompilation is running. Once finished, I will test `vault publish --dry-run` and `vault audit`."
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": "The privacy audit is running across all stored conversations. I will inspect the output once complete."
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": "The publish dry-run is verifying all privacy and git staging checks. I will inspect the output once complete."
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": "All 4 requested features have been implemented, tested, and compiled into the standalone [`vault.exe`](file:///D:/code/llm-context-vault/vault.exe) binary:\n\n---\n\n### 1. 🚀 One-Command Git Publishing (`vault publish`)\n* **Package**: [`pkg/gitops/gitops.go`](file:///D:/code/llm-context-vault/pkg/gitops/gitops.go)\n* **What it does**:\n  1. Runs `AuditAll()` across all markdown \u0026 dataset files to verify 0 leaked secrets or tokens.\n  2. Automatically stages `conversations/` and modified datasets.\n  3. Auto-generates a clean descriptive commit message (e.g. `chore(vault): sync 14 sanitized conversation session(s)`).\n  4. Pushes directly to your Git remote/branch with upstream tracking.\n* **Usage**:\n  ```bash\n  vault publish\n  vault publish --dry-run\n  vault publish --branch main --message \"Add recent auth debugging sessions\"\n  ```\n\n---\n\n### 2. 🛡️ Git Pre-Commit \u0026 Pre-Push Safety Hooks (`vault hook install`)\n* **Package**: [`pkg/gitops/hook.go`](file:///D:/code/llm-context-vault/pkg/gitops/hook.go)\n* **What it does**:\n  * Installs `.git/hooks/pre-commit` and `.git/hooks/pre-push` scripts.\n  * Automatically intercepts `git commit` and `git push` commands and aborts them if any un-sanitized API keys, private tokens, or file paths are detected in the repository.\n* **Usage**:\n  ```bash\n  vault hook install     # Install safety guards\n  vault hook uninstall   # Remove safety guards\n  ```\n\n---\n\n### 3. 🖥️ Interactive Web Dashboard \u0026 RAG Playground (`vault ui`)\n* **Package**: [`pkg/webui/webui.go`](file:///D:/code/llm-context-vault/pkg/webui/webui.go) \u0026 [`pkg/webui/template.go`](file:///D:/code/llm-context-vault/pkg/webui/template.go)\n* **What it does**:\n  * Launches a local browser dashboard (dark mode, zero external runtime dependencies).\n  * **Overview \u0026 Metrics**: Visual breakdown of sessions harvested per AI assistant.\n  * **Conversations Explorer**: Filter by assistant (AGY, Codex, OpenCode, Aider), view full sanitized conversations with syntax highlighting.\n  * **Privacy Inspector**: Live audit status for every session.\n  * **RAG Playground**: Search by intent, test semantic vectors vs keyword weighting, and one-click copy formatted LLM prompt context blocks.\n  * **Web Actions**: Trigger full scans, rebuild vector embeddings, and publish to Git directly from the browser.\n* **Usage**:\n  ```bash\n  vault ui\n  vault ui --port 3000 --no-browser\n  ```\n\n---\n\n### 4. ⚡ Semantic Vector Indexing \u0026 Hybrid Search (`vault index` / `vault search --semantic`)\n* **Package**: [`pkg/indexer/indexer.go`](file:///D:/code/llm-context-vault/pkg/indexer/indexer.go) \u0026 [`pkg/indexer/vectorizer.go`](file:///D:/code/llm-context-vault/pkg/indexer/vectorizer.go)\n* **What it does**:\n  * Chunks conversation turns and builds a dense 384-dimensional vector embeddings database in SQLite (`conversations/index.db`) using pure Go.\n  * **Built-in Offline Vectorizer**: Generates dense embeddings using subword n-gram hashing and TF-IDF with L2 normalization (works 100% offline, zero API keys or external services required). Also supports Ollama (`--provider ollama`) and OpenAI (`--provider openai`).\n  * **Hybrid \u0026 Semantic Retrieval**: Searches developer history by intent, concepts, and code semantics.\n* **Usage**:\n  ```bash\n  # Build/rebuild SQLite vector index (14,000+ chunks indexed in seconds)\n  vault index\n\n  # Semantic vector cosine search\n  vault search \"JWT token verification failure\" --semantic\n\n  # Generate LLM context block with top matching reference sessions\n  vault context \"how to configure Module Federation singleton\" --semantic\n  ```\n\n---\n\n### Verification Summary\n\n```text\nCORE COMMANDS:\n  vault scan                   🌟 Unified Scan: Auto-detects \u0026 extracts all local LLMs\n  vault publish                🚀 One-Command Git Publish: audit -\u003e stage -\u003e commit -\u003e push\n  vault hook install           🛡️ Install Git pre-commit \u0026 pre-push safety hooks\n  vault ui                     🖥️ Launch local interactive Web Dashboard \u0026 RAG playground\n  vault index                  ⚡ Build/Rebuild SQLite semantic vector embeddings index\n  vault search \u003cquery\u003e         🔍 Hybrid/Semantic search across all indexed sessions\n  vault context \u003cquery\u003e        🧠 Generate LLM prompt context block from matching history\n  vault audit                  🛡️ Audit all stored conversations for secrets / leaked paths\n```"
+    },
+    {
+      "from": "human",
+      "value": "is it possible to embed the name of the person that commit to be embedded to the filename? \nexample : azzy-...."
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": "Yes, absolutely! We can easily embed the contributor's name into the filename and metadata.\n\n### How it works\n\n1. **Automatic Author Discovery Priority**:\n   - **CLI flag**: `vault scan --author azzy` or `vault import ... --author azzy`\n   - **Environment Variable**: `VAULT_AUTHOR=azzy`\n   - **Git Config (Auto)**: Reads `git config user.name` (e.g. `Azzy Dvyastia Kesuma` $\\rightarrow$ `azzy`)\n   - **Fallback**: OS username\n\n---\n\n### Filename Format Options\n\n| Format Style | Example Filename |\n| :--- | :--- |\n| **Option A (Recommended: Author + Tool + Topic)** | `azzy_antigravity_centralized-auth-guard-and-module-federation.md` |\n| **Option B (Author Prefix with Hyphen)** | `azzy-antigravity_centralized-auth-guard-and-module-federation.md` |\n| **Option C (Author + Topic Only)** | `azzy_centralized-auth-guard-and-module-federation.md` |\n\n---\n\n### Additional Author Metadata Added\n\nIn addition to the filename, we can also embed the contributor name into the markdown frontmatter:\n\n```markdown\n# Centralized Auth Guard and Module Federation Architecture\n\n- **Author / Contributor**: `azzy` (Azzy Dvyastia Kesuma)\n- **Source Tool**: `antigravity`\n- **Date**: `2026-08-20 08:30:00`\n- **ID**: `azzy_antigravity_centralized-auth-guard...`\n```\n\n---\n\nWould you like me to implement this with **Option A** (`azzy_antigravity_...`), **Option B** (`azzy-antigravity_...`), or your preferred naming convention?"
+    },
+    {
+      "from": "human",
+      "value": "okay option a, and no need to rescan the whole repo, just for future file"
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": "The build is in progress. I will verify the output once complete."
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": "The verification is running. I will inspect the output."
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": "Option A has been implemented for all future files without touching existing historical sessions:\n\n---\n\n### How Future Files Will Be Generated\n\n1. **Filename Format (Option A)**:\n   ```text\n   \u003cauthor\u003e_\u003ctool\u003e_\u003ctopic-slug\u003e.md\n   ```\n   **Examples:**\n   * `azzy_antigravity_implement-jwt-auth-middleware.md`\n   * `azzy_opencode_fix-module-federation-shared-scope.md`\n   * `azzy_codex_optimize-sql-vector-index.md`\n\n2. **Automatic Contributor Discovery**:\n   * **Auto**: Reads your `git config user.name` (automatically converts `Azzy Dvyastia Kesuma` $\\rightarrow$ `azzy`).\n   * **Explicit Override**: Pass `--author \u003cname\u003e` or set `VAULT_AUTHOR=yourname`.\n     ```bash\n     vault scan --author azzy\n     vault import ./chat.json --author azzy\n     ```\n\n3. **Frontmatter \u0026 Dataset Metadata**:\n   Future markdown files will also include the author header:\n   ```markdown\n   # Implement JWT Auth Middleware\n\n   - **Author**: `azzy`\n   - **ID**: `azzy_antigravity_implement-jwt-auth-middleware`\n   - **Source Tool**: `antigravity`\n   - **Date**: `2026-08-20 08:35:00`\n   ```\n\nThe updated binary has been compiled to [`vault.exe`](file:///D:/code/llm-context-vault/vault.exe). Existing files remain unchanged."
+    },
+    {
+      "from": "human",
+      "value": "i think there are many files that is being replaced and reuploaded to git, is this a feature since the ongoing conversation is running?"
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": "**Yes, exactly!** That is by design for active/ongoing conversations. Here is why that happens:\n\n---\n\n### 1. 🔄 Live Conversation Syncing\n* When you are actively chatting with an AI assistant (like Antigravity or Codex), the local log (`transcript.jsonl`) on disk grows with each new turn/message.\n* When `vault scan` runs, it detects the newly added messages for that session and **updates the markdown and ShareGPT files in place** with the complete, latest conversation.\n\n---\n\n### 2. 🛡️ In-Place Updates (Zero Duplicate Files)\n* Because filename slugs are deterministically generated from the session's first user prompt (e.g. `antigravity_run-vault-exe.md`), subsequent scans update that single file instead of creating duplicate files like `run-vault-exe_1.md` or `run-vault-exe_2.md`.\n* Sessions that have concluded and received no new messages remain untouched and show **0 changes** in Git.\n\n---\n\n### 3. 🎯 Summary\n* **Finished / Old Sessions**: Remain frozen and unchanged.\n* **Ongoing Active Sessions**: Progressively append new turns as the conversation develops, ensuring your knowledge vault captures the full solution when published."
+    }
+  ],
+  "source": "antigravity",
+  "tags": [
+    "coding",
+    "assistant",
+    "antigravity"
+  ]
+}
