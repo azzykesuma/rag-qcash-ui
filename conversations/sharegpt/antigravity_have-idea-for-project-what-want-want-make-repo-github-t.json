@@ -984,6 +984,1470 @@
     {
       "from": "gpt",
       "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": "### 1. GitHub MCP Configured\n\nThe GitHub Copilot MCP server has been added to your global configurations:\n\n- **Antigravity ([`~/.gemini/config/mcp_config.json`](file:///C:~/.gemini/config/mcp_config.json))**:\n  ```json\n  \"github\": {\n    \"serverUrl\": \"https://api.githubcopilot.com/mcp/\"\n  }\n  ```\n- **OpenCode ([`~/.config/opencode/opencode.jsonc`](file:///C:~/.config/opencode/opencode.jsonc))**:\n  ```json\n  \"github\": {\n    \"type\": \"remote\",\n    \"url\": \"https://api.githubcopilot.com/mcp/\"\n  }\n  ```\n\n---\n\n### 2. Repository Initialized \u0026 Pushed to GitHub\n\nYour repository has been sanitized, committed, and pushed to:\n👉 **[https://github.com/azzykesuma/rag-qcash-ui](https://github.com/azzykesuma/rag-qcash-ui)**\n\n- **Branch**: `main`\n- **Release Tag**: `v1.0.0`\n- **Automated GitHub Action Workflow**: Triggered automatically on tag `v1.0.0`. It is currently cross-compiling multi-platform binaries for Windows, Linux, and macOS.\n\nYou can check the build progress live under the **Actions** tab on your GitHub repository:\n👉 [https://github.com/azzykesuma/rag-qcash-ui/actions](https://github.com/azzykesuma/rag-qcash-ui/actions)"
+    },
+    {
+      "from": "gpt",
+      "value": "The release tag `v1.0.0` has been pushed to your repository, and the automated GitHub Actions workflow is running.\n\n### Summary of What Was Done:\n1. **GitHub MCP Server Added**: Configured in both Antigravity ([`mcp_config.json`](file:///C:~/.gemini/config/mcp_config.json)) and OpenCode ([`opencode.jsonc`](file:///C:~/.config/opencode/opencode.jsonc)).\n2. **Unified Multi-Tool Scanner Built**: Automatically detects and extracts conversations from **Antigravity (AGY)**, **OpenCode**, and **Codex**.\n3. **Filtering \u0026 Human-Readable Slugs**: Automatically skips trivial greetings and names markdown files based on the user's first query.\n4. **Secret \u0026 PII Sanitization Engine**: Redacted all API keys, Atlassian/Bitbucket tokens, database credentials, internal corporate domains, and local machine user paths.\n5. **Git \u0026 CI/CD Workflow**: Pushed to [https://github.com/azzykesuma/rag-qcash-ui](https://github.com/azzykesuma/rag-qcash-ui) with automated multi-platform binary compilation and release on tag `v1.0.0`."
+    },
+    {
+      "from": "human",
+      "value": "okay, i want to change the mcp from oauth to providing mcp, please reconfigure the mcp server , and i will provide the pat"
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": "The GitHub MCP server configuration has been updated to use the **PAT-based official GitHub MCP server** (`@modelcontextprotocol/server-github`).\n\n### Configurations Updated:\n\n1. **Antigravity ([`~/.gemini/config/mcp_config.json`](file:///C:~/.gemini/config/mcp_config.json))**:\n   ```json\n   \"github\": {\n     \"command\": \"npx.cmd\",\n     \"args\": [\n       \"-y\",\n       \"@modelcontextprotocol/server-github\"\n     ],\n     \"env\": {\n       \"GITHUB_PERSONAL_ACCESS_TOKEN\": \"YOUR_GITHUB_PAT_HERE\"\n     }\n   }\n   ```\n\n2. **OpenCode ([`~/.config/opencode/opencode.jsonc`](file:///C:~/.config/opencode/opencode.jsonc))**:\n   ```json\n   \"github\": {\n     \"type\": \"local\",\n     \"command\": [\n       \"npx.cmd\",\n       \"-y\",\n       \"@modelcontextprotocol/server-github\"\n     ],\n     \"environment\": {\n       \"GITHUB_PERSONAL_ACCESS_TOKEN\": \"YOUR_GITHUB_PAT_HERE\"\n     }\n   }\n   ```\n\n---\n\nPlease provide your GitHub Personal Access Token (PAT) so I can insert it for you, or you can paste it directly into the files above."
+    },
+    {
+      "from": "human",
+      "value": "how do i provide the pat safely, can you write a script to add it?"
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": "To provide your GitHub Personal Access Token (PAT) safely **without exposing it in chat logs or terminal history**, I created a secure configuration script:\n\n[`~\\.config\\opencode\\scripts\\set-github-token.ps1`](file:///C:~/.config/opencode/scripts/set-github-token.ps1)\n\n---\n\n### How to Run It:\n\nOpen a PowerShell terminal on your machine and run:\n\n```powershell\npwsh -NoProfile -File \"$HOME\\.config\\opencode\\scripts\\set-github-token.ps1\"\n```\n\n### What this script does securely:\n1. **Masked Prompt**: Prompts for your PAT as a password (`***`), ensuring characters are never printed on screen.\n2. **API Verification**: Tests connection with `https://api.github.com/user` to verify your identity.\n3. **Environment \u0026 MCP Config Update**:\n   - Saves `GITHUB_PERSONAL_ACCESS_TOKEN` \u0026 `GITHUB_TOKEN` to your Windows User Environment.\n   - Updates [`~/.gemini/config/mcp_config.json`](file:///C:~/.gemini/config/mcp_config.json) (Antigravity).\n   - Updates [`~/.config/opencode/opencode.jsonc`](file:///C:~/.config/opencode/opencode.jsonc) (OpenCode).\n4. **Memory Scrubbing**: Immediately zeroes out and frees the token from memory."
+    },
+    {
+      "from": "human",
+      "value": "https://github.com/azzykesuma/rag-qcash-ui/actions/runs/32206253277 check this workflow, can you fix the error?"
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": "### Workflow Fixed \u0026 Release Published Successfully\n\nThe failure was caused by two issues:\n1. **Source Tracking in `.gitignore`**: The `.gitignore` file contained a generic `vault` entry which unintentionally ignored both `cmd/vault/` and `pkg/vault/`.\n2. **Go Toolchain \u0026 Cross-Compilation**: Configured `setup-go` with `go-version-file: 'go.mod'` and inline `CGO_ENABLED=0` static builds to compile pure-Go binaries for all platforms on a single runner.\n\n---\n\n### GitHub Release v1.0.0 is Live\n\nThe GitHub Actions workflow has finished with **100% success**:\n👉 **[View Workflow Run #32211250909](https://github.com/azzykesuma/rag-qcash-ui/actions/runs/32211250909)**\n\n### Downloadable Binaries on GitHub:\n👉 **[Release Page v1.0.0](https://github.com/azzykesuma/rag-qcash-ui/releases/tag/v1.0.0)**\n\n| Platform | Download Link |\n| :--- | :--- |\n| **Windows (x86_64)** | [`vault-windows-amd64.exe`](https://github.com/azzykesuma/rag-qcash-ui/releases/download/v1.0.0/vault-windows-amd64.exe) |\n| **Linux (x86_64)** | [`vault-linux-amd64`](https://github.com/azzykesuma/rag-qcash-ui/releases/download/v1.0.0/vault-linux-amd64) |\n| **macOS (Apple Silicon M1-M4)** | [`vault-darwin-arm64`](https://github.com/azzykesuma/rag-qcash-ui/releases/download/v1.0.0/vault-darwin-arm64) |\n| **macOS (Intel)** | [`vault-darwin-amd64`](https://github.com/azzykesuma/rag-qcash-ui/releases/download/v1.0.0/vault-darwin-amd64) |"
+    },
+    {
+      "from": "human",
+      "value": "okay, i downloaded the exe, how do we run it?"
+    },
+    {
+      "from": "gpt",
+      "value": "Here is how to run the downloaded `vault-windows-amd64.exe` on your machine:\n\n---\n\n### Step 1: Open PowerShell and Navigate to Your Download Folder\n\nOpen **PowerShell** (or Windows Terminal) and run:\n\n```powershell\n# Go to your Downloads folder\ncd ~/Downloads\n\n# (Optional) Rename it to just \"vault.exe\" for convenience\nRename-Item .\\vault-windows-amd64.exe vault.exe\n```\n\n---\n\n### Step 2: Test Running It\n\nRun the executable to see all available commands:\n\n```powershell\n.\\vault.exe\n```\n\n**Output:**\n```text\nllm-context-vault: Open-source repository for sanitized local LLM conversations\n\nUSAGE:\n  vault \u003ccommand\u003e [options]\n\nCOMMANDS:\n  scan                   🌟 Unified Scan: Auto-detects \u0026 extracts all local LLMs (AGY, OpenCode, Codex, Aider)\n  scan-agy [dir]         Scan only Antigravity sessions\n  scan-codex [dir]       Scan only OpenAI Codex sessions\n  scan-opencode [db]     Scan only OpenCode SQLite database\n  import \u003cpath\u003e          Extract, sanitize, and add a single file/folder\n  search \u003cquery\u003e         Search indexed conversations for solutions or code\n  context \u003cquery\u003e        Generate context snippet to inject into local LLM prompt\n  audit                  Audit all stored conversations for secrets / leaked paths\n  stats                  Display statistics about stored conversations\n```\n\n---\n\n### Step 3: Common Usages\n\n#### 1. 🔍 Auto-Scan \u0026 Harvest All Your Local AI Conversations\nPlace `vault.exe` inside your repository folder (e.g. `D:\\code\\llm-context-vault`) and run:\n```powershell\n.\\vault.exe scan\n```\nIt will automatically discover your Antigravity, OpenCode, and Codex sessions, filter greetings, redact all sensitive data, and organize them with human-readable filenames into `conversations/markdown/`.\n\n#### 2. 🔎 Search Across Conversations\n```powershell\n.\\vault.exe search \"splash screen\"\n```\n\n#### 3. 🧠 Generate Context Snippets for Local LLM\n```powershell\n.\\vault.exe context \"how to fix module federation routing\"\n```\n\n#### 4. 🛡️ Run Privacy Audit Before Git Commit\n```powershell\n.\\vault.exe audit\n```\n\n---\n\n\u003e [!TIP]\n\u003e **To run `vault` from anywhere without typing `.\\`:**\n\u003e Move `vault.exe` to a folder already in your system PATH (such as `C:\\Windows\\System32` or your user bin folder). Then you can simply type `vault scan` or `vault search` from any terminal directory."
+    },
+    {
+      "from": "human",
+      "value": "/agy-customizations"
+    },
+    {
+      "from": "gpt",
+      "value": "# Antigravity (AGY) Customization System\n\nThe **Antigravity Customization System** allows you to tailor the assistant’s behavior, teach it specialized workflows, enforce team guidelines, and integrate with external APIs and services.\n\n---\n\n## 🛠️ Customization Types at a Glance\n\n| Customization Type | Location / Config File | Scope | Best For |\n| :--- | :--- | :--- | :--- |\n| **Rules** | `AGENTS.md`, `GEMINI.md`, `.agents/rules/*.md` | Contextual / Hierarchical | Enforcing coding styles, architecture constraints, and API restrictions. |\n| **Skills** | `skills/\u003cname\u003e/SKILL.md` | On-Demand (Loaded as needed) | Multi-step playbooks, runbooks, build steps, and specialized tools. |\n| **Plugins** | `plugins/\u003cname\u003e/plugin.json` | Bundle | Packaging skills, rules, and MCP configs into a shareable unit. |\n| **Hooks** | `hooks.json` | Lifecycle Events | Running custom scripts before or after tool executions or lifecycle steps. |\n| **MCP Servers** | `mcp_config.json` | Tool Integration | Exposing custom tools and external services (GitHub, SonarQube, Jira, SQLite). |\n\n---\n\n## 📁 Discovery \u0026 Priority Order\n\nAntigravity traverses directories and loads customizations in this priority order (highest overrides lowest):\n\n1. **Workspace Project (`.agents/` or project root `AGENTS.md`)**: Project-specific, shared with your team via git.\n2. **Workspace JSON Configs (`skills.json`, `plugins.json`)**: Declared workspace customizations.\n3. **Global Machine Discovery ([`~/.gemini/config/`](file:///C:~/.gemini/config/))**: Applies to all projects across your machine.\n4. **Built-in Customizations**: Default skills and configurations bundled with Antigravity.\n\n---\n\n## 🚀 How Would You Like to Customize Antigravity?\n\nHere are common customizations we can set up:\n\n1. **Create a Project Skill for `vault`**:\n   - Create `.agents/skills/vault-sync/SKILL.md` so Antigravity can automatically run `vault scan`, `vault search`, and `vault audit` on command.\n2. **Create Project / Workspace Rules (`AGENTS.md`)**:\n   - Teach Antigravity project conventions (e.g. TypeScript standards, module federation guidelines, pre-commit checks).\n3. **Configure MCP Servers ([`mcp_config.json`](file:///C:~/.gemini/config/mcp_config.json))**:\n   - Add tools for GitHub, databases, Jira, Bitbucket, SonarQube, or custom local scripts.\n4. **Set Up Lifecycle Hooks (`hooks.json`)**:\n   - Run automated linting, test verification, or secret checks before tools execute.\n\nLet me know what you would like to create or configure!"
+    },
+    {
+      "from": "human",
+      "value": "nice, now how do other people contribute to the conversations?"
+    },
+    {
+      "from": "gpt",
+      "value": "Here is the step-by-step workflow for how other developers and community members can contribute their sanitized conversations to your repository:\n\n---\n\n### 🌐 The 5-Step Contributor Workflow\n\n```\n   1. Fork \u0026 Clone          2. Run Local Scan           3. Local Audit            4. Push \u0026 PR             5. Automated CI Audit\n ┌─────────────────┐       ┌─────────────────┐       ┌─────────────────┐       ┌─────────────────┐       ┌───────────────────────┐\n │ Fork \u0026 clone    │  ──►  │ Run ./vault scan│  ──►  │ ./vault audit   │  ──►  │ Open Pull       │  ──►  │ GitHub Actions checks │\n │ your repository │       │ (auto-redaction)│       │ (verify safe)   │       │ Request (PR)    │       │ 0 secrets before merge│\n └─────────────────┘       └─────────────────┘       └─────────────────┘       └─────────────────┘       └───────────────────────┘\n```\n\n---\n\n#### Step 1: Fork \u0026 Clone the Repository\nContributors fork your repository on GitHub and clone their fork:\n```bash\ngit clone https://github.com/\u003ccontributor-username\u003e/rag-qcash-ui.git\ncd rag-qcash-ui\n```\n\n#### Step 2: Download the `vault` Binary (or build it)\nThey grab the pre-compiled executable from your [Releases Page](https://github.com/azzykesuma/rag-qcash-ui/releases/tag/v1.0.0):\n```bash\n# Windows\ncurl -LO https://github.com/azzykesuma/rag-qcash-ui/releases/download/v1.0.0/vault-windows-amd64.exe\nmv vault-windows-amd64.exe vault.exe\n\n# Linux / macOS\ncurl -LO https://github.com/azzykesuma/rag-qcash-ui/releases/download/v1.0.0/vault-linux-amd64\nchmod +x vault-linux-amd64 \u0026\u0026 mv vault-linux-amd64 vault\n```\n\n#### Step 3: Run the Auto-Scanner \u0026 Sanitizer\nContributors simply run `vault scan` on their machine:\n```bash\n# Basic scan (auto-scans Antigravity, OpenCode, Codex, Aider)\n./vault scan\n\n# Or with their own custom company keywords to scrub:\n./vault scan --redact-words \"MyClient,SecretProject,InternalOrg\"\n```\n**What happens automatically:**\n- Non-valuable/greeting-only chats (`\"hi\"`, `\"test\"`, `\"halo\"`) are filtered out.\n- All tokens, API keys, passwords, user directories, and emails are redacted.\n- Clean markdown files with descriptive slugs are written into `conversations/markdown/`.\n\n#### Step 4: Run the Pre-Commit Security Audit\nThey verify that zero secrets exist in their generated files:\n```bash\n./vault audit\n```\nOutput:\n```text\n✅ Safe to publish! No secrets or unauthorized paths detected.\n```\n\n#### Step 5: Commit and Open a Pull Request (PR)\n```bash\ngit checkout -b add-debugging-sessions\ngit add conversations/\ngit commit -m \"feat(dataset): add sanitized debugging sessions for Next.js \u0026 Go\"\ngit push origin add-debugging-sessions\n```\nThen they open a **Pull Request** to your `main` branch.\n\n---\n\n### 🛡️ How You (The Maintainer) Keep the Repo Safe\n\nYou don't need to manually check thousands of lines of code. Your repository already has **automated CI security scanning**:\n\n1. When a contributor opens a Pull Request, the [`.github/workflows/audit.yml`](file:///D:/code/llm-context-vault/.github/workflows/audit.yml) workflow runs automatically.\n2. It executes `./vault audit` across all newly submitted files.\n3. If a contributor accidentally bypassed redaction or included a secret, GitHub Actions **blocks the PR from merging** with a red status check ❌.\n\n---\n\n\u003e [!TIP]\n\u003e Would you like me to add a formatted [`CONTRIBUTING.md`](file:///D:/code/llm-context-vault/CONTRIBUTING.md) to your repository so visitors on GitHub can see these contribution guidelines right away?"
+    },
+    {
+      "from": "human",
+      "value": "yes go ahead"
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": "### [`CONTRIBUTING.md`](file:///D:/code/llm-context-vault/CONTRIBUTING.md) Added \u0026 Pushed to GitHub\n\nThe contribution guide is live on your GitHub repository:\n👉 **[View CONTRIBUTING.md on GitHub](https://github.com/azzykesuma/rag-qcash-ui/blob/main/CONTRIBUTING.md)**\n\n---\n\n### Summary of What the Guide Covers for New Contributors:\n\n1. **5-Step Contribution Workflow**:\n   - **Fork \u0026 Clone** the repo.\n   - **Download** the pre-built `vault` binary from [GitHub Releases](https://github.com/azzykesuma/rag-qcash-ui/releases/latest).\n   - **Run `vault scan`** (with optional `--redact-words`).\n   - **Verify with `vault audit`** to ensure zero leaked tokens or machine paths.\n   - **Submit a Pull Request (PR)**.\n2. **Automated Redaction \u0026 Filtering Guarantees**:\n   - Explains how greeting-only chats are dropped and API keys/passwords/emails are scrubbed.\n3. **Automated CI Security Gate**:\n   - Highlights that our GitHub Actions audit workflow ([`audit.yml`](file:///D:/code/llm-context-vault/.github/workflows/audit.yml)) automatically verifies every PR before merging."
+    },
+    {
+      "from": "human",
+      "value": "okay, so how do i add or start the scan outside of the vault itself? \nlet say i am on session qcash ui, and i want to refer to the chat inside the vault that is not agy, how do we do that?"
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": "Here is how you can **scan from any project** and **refer to past chats (from OpenCode, Codex, Aider, etc.)** while working inside another session like `qcash-ui`:\n\n---\n\n### Part 1: How to Run the Scan from Any Project Directory\n\nThe CLI now has **Smart Vault Resolution**. Even if you are working inside `D:\\work\\qcash-ui` (or any other folder), the `vault` command will automatically locate your central vault at `D:\\code\\llm-context-vault`.\n\n#### Option A: Run it directly from your terminal\nFrom inside your `qcash-ui` folder in PowerShell:\n```powershell\n# Run scan from anywhere (updates D:\\code\\llm-context-vault automatically)\nvault scan\n```\n*(Or specify the full path if `vault.exe` is not in your system PATH: `D:\\code\\llm-context-vault\\vault.exe scan`)*\n\n#### Option B: Set an Environment Variable (Optional)\nIf you want to make it permanent for any shell or CI script:\n```powershell\n[System.Environment]::SetEnvironmentVariable('LLM_VAULT_DIR', 'D:\\code\\llm-context-vault', 'User')\n```\n\n---\n\n### Part 2: How to Refer to Past Chats (OpenCode, Codex, AGY) Inside `qcash-ui`\n\nWhen you are in an active session on `qcash-ui` and encounter a bug or need architecture guidance, you can pull past solutions in three ways:\n\n#### 1. Ask the AI Directly in Chat (Using the New Global `/vault` Skill)\nI have registered a global Antigravity skill ([`SKILL.md`](file:///C:~/.gemini/config/skills/vault/SKILL.md)) on your machine. You can simply ask the AI in your `qcash-ui` session:\n\n\u003e *\"Check the vault for how we fixed the splash screen navigation crash previously.\"*  \n\u003e *\"Refer to the OpenCode session in the vault about module federation routing.\"*  \n\u003e *\"Search vault for 'JWT refresh token retry'.\"*\n\nThe assistant will automatically search your stored sessions, read the relevant Markdown file from `conversations/markdown/` (even if it was originally solved by OpenCode or Codex), and apply the exact solution to `qcash-ui`.\n\n---\n\n#### 2. Search \u0026 Preview Solutions from Terminal\nYou can quickly search your indexed vault from PowerShell:\n\n```powershell\n# 1. Search across all OpenCode, Codex, and AGY sessions:\nvault search \"splash screen navigation\"\n\n# 2. Extract the prompt context snippet to feed to an LLM:\nvault context \"splash screen navigation\"\n```\n\n---\n\n#### 3. View the Markdown Files Directly\nAll harvested sessions are organized with human-readable slugs in:\n📂 **[`D:\\code\\llm-context-vault\\conversations\\markdown\\`](file:///D:/code/llm-context-vault/conversations/markdown/)**\n\n| Assistant Source | Filename Prefix | Example |\n| :--- | :--- | :--- |\n| **OpenCode** | `opencode_*.md` | `opencode_analyze-repository-for-reported-navigation-bug.md` |\n| **OpenAI Codex** | `codex_*.md` | `codex_fix-build-errors-in-splash-screen-component.md` |\n| **Antigravity** | `agy_*.md` | `agy_update-build-and-release-binaries-workflow.md` |\n\nYou can open and read any of these Markdown files in your editor at any time."
+    },
+    {
+      "from": "human",
+      "value": "okay i still got error  : The term 'vault' is not recognized as the name of a cmdlet, function, script file, or operable program. Check the spelling\nof the name, or if a path was included, verify that the path is correct"
+    },
+    {
+      "from": "gpt",
+      "value": "This error happens because PowerShell doesn't know where `vault.exe` is located until its folder is added to your Windows `PATH`.\n\nHere are the 2 easiest ways to fix it:\n\n---\n\n### Option 1: Add `vault` to Your PATH Permanently (Recommended)\n\nRun this **one-line command** in PowerShell:\n\n```powershell\n[System.Environment]::SetEnvironmentVariable('Path', [System.Environment]::GetEnvironmentVariable('Path', 'User') + ';D:\\code\\llm-context-vault', 'User')\n```\n\n\u003e **Note:** After running this command, **restart your PowerShell window**. From then on, you can simply type `vault scan`, `vault search`, or `vault audit` from **any folder**.\n\n---\n\n### Option 2: Add a Quick Alias in Your Current PowerShell Window\n\nIf you want to use it immediately without restarting your terminal:\n\n```powershell\nSet-Alias -Name vault -Value \"D:\\code\\llm-context-vault\\vault.exe\"\n```\n\nNow you can run:\n```powershell\nvault scan\nvault search \"splash screen\"\n```\n\n---\n\n### Option 3: Run with the Full Path Directly\n\nYou can also always run it directly using its full path:\n```powershell\n\u0026 \"D:\\code\\llm-context-vault\\vault.exe\" scan\n```"
+    },
+    {
+      "from": "human",
+      "value": "okay , it works globally here in the terminal, but on my vscode terminal, i can't run vault"
+    },
+    {
+      "from": "gpt",
+      "value": "This happens because **VS Code caches your environment variables** when it starts up. Terminals opened inside VS Code don't see newly added `PATH` entries until the environment is refreshed.\n\nHere are 3 quick ways to make `vault` work in VS Code:\n\n---\n\n### Solution 1: Refresh PATH in Your Current VS Code Terminal (Instant)\n\nPaste and run this line in your **VS Code terminal**:\n\n```powershell\n$env:Path = [System.Environment]::GetEnvironmentVariable('Path', 'Machine') + ';' + [System.Environment]::GetEnvironmentVariable('Path', 'User')\n```\nNow type `vault` — it will work immediately.\n\n---\n\n### Solution 2: Reload the VS Code Window\n\n1. In VS Code, press **`Ctrl + Shift + P`** (or `Cmd + Shift + P` on Mac).\n2. Type **`Developer: Reload Window`** and press **Enter**.\n3. Open a new terminal (**`Ctrl + ` `**). VS Code will now pick up the new PATH.\n\n---\n\n### Solution 3: Add to Your PowerShell Profile (Permanent for VS Code)\n\nTo guarantee that `vault` is always available in every VS Code terminal tab regardless of PATH caching, run this in your terminal:\n\n```powershell\nif (!(Test-Path $PROFILE)) { New-Item -ItemType File -Path $PROFILE -Force }\nAdd-Content -Path $PROFILE -Value 'Set-Alias -Name vault -Value \"D:\\code\\llm-context-vault\\vault.exe\"'\n```\n\nAfter doing this, every time you open a terminal in VS Code, `vault` will be available instantly!"
+    },
+    {
+      "from": "human",
+      "value": "thanks!"
+    },
+    {
+      "from": "gpt",
+      "value": "You're very welcome! 🎉\n\nYou're all set with:\n- 🚀 **Cross-platform releases** published on GitHub.\n- 🔍 **Unified auto-scanning** for Antigravity, OpenCode, and Codex with smart secret redaction.\n- 🌐 **Global terminal and VS Code access** to `vault`.\n- 🧠 **Global Antigravity skill** to reference past problem-solving sessions from any project.\n- 🤝 **Comprehensive [CONTRIBUTING.md](file:///D:/code/llm-context-vault/CONTRIBUTING.md)** with automated CI security gates.\n\nFeel free to reach out anytime if you need help adding new features or workflows. Happy coding! 🚀"
+    },
+    {
+      "from": "human",
+      "value": "oiya, i think you need to add to readme.md concerning the setting the env for the .exe to make it available globally"
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": "### [`README.md`](file:///D:/code/llm-context-vault/README.md) Updated \u0026 Pushed to GitHub\n\nAdded the **Installation \u0026 Global Setup** section directly to the `README.md`:\n👉 **[View README.md on GitHub](https://github.com/azzykesuma/rag-qcash-ui#readme)**\n\n---\n\n### What Was Added:\n\n1. **Global `PATH` Setup (Windows PowerShell \u0026 VS Code Profile)**:\n   ```powershell\n   # 1. Add vault's directory to User PATH permanently\n   [System.Environment]::SetEnvironmentVariable('Path', [System.Environment]::GetEnvironmentVariable('Path', 'User') + ';D:\\code\\llm-context-vault', 'User')\n\n   # 2. Add alias to PowerShell Profile (ensures instant availability in VS Code)\n   if (!(Test-Path $PROFILE)) { New-Item -ItemType File -Path $PROFILE -Force }\n   Add-Content -Path $PROFILE -Value 'Set-Alias -Name vault -Value \"D:\\code\\llm-context-vault\\vault.exe\"'\n   ```\n\n2. **Linux \u0026 macOS Setup (`/usr/local/bin/vault`)**:\n   ```bash\n   chmod +x vault-linux-amd64\n   sudo mv vault-linux-amd64 /usr/local/bin/vault\n   ```\n\n3. **`LLM_VAULT_DIR` Central Repository Variable**:\n   Explains how to set `LLM_VAULT_DIR` so that commands like `vault scan` or `vault search` always point back to the central repository from any external workspace folder."
     }
   ],
   "source": "antigravity",
