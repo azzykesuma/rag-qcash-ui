@@ -1,0 +1,104 @@
+{
+  "id": "27781f02-e1f5-4d10-b5ed-c56f4c6e6f9d",
+  "author": "azzy",
+  "conversations": [
+    {
+      "from": "human",
+      "value": "vault chat integration\nwe have vault in my local machine, where this is a conversation accumulator accross all of the local llm. what i want is , when i asked something, can you first refer to the vault conversation first before looking for your own answer? how do we integrate this pattern globally? should we add a skill md or something?"
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": "To integrate the **Vault-first pattern globally** across all your conversations and projects, the best practice is a **Hybrid Pattern: Global Rule + Vault Skill**.\n\n---\n\n### Why a Skill alone is not enough\n\n* **Skills (`SKILL.md`)**: Use *progressive disclosure*. The agent only loads the full skill instructions when it explicitly decides to trigger it (or when you invoke `/vault`). On general coding or debugging questions, the agent will not automatically search the Vault first unless mandated to do so.\n* **Global Rules (`RULE[user_global]` / Global Instructions)**: Are **always active** in the agent's context across all projects and sessions. They enforce the mandatory behavioral policy: *\"Check Vault before answering from scratch.\"*\n\n---\n\n### The Recommended Global Architecture\n\n```mermaid\nflowchart TD\n    A[\"User Asks Technical / Architecture / Bug Question\"] --\u003e B{\"Global Rule Intercepts\"}\n    B --\u003e|\"Trivial / Generic Typo\"| E[\"Direct Response / Codebase Search\"]\n    B --\u003e|\"Domain / Architecture / Bug / Past Work\"| C[\"Step 1: Query Vault (vault.exe context ... --semantic)\"]\n    C --\u003e D{\"Relevant Past Session Found?\"}\n    D --\u003e|\"Yes\"| F[\"Synthesize Answer using Past LLM Consensus \u0026 Cite Session\"]\n    D --\u003e|\"No\"| E\n```\n\n---\n\n### Step 1: Add the Vault Rule to Global Rules (`user_global`)\n\nAdd this block into your **Global Instructions / Global Rules** (in your Antigravity Settings or global prompt, right alongside your `\u003c!-- context7 --\u003e` block):\n\n```markdown\n\u003c!-- local-vault --\u003e\n## LLM Context Vault First-Lookup Policy\n\nWhenever the user asks a technical question, reports an error/bug, requests an architectural decision, or asks how something was previously solved:\n1. **Query Vault First**: Before formulating your own answer from scratch or doing standard web searches, run the Vault CLI tool to retrieve relevant prior discussions across local LLMs (Antigravity, OpenCode, Codex, Aider):\n   ```powershell\n   D:\\code\\llm-context-vault\\vault.exe context \"\u003cconcise query or error message\u003e\" --semantic\n   ```\n2. **Evaluate \u0026 Cite Context**:\n   - If relevant past context is found, use that prior solution/decision as the primary reference, aligning with existing team conventions and past fixes.\n   - Mention the source session or past consensus briefly (e.g., *\"Based on a past session in the Vault regarding...\"*).\n3. **Fallback**:\n   - If Vault returns no relevant hits or the question is a trivial general-syntax query, proceed with standard codebase exploration and reasoning.\n\u003c!-- local-vault --\u003e\n```\n\n---\n\n### Step 2: Keep \u0026 Refine the Vault Skill (`SKILL.md`)\n\nYou already have the skill located at [`C:~/.gemini/config/skills/vault/SKILL.md`](file:///C:~/.gemini/config/skills/vault/SKILL.md). We can optimize it so it outlines both the primary CLI flow and markdown fallbacks:\n\n```markdown\n---\nname: vault\ndescription: Search, retrieve, and refer to past problem-solving sessions, architecture decisions, and bugfixes from the LLM Context Vault across local AI assistants (Antigravity, OpenCode, Codex, Aider).\n---\n\n# LLM Context Vault Skill\n\nUse this skill to retrieve past debugging sessions, architecture decisions, and code solutions recorded across local AI tools.\n\n## 📍 Vault Repository Location\n- Central repo: `D:\\code\\llm-context-vault`\n- Markdown sessions: `D:\\code\\llm-context-vault\\conversations\\markdown\\`\n\n## 🔎 Retrieval Commands\n\n### 1. Semantic Context Extraction (Fastest for answering questions)\nExtracts the most relevant context snippets directly for the current prompt:\n```powershell\nD:\\code\\llm-context-vault\\vault.exe context \"\u003ctopic or error message\u003e\" --semantic\n```\n\n### 2. Search Session List\nLists matching session titles and IDs:\n```powershell\nD:\\code\\llm-context-vault\\vault.exe search \"\u003ctopic or error message\u003e\" --semantic\n```\n\n### 3. Direct Markdown Inspection (Fallback)\nIf you need the full uncompressed session log, view the corresponding file in `D:\\code\\llm-context-vault\\conversations\\markdown\\`:\n- OpenCode: `opencode_*.md`\n- OpenAI Codex: `codex_*.md`\n- Antigravity: `agy_*.md`\n\n## 📥 Sync \u0026 Maintenance Commands\n- Scan \u0026 rebuild embeddings: `D:\\code\\llm-context-vault\\vault.exe scan`\n- Audit for secrets: `D:\\code\\llm-context-vault\\vault.exe audit`\n- Publish to remote: `D:\\code\\llm-context-vault\\vault.exe publish`\n- Web UI: `D:\\code\\llm-context-vault\\vault.exe ui`\n```\n\n---\n\n### Summary of Benefits\n\n1. **Deterministic Execution**: The **Global Rule** guarantees the agent never skips checking the vault before generating answers.\n2. **Context Efficient**: `vault.exe context --semantic` delivers just the top relevant snippets rather than loading massive conversation files into memory.\n3. **Cross-Agent Memory**: Any solution found in OpenCode, Codex, or past Antigravity chats immediately informs future Antigravity sessions."
+    },
+    {
+      "from": "human",
+      "value": "okay go ahead and implement the global rules"
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": "I am checking your Antigravity configuration directory to locate the global rules file."
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": "The global rule has been implemented in [`~\\.gemini\\GEMINI.md`](file:///C:~/.gemini/GEMINI.md) and synchronized with the [`vault` skill](file:///C:~/.gemini/config/skills/vault/SKILL.md).\n\n---\n\n### What Was Configured\n\n1. **Global Rule in [`~\\.gemini\\GEMINI.md`](file:///C:~/.gemini/GEMINI.md)**:\n   Added the `\u003c!-- local-vault --\u003e` directive so that on every incoming technical, debugging, or architectural inquiry across all workspaces, the agent will:\n   - First execute:\n     ```powershell\n     D:\\code\\llm-context-vault\\vault.exe context \"\u003cconcise query or error message\u003e\" --semantic\n     ```\n   - Prioritize established patterns and solutions found in the Vault (across Antigravity, OpenCode, Codex, and Aider) over generating solutions from scratch.\n   - Reference the past session when answering.\n   - Gracefully fallback to codebase search/reasoning if no past context matches.\n\n2. **Refined Skill in [`~\\.gemini\\config\\skills\\vault\\SKILL.md`](file:///C:~/.gemini/config/skills/vault/SKILL.md)**:\n   Maintained full support for manual triggers, session listing via `vault.exe search`, direct markdown log inspections, and vault scans (`vault.exe scan`).\n\n---\n\n### How It Works in Practice\n\nWhenever you ask a question like *\"how did we resolve the auto collection route issue?\"* or provide a bug stack trace, the agent will automatically query your local Vault first, incorporate the relevant past discussion snippet into its context, and formulate the response aligned with your past local sessions."
+    }
+  ],
+  "source": "antigravity",
+  "tags": [
+    "coding",
+    "assistant",
+    "antigravity"
+  ]
+}

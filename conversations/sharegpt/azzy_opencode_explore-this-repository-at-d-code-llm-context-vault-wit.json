@@ -1,0 +1,44 @@
+{
+  "id": "ses_fe18de0c4ffe4Z2im8TTmgKeH0",
+  "author": "azzy",
+  "conversations": [
+    {
+      "from": "human",
+      "value": "Explore this repository at D:\\code\\llm-context-vault with medium thoroughness. Do not modify files. Identify: project purpose, languages/frameworks/dependencies, top-level structure, core execution/data flows, tests/tooling, documentation, and notable risks or gaps. Inspect relevant manifests/readmes/source and return a concise but specific architecture summary with exact file paths. Also report git worktree state but do not alter it."
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": "## Architecture summary\n\n**Purpose.** A Go CLI and Git-backed dataset for harvesting local coding-assistant conversations, sanitizing them, and exporting searchable Markdown plus ShareGPT/JSONL records for reuse in prompts or model/RAG training. Primary docs: `D:\\code\\llm-context-vault\\README.md`, `D:\\code\\llm-context-vault\\CONTRIBUTING.md`.\n\n**Technology.**\n- Go 1.25 module: `D:\\code\\llm-context-vault\\go.mod`\n- Only direct dependency is pure-Go SQLite driver `modernc.org/sqlite`, used to read OpenCode databases: `D:\\code\\llm-context-vault\\pkg\\extractor\\opencode.go`\n- GitHub Actions builds Windows/Linux/macOS static binaries and publishes tag releases: `D:\\code\\llm-context-vault\\.github\\workflows\\release.yml`\n\n**Top-level structure.**\n- CLI: `D:\\code\\llm-context-vault\\cmd\\vault\\main.go`\n- Domain models: `D:\\code\\llm-context-vault\\pkg\\models\\types.go`\n- Extractors: `D:\\code\\llm-context-vault\\pkg\\extractor\\`\n- Sanitization: `D:\\code\\llm-context-vault\\pkg\\sanitizer\\sanitizer.go`\n- Export/storage/search orchestration: `D:\\code\\llm-context-vault\\pkg\\vault\\vault.go`, `D:\\code\\llm-context-vault\\pkg\\exporter\\`\n- Published conversation corpus: `D:\\code\\llm-context-vault\\conversations\\markdown\\`, `D:\\code\\llm-context-vault\\conversations\\sharegpt\\`, and `D:\\code\\llm-context-vault\\conversations\\dataset.jsonl` (736 tracked conversation artifacts).\n- Admin script: `D:\\code\\llm-context-vault\\scripts\\set-github-token.ps1`\n\n## Core flow\n\n1. `vault scan` discovers AGY, OpenCode, Codex, and Aider locations; individual scan/import commands are dispatched in `D:\\code\\llm-context-vault\\cmd\\vault\\main.go`.\n2. Tool-specific extractors normalize source data into `models.Conversation`:\n   - Antigravity JSONL: `D:\\code\\llm-context-vault\\pkg\\extractor\\agy.go`\n   - Codex rollout JSONL: `D:\\code\\llm-context-vault\\pkg\\extractor\\codex.go`\n   - OpenCode SQLite `session`/`message`/`part` tables: `D:\\code\\llm-context-vault\\pkg\\extractor\\opencode.go`\n   - Aider history Markdown: `D:\\code\\llm-context-vault\\pkg\\extractor\\aider.go`\n   - Generic normalized/ShareGPT JSON: `D:\\code\\llm-context-vault\\pkg\\extractor\\generic.go`\n3. `Vault.StoreConversation` filters trivial chats, sanitizes message and tool-call text, performs a post-sanitize audit, then writes Markdown and ShareGPT files and appends one normalized record to JSONL: `D:\\code\\llm-context-vault\\pkg\\vault\\vault.go`.\n4. Search is case-insensitive literal scanning of stored Markdown; `context` formats up to three matching snippets rather than using embeddings or the SQLite index: `D:\\code\\llm-context-vault\\pkg\\vault\\vault.go`.\n5. Sanitization uses regex rules for common credentials, paths, a specific internal domain, emails, IPs, and optional custom terms: `D:\\code\\llm-context-vault\\pkg\\sanitizer\\sanitizer.go`.\n\n## Tests, tooling, and documentation\n\n- No `*_test.go` files or test framework/configuration found.\n- CI only builds and runs `vault audit` on pushes/PRs to `main`: `D:\\code\\llm-context-vault\\.github\\workflows\\audit.yml`.\n- No Makefile, Docker configuration, lint configuration, or dependency-update tooling found.\n- README and contribution guide are substantial, though release/clone URLs still use the legacy repository name `rag-qcash-ui`.\n\n## Notable risks/gaps\n\n- **No automated tests**, including for extractors, redaction patterns, malformed input, and export idempotency.\n- **Potential duplicate/data-loss behavior:** Markdown/ShareGPT filenames derive from truncated prompt slugs and can overwrite each other; JSONL always appends, so repeat scans can duplicate records. See `D:\\code\\llm-context-vault\\pkg\\vault\\vault.go` and `D:\\code\\llm-context-vault\\pkg\\exporter\\jsonl.go`.\n- **Privacy coverage is incomplete:** sanitizer does not sanitize `Conversation.Metadata` / `Message.Metadata`, and audit does not check IP patterns despite redacting them during sanitization. `D:\\code\\llm-context-vault\\pkg\\models\\types.go`, `D:\\code\\llm-context-vault\\pkg\\sanitizer\\sanitizer.go`.\n- Per-session extraction/storage errors are generally swallowed during scans, yielding incomplete imports without detailed reporting: `D:\\code\\llm-context-vault\\pkg\\vault\\vault.go`.\n- `--vault-dir` is advertised but not parsed/implemented; directory resolution includes a hard-coded Windows path, reducing portability: `D:\\code\\llm-context-vault\\cmd\\vault\\main.go`.\n- Generic extractor claims JSONL support but reads and unmarshals the whole file as one JSON document, so multi-record JSONL is not supported: `D:\\code\\llm-context-vault\\pkg\\extractor\\generic.go`.\n- `conversations\\index.db` is untracked/ignored and no code references it; current search does not use it.\n- The token setup script persists PATs in user environment variables and writes plaintext config values; it is operationally sensitive: `D:\\code\\llm-context-vault\\scripts\\set-github-token.ps1`.\n\n## Git worktree state\n\n- Worktree: `D:\\code\\llm-context-vault`, branch `main` tracking `origin/main`, HEAD `b21c50a`.\n- Modified tracked file: `D:\\code\\llm-context-vault\\.gitignore` (adds database ignore rules).\n- Ignored untracked local artifacts: `D:\\code\\llm-context-vault\\vault.exe`, `D:\\code\\llm-context-vault\\vault.exe~`, `D:\\code\\llm-context-vault\\conversations\\index.db`.\n- No files were modified during this review."
+    }
+  ],
+  "source": "opencode",
+  "tags": [
+    "coding",
+    "assistant",
+    "opencode"
+  ]
+}

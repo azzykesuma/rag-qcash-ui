@@ -3,7 +3,7 @@
 - **Author**: `azzy`
 - **ID**: `59b09d49-f0f6-4296-ba9c-a3a70d4d57c8`
 - **Source Tool**: `antigravity`
-- **Date**: `2026-08-20 10:27:43`
+- **Date**: `2026-08-24 09:59:00`
 - **Tags**: `coding`, `assistant`, `antigravity`
 
 ---
@@ -1323,6 +1323,63 @@ When we check the git history of [`qcash-ui/hooks/use-modal-session-expired.tsx`
 
 - The stale session bug you reported is **actively present in Production (`v1.655.1-release-com`)** because `use-modal-session-expired.tsx` in production does not detect user changes and does not reload on authorized subpages.
 - On **`dev`**, the fix in `use-modal-session-expired.tsx` is already present, which is why testing on `dev` triggers the reload and refreshes the credentials.
+
+---
+
+## Turn 86: User
+
+so which repo that it needs to be fixed for this issue? both qcash ui and header footer?
+
+---
+
+## Turn 87: Assistant
+
+To fix this issue completely, changes are needed in **both `qcash-ui` (Host)** and **`qcash-ui-header-footer` (Remote)**, with optional hardening in **`addons-auth-provider`**.
+
+Here is why and what each repo needs:
+
+---
+
+### 1. `qcash-ui` (Host Shell) — **Primary / Immediate Fix**
+
+In production (`v1.655.1-release-com`), the session expiration modal is missing the fix that is already on `dev`.
+
+* **File:** [`qcash-ui/hooks/use-modal-session-expired.tsx`](file:///D:/work/qcash-ui/hooks/use-modal-session-expired.tsx#L100-L165)
+* **What needs to be cherry-picked / fixed:**
+  1. **Purge session storage:** Add `sessionStorage.removeItem("session-user-data")` on successful modal relogin.
+  2. **Detect user change and reload everywhere:** Add `isUserChanged = (username !== _uname)` so that logging in as a different user triggers `globalThis.window.location.reload()`, regardless of what page the user is on (not just `/v2` or `/v2/homepage`).
+  3. **Route protection:** A user switch on a restricted subpage (e.g., BA on `/v2/user-management` $\rightarrow$ CU) must reload to prevent the user from being left on an unauthorized route.
+
+---
+
+### 2. `qcash-ui-header-footer` (Remote) — **Component Resilience Fix**
+
+Even if the host updates the token in React context without a hard reload, `header-footer` currently fails to update its menus due to internal locks.
+
+* **File:** [`qcash-ui-header-footer/hooks/useMenu.tsx`](file:///D:/work/qcash-ui-header-footer/hooks/useMenu.tsx#L20-L96)
+* **What needs to be fixed:**
+  1. **Reset `hasFetched` on token change:** `hasFetched = useRef(false)` must be reset when `token` changes so that a new user triggers `validateMenu.run(token)` and `productRoles.run()`.
+  2. **Token-scoped or invalidated ahooks cache:** Clear the ahooks cache (`clearCache(["validate-menu", "product-roles"])`) or key the cache by token so that User A's menu is never returned from in-memory cache for User B.
+  3. **Effect dependencies:** Include `token` in `useEffect` dependencies instead of only `[userType]`.
+
+---
+
+### 3. `addons-auth-provider` (Core Auth Library) — **Root Layer Hardening (Recommended)**
+
+* **File:** [`addons-auth-provider/src/auth.tsx`](file:///D:/work/addons-auth-provider/src/auth.tsx#L363-L412)
+* **What needs to be fixed:**
+  1. **Token binding in `session-user-data`:** When storing `session-user-data` in `sessionStorage`, store a token identifier/hash with it. In `guard()`, verify that `sessionUserData.token === currentToken` before restoring. If tokens don't match, purge the cache and force re-validation.
+  2. **Login cleanup:** In `login()`, `passwordLogin()`, and `ssoLogin()`, clear `session-user-data` and reset `sessionLastValidatedAt = null`.
+
+---
+
+### Summary Checklist
+
+| Repository | Role in Fix | Urgency |
+| :--- | :--- | :--- |
+| **`qcash-ui`** | Backport/cherry-pick commit `556eaaa` to release branch (`v1.655.1-release-com`) to trigger reload & session storage purge on modal relogin. | **Critical (fixes the production bug)** |
+| **`qcash-ui-header-footer`** | Fix `useMenu.tsx` so menu fetching reacts to token changes without getting blocked by `hasFetched` ref or static ahooks cache. | **High (prevents stale menu in SPA transitions)** |
+| **`addons-auth-provider`** | Validate token match before restoring `session-user-data` in `guard()`. | **Medium (architectural hardening)** |
 
 ---
 

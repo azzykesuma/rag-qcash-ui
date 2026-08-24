@@ -1,0 +1,252 @@
+{
+  "id": "7f83b01b-6d94-409f-8b1c-f2e0467ef42d",
+  "author": "azzy",
+  "conversations": [
+    {
+      "from": "human",
+      "value": "dac documentation\ncan you make a full documentation for this repo? i want\n1. a full documentation codebase for new people\n2. full tech stack documentation \n3  api documentation\n4. logic flowm documentation"
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": "# QCash Dashboard Auto Collection (DAC) — Technical Documentation\n\n---\n\n## 1. Codebase Onboarding Guide (For New Joiners)\n\n### 1.1 Overview \u0026 Purpose\n**`qcash-ui-dashboard-auto-collection`** is a Next.js (Pages Router) Micro-Frontend (MFE) in the **BRICaMS / QCash** ecosystem. It provides an analytics and operational dashboard for **Auto Collection Services (ACS)**, enabling corporate clients (such as Pelindo and port service users) to monitor, inspect, and export auto-collection transaction flows:\n- **Paid Funds (Payment)**: Successfully settled and debited obligations.\n- **Hold Funds (Hold)**: Blocked/held funds awaiting debit or settlement.\n- **Released Funds (Release)**: Previously held funds that were unblocked/returned.\n\n---\n\n### 1.2 Repository Structure\n\n```\nqcash-ui-dashboard-auto-collection/\n├── @mf-types/                     # Auto-generated Module Federation declaration types\n├── public/\n│   └── locales/                   # i18n translation dictionaries\n│       ├── en/                    # English (dashboard-auto-collection.json, common.json)\n│       └── id/                    # Indonesian (dashboard-auto-collection.json, common.json)\n├── scripts/\n│   ├── build-globals-expose.mjs   # Bundles Tailwind CSS into a portable JS string for MFE\n│   └── dev-host-compat.mjs        # Dev proxy stripping cross-site dev headers for host integration\n├── src/\n│   ├── components/\n│   │   ├── providers/             # Global Context Providers (I18nProvider)\n│   │   └── ui/                    # Design System wrappers \u0026 remote QUI/Global component bridges\n│   ├── containers/\n│   │   └── dashboard/             # Main Dashboard feature module\n│   │       ├── components/        # Header, SummaryCards, TrendChart, TransactionTable, Skeleton\n│   │       └── index.tsx          # Dashboard container state coordinator\n│   ├── hooks/                     # Custom React hooks (useDashboardAutoCollectionTranslation)\n│   ├── pages/\n│   │   ├── _app.tsx               # Next.js custom App (Providers, CSS \u0026 Remote loader)\n│   │   ├── _document.tsx          # Next.js document definition\n│   │   ├── dashboard/index.tsx    # Primary MFE entrypoint (exposed via Module Federation)\n│   │   └── index.tsx              # Standalone landing page\n│   ├── services/\n│   │   ├── customAxios.ts         # Axios client with UUID process tracing \u0026 error interceptors\n│   │   ├── dashboard.ts           # API service functions for Accounts, Graph, Table, Download\n│   │   └── system.ts              # API service for Pelindo system config lookup\n│   ├── styles/\n│   │   ├── global.exposes.ts      # Programmatically generated stylesheet injector for host apps\n│   │   └── globals.css            # Tailwind v4 configuration \u0026 styles (fpl: prefix)\n│   ├── utils/\n│   │   ├── auth.ts                # Permission and menu authorization validation\n│   │   ├── federation.ts          # Module Federation runtime resolution \u0026 remote loader\n│   │   ├── i18n.ts                # i18next instance setup and resource bundle injector\n│   │   └── toast.ts               # Danger toast bridge with gRPC process ID copy support\n│   └── config.ts                  # Runtime API base URL resolution based on hostname\n├── next.config.ts                 # Next.js \u0026 Rspack Module Federation configuration\n├── package.json                   # Dependencies, scripts, and package metadata\n├── tsconfig.json                  # TypeScript compiler settings \u0026 module aliases (@/*)\n└── biome.json                     # Biome linter, formatter, and class sorter configuration\n```\n\n---\n\n### 1.3 Module Federation Architecture\n\nThis application operates as a remote container exposed to the QCash host shell application.\n\n```mermaid\ngraph TD\n    Host[\"Host Shell (qcash-ui / BRICaMS Portal)\"]\n    DAC[\"Remote: qcash-ui-dashboard-auto-collection\"]\n    QUI[\"Remote: qui (QUILA Design System)\"]\n    QC_GLOBAL[\"Remote: qcash-global-component\"]\n\n    Host -- \"Loads ./dashboard or ./globals\" --\u003e DAC\n    DAC -- \"Dynamically imports UI elements\" --\u003e QUI\n    DAC -- \"Dynamically imports layout/messages\" --\u003e QC_GLOBAL\n\n    subgraph \"Exposed Modules in next.config.ts\"\n        DAC_Root[\"./root -\u003e src/pages/index.tsx\"]\n        DAC_Dash[\"./dashboard -\u003e src/pages/dashboard/index.tsx\"]\n        DAC_Style[\"./globals -\u003e src/styles/global.exposes.ts\"]\n    end\n```\n\n#### Shared Singletons\nTo avoid duplicate instances and memory leaks across the MFE boundary, the following packages are configured as shared singletons in [`next.config.ts`](file:///D:/work/qcash-ui-dashboard-auto-collection/next.config.ts) and [`src/utils/federation.ts`](file:///D:/work/qcash-ui-dashboard-auto-collection/src/utils/federation.ts):\n- `react`, `react-dom`\n- `@ordentco/addons-auth-provider`\n- `i18next`, `react-i18next`, `ni18n`\n\n#### Style Isolation \u0026 Injection\nTailwind styles are compiled with the `fpl:` prefix. When embedded in a host that might purge remote CSS chunks, [`src/styles/global.exposes.ts`](file:///D:/work/qcash-ui-dashboard-auto-collection/src/styles/global.exposes.ts) injects the stylesheet directly into `\u003chead id=\"qcash-ui-dashboard-auto-collection-globals\"\u003e`.\n\n---\n\n### 1.4 Local Developer Setup\n\n1. **Install Dependencies**:\n   ```bash\n   yarn install\n   ```\n2. **Run Local Development**:\n   ```bash\n   yarn proxy\n   ```\n   \u003e **Note on `yarn proxy`**: Do not use raw `yarn dev`. `yarn proxy` starts [`scripts/dev-host-compat.mjs`](file:///D:/work/qcash-ui-dashboard-auto-collection/scripts/dev-host-compat.mjs), which strips cross-site development headers (`sec-fetch-*`, `origin`, `referer`) that can break Next.js HMR and `/_next` chunk loading when running alongside host shells. Access the dashboard locally at `http://localhost:3001/dashboard-auto-collection-v2/dashboard`.\n3. **Linting \u0026 Formatting**:\n   ```bash\n   yarn lint       # Biome verification\n   yarn lint:fix   # Autofix lint errors\n   yarn format     # Code formatting\n   ```\n4. **Testing**:\n   ```bash\n   yarn test       # Vitest runner\n   yarn test:coverage # Code coverage report\n   ```\n\n---\n\n## 2. Tech Stack Documentation\n\n| Layer / Category | Technology | Version | Purpose \u0026 Description |\n| :--- | :--- | :--- | :--- |\n| **Framework** | Next.js (Pages Router) | `16.2.9` | Application framework configured with `basePath: \"/dashboard-auto-collection-v2\"` and standalone output. |\n| **Compiler \u0026 Bundler** | `next-rspack` | `16.2.9` | High-performance Rust-based bundler replacing Webpack for fast local builds and compilation. |\n| **Optimization** | React Compiler | `1.0.0` | Target React 18 compiler for automatic memoization without manual `useMemo`/`useCallback` everywhere. |\n| **Micro Frontend** | `@module-federation/enhanced` | `^2.3.3` | Native Module Federation plugin handling remotes, exposes, and runtime fallback instances. |\n| **Language** | TypeScript | `^5.0.0` | Strict type checking with path aliases configured in [`tsconfig.json`](file:///D:/work/qcash-ui-dashboard-auto-collection/tsconfig.json). |\n| **UI Styling** | Tailwind CSS v4 | `^4.0.0` | Configured with `fpl:` prefix in [`src/styles/globals.css`](file:///D:/work/qcash-ui-dashboard-auto-collection/src/styles/globals.css) to prevent styling conflicts with the host container. |\n| **Charting \u0026 Viz** | Recharts | `^3.9.2` | Interactive SVG Area Chart rendering daily transaction trends with custom dynamic tick intervals. |\n| **HTTP Client** | Axios | `^1.4.0` | Configured in [`src/services/customAxios.ts`](file:///D:/work/qcash-ui-dashboard-auto-collection/src/services/customAxios.ts) with bearer tokens, UUID request tracing, and 401 re-auth dispatchers. |\n| **Internationalization**| `i18next`, `react-i18next`, `ni18n` | `^26.3.1` / `^17.0.8` | Dual-language support (`id` / `en`) with runtime resource injection via fallback namespaces. |\n| **Authentication** | `@ordentco/addons-auth-provider`| `^0.9.142-mfe` | Handles user session, role parsing, and authority guard verification. |\n| **Lint \u0026 Format** | Biome | `2.4.13` | Fast Rust-based linter and formatter enforcing code standards and sorted Tailwind class names. |\n| **Testing** | Vitest \u0026 JSDOM | `^4.1.6` / `^29.1.1` | Unit and integration testing framework with V8 code coverage. |\n\n---\n\n## 3. API Documentation\n\n### 3.1 Base URL Resolution\n\nThe backend URL is dynamically resolved on the client based on `window.location.hostname` in [`src/config.ts`](file:///D:/work/qcash-ui-dashboard-auto-collection/src/config.ts):\n\n| Environment Match | Base URL Source Variable | Typical Domain |\n| :--- | :--- | :--- |\n| **Localhost** | `NEXT_PUBLIC_API_URL_DEV_ID` | `http://localhost:*` |\n| **Dev Indonesia** | `NEXT_PUBLIC_API_URL_DEV_ID` | `internal-service.example.com` |\n| **Dev Timor Leste** | `NEXT_PUBLIC_API_URL_DEV_TL` | `internal-service.example.com` |\n| **Dev Singapore** | `NEXT_PUBLIC_API_URL_DEV_SG` | `internal-service.example.com` |\n| **Pre-Staging** | `NEXT_PUBLIC_API_URL_PRESTAG` | `internal-service.example.com` |\n| **Pre-Deploy** | `NEXT_PUBLIC_API_URL_PREPLOY` | `internal-service.example.com` |\n| **Piloting** | `NEXT_PUBLIC_API_URL_PILOTING` | `demo.addons.*` |\n| **Production ID** | `NEXT_PUBLIC_API_URL_PROD_ID` | `internal-service.example.com` |\n| **Production TL / SG**| `NEXT_PUBLIC_API_URL_PROD_TL` / `_SG` | `bricams.bri.tl` / `bricams.bankbri.com.sg` |\n\n---\n\n### 3.2 HTTP Interceptors \u0026 Headers\n\nAll requests sent through [`customAxios`](file:///D:/work/qcash-ui-dashboard-auto-collection/src/services/customAxios.ts) automatically include:\n1. **Authorization**: `Bearer \u003caccess-token\u003e` (retrieved from `localStorage.getItem(\"access-token\")`).\n2. **Process Tracing**: `grpc-metadata-process-id: \u003cuuidv4\u003e` for log correlation.\n3. **Session Interceptor**: On `401`, `408`, or `499` response codes, dispatches a custom `showDialog` event to trigger re-authentication dialogs in the host shell.\n4. **Error Toasting**: Non-401 errors trigger a toast notification containing the error message and a one-click button to copy the `Process ID`.\n\n---\n\n### 3.3 Endpoints Reference\n\n#### 1. Get Pelindo Authorized Company ID\n- **Function**: [`getPelindoId(signal?)`](file:///D:/work/qcash-ui-dashboard-auto-collection/src/services/system.ts#L7)\n- **Method \u0026 Path**: `GET /system/key-secure/acs-company-id-pelindo`\n- **Response**:\n  ```json\n  {\n    \"data\": {\n      \"value\": \"COMPANY_PELINDO_ID_12345\"\n    }\n  }\n  ```\n\n---\n\n#### 2. Get Associated Accounts\n- **Function**: [`getDashboardAccounts(companyID, signal?)`](file:///D:/work/qcash-ui-dashboard-auto-collection/src/services/dashboard.ts#L77)\n- **Method \u0026 Path**: `POST /dashboard-auto-collection/accounts`\n- **Request Body**:\n  ```json\n  {\n    \"company_id\": \"string\"\n  }\n  ```\n- **Response**:\n  ```json\n  {\n    \"error\": false,\n    \"code\": 200,\n    \"message\": \"Success\",\n    \"data\": [\n      {\n        \"account_no\": \"012345678901234\",\n        \"account_name\": \"PT PELABUHAN INDONESIA\"\n      }\n    ]\n  }\n  ```\n\n---\n\n#### 3. Get Summary \u0026 Trend Graph\n- **Function**: [`getDashboardGraph(accountNo, period, type, signal?)`](file:///D:/work/qcash-ui-dashboard-auto-collection/src/services/dashboard.ts#L81)\n- **Method \u0026 Path**: `POST /dashboard-auto-collection/summary-graph`\n- **Request Body**:\n  ```json\n  {\n    \"account_no\": \"ALL\", // or specific account number \"012345678901234\"\n    \"periode\": \"08-2026\", // format: MM-YYYY\n    \"type\": \"payment\" // \"payment\" | \"hold\" | \"release\"\n  }\n  ```\n- **Response**:\n  ```json\n  {\n    \"error\": false,\n    \"code\": 200,\n    \"message\": \"Success\",\n    \"graph\": [\n      {\n        \"date\": \"01-08-2026\",\n        \"total_amount\": \"1500000000\"\n      },\n      {\n        \"date\": \"02-08-2026\",\n        \"total_amount\": \"2300000000\"\n      }\n    ],\n    \"summary\": {\n      \"total_payment\": \"3800000000\",\n      \"count_payment\": 142,\n      \"total_hold\": \"500000000\",\n      \"count_hold\": 12,\n      \"total_release\": \"150000000\",\n      \"count_release\": 4\n    }\n  }\n  ```\n\n---\n\n#### 4. Get Paginated Transaction Table\n- **Function**: [`getDashboardData(accountNo, period, type, filter, limit, page, signal?)`](file:///D:/work/qcash-ui-dashboard-auto-collection/src/services/dashboard.ts#L85)\n- **Method \u0026 Path**: `POST /dashboard-auto-collection/data`\n- **Request Body**:\n  ```json\n  {\n    \"account_no\": \"ALL\",\n    \"periode\": \"08-2026\",\n    \"type\": \"payment\",\n    \"filter\": \"search query\",\n    \"limit\": 10,\n    \"page\": 1\n  }\n  ```\n- **Response**:\n  ```json\n  {\n    \"error\": false,\n    \"code\": 200,\n    \"message\": \"Success\",\n    \"data\": [\n      {\n        \"id\": \"tx-981247\",\n        \"date\": \"2026-08-01 10:15:30\",\n        \"entity_name\": \"PT LOGISTIK UTAMA\",\n        \"payment_code\": \"ACS-8829104\",\n        \"amount\": \"15000000\",\n        \"remark\": \"Port Service Settlement Batch 1\"\n      }\n    ],\n    \"totalData\": 142,\n    \"totalPage\": 15\n  }\n  ```\n\n---\n\n#### 5. Download / Export Transactions\n- **Function**: [`downloadDashboardData(accountNo, period, type, format, ids?)`](file:///D:/work/qcash-ui-dashboard-auto-collection/src/services/dashboard.ts#L93)\n- **Method \u0026 Path**: `POST /dashboard-auto-collection/download`\n- **Request Body**:\n  ```json\n  {\n    \"account_no\": \"012345678901234\",\n    \"periode\": \"08-2026\",\n    \"type\": \"Payment\", // Capitalized: \"Payment\" | \"Hold\" | \"Release\"\n    \"format\": \"xlsx\",  // \"csv\" | \"xlsx\" | \"pdf\" (maps \"xls\" to \"xlsx\")\n    \"ids\": [\"tx-981247\", \"tx-981248\"] // Optional for selected rows\n  }\n  ```\n- **Response**: Binary Blob with `Content-Disposition` header specifying the download filename.\n\n---\n\n## 4. Logic Flow Documentation\n\n### 4.1 Mounting, Authentication \u0026 Authorization Gate\n\nWhen the host mounts [`DashboardPageView`](file:///D:/work/qcash-ui-dashboard-auto-collection/src/pages/dashboard/index.tsx), the page enforces security gates before rendering:\n\n```mermaid\nsequenceDiagram\n    autonumber\n    participant Host as Host Shell\n    participant View as pages/dashboard/index.tsx\n    participant Auth as @ordentco/addons-auth-provider\n    participant Container as containers/dashboard/index.tsx\n\n    Host-\u003e\u003eView: Mount remote component\n    View-\u003e\u003eView: useInsertionEffect (Inject/restore global CSS)\n    View-\u003e\u003eAuth: useAuth() \u0026 guard()\n    alt Authorities Not Ready or Username is Guest\n        View--\u003e\u003eHost: Render LoadingOverlay (variant=\"fullpage\")\n    else Access Denied (userType !== \"cu\" or Missing Menu / Product Authority)\n        View--\u003e\u003eHost: Render UnauthorizedDialog\n    else Access Granted\n        View-\u003e\u003eContainer: Render DashboardPage(companyID)\n    end\n```\n\n---\n\n### 4.2 Data Initialization Flow (Pelindo ID \u0026 Accounts)\n\nWhen [`DashboardPage`](file:///D:/work/qcash-ui-dashboard-auto-collection/src/containers/dashboard/index.tsx) mounts with a valid `companyID`:\n\n```mermaid\nflowchart TD\n    Start([\"Mount DashboardPage (companyID)\"]) --\u003e FetchPelindo[\"Fetch getPelindoId()\"]\n    FetchPelindo -- Error --\u003e ShowAccountError[\"Show Error Toast / Error State\"]\n    FetchPelindo -- Success (pelindoID) --\u003e CheckAuth{\"isAuthorizedCompany(companyID, pelindoID)?\"}\n    \n    CheckAuth --\u003e FetchAccounts[\"Fetch getDashboardAccounts(companyID)\"]\n    \n    FetchAccounts -- Success (accounts) --\u003e CalcDefault[\"getDefaultDashboardAccount()\"]\n    CheckAuth -- \"Yes (Pelindo Partner)\" --\u003e CalcDefault -- \"Default Account = 'All'\" --\u003e SetAccountNo[\"Set accountNo State\"]\n    CheckAuth -- \"No (Regular Corporate)\" --\u003e CalcDefault -- \"Default Account = accounts[0].account_no\" --\u003e SetAccountNo\n    \n    SetAccountNo --\u003e TriggerDashboardLoad[\"Trigger Dashboard Data Effect\"]\n```\n\n---\n\n### 4.3 Dashboard Metrics, Chart \u0026 Table Loading Flow\n\nWhenever `accountNo`, `period`, `activeType`, or the manual `Refresh` button is clicked:\n\n```mermaid\nsequenceDiagram\n    autonumber\n    participant Container as containers/dashboard/index.tsx\n    participant Service as services/dashboard.ts\n    participant UI_Cards as SummaryCards\n    participant UI_Chart as TrendChart\n    participant UI_Table as TransactionTable\n\n    Container-\u003e\u003eContainer: Set isDashboardLoading = true\n    Container-\u003e\u003eUI_Cards: Render SummaryCardsSkeleton\n    Container-\u003e\u003eUI_Chart: Render DashboardDetailsSkeleton\n\n    par Parallel API Calls\n        Container-\u003e\u003eService: getDashboardGraph(accountNo, period, activeType)\n        Container-\u003e\u003eService: getDashboardData(accountNo, period, activeType, page=1, limit=10)\n    end\n\n    Service--\u003e\u003eContainer: Return Graph \u0026 Summary Data\n    Service--\u003e\u003eContainer: Return Initial Table Data\n\n    Container-\u003e\u003eUI_Cards: Render Cards (Paid, Hold, Released) with active selection\n    Container-\u003e\u003eUI_Chart: Render AreaChart with dynamic Y-axis scaling (M / Jt)\n    Container-\u003e\u003eUI_Table: Render DataTable with pre-fetched page 1 records\n```\n\n---\n\n### 4.4 Transaction Table Interaction \u0026 Export Flow\n\n```mermaid\nsequenceDiagram\n    autonumber\n    participant User as Corporate User\n    participant Table as TransactionTable (DataTable)\n    participant Service as services/dashboard.ts\n    participant Browser as Browser File Downloader\n\n    alt User Searches or Changes Page\n        User-\u003e\u003eTable: Type search keyword or click page 2\n        Table-\u003e\u003eService: getDashboardData(accountNo, period, activeType, filter, limit, page)\n        Service--\u003e\u003eTable: Return matching records \u0026 total count\n        Table-\u003e\u003eTable: Re-render rows\n    else User Selects Rows \u0026 Clicks Download\n        User-\u003e\u003eTable: Select rows [ID1, ID2] -\u003e Choose format (CSV/XLSX/PDF) -\u003e Click \"Download Table\"\n        Table-\u003e\u003eService: downloadDashboardData(accountNo, period, type, format, ids)\n        Service--\u003e\u003eTable: Return Blob response \u0026 Content-Disposition filename\n        Table-\u003e\u003eBrowser: Trigger download via URL.createObjectURL()\n    else User Clicks Download All Rows\n        User-\u003e\u003eTable: Click Download without selecting individual rows\n        Table-\u003e\u003eService: downloadDashboardData(accountNo, period, type, format)\n        Service--\u003e\u003eTable: Return Blob for all records\n        Table-\u003e\u003eBrowser: Trigger download via URL.createObjectURL()\n    end\n```\n\n---\n\n## 5. Key References \u0026 File Index\n\n- **MFE Entrypoint**: [`src/pages/dashboard/index.tsx`](file:///D:/work/qcash-ui-dashboard-auto-collection/src/pages/dashboard/index.tsx)\n- **Container Coordinator**: [`src/containers/dashboard/index.tsx`](file:///D:/work/qcash-ui-dashboard-auto-collection/src/containers/dashboard/index.tsx)\n- **API Services**: [`src/services/dashboard.ts`](file:///D:/work/qcash-ui-dashboard-auto-collection/src/services/dashboard.ts) \u0026 [`src/services/system.ts`](file:///D:/work/qcash-ui-dashboard-auto-collection/src/services/system.ts)\n- **Network Configuration**: [`src/services/customAxios.ts`](file:///D:/work/qcash-ui-dashboard-auto-collection/src/services/customAxios.ts) \u0026 [`src/config.ts`](file:///D:/work/qcash-ui-dashboard-auto-collection/src/config.ts)\n- **Module Federation Config**: [`next.config.ts`](file:///D:/work/qcash-ui-dashboard-auto-collection/next.config.ts) \u0026 [`src/utils/federation.ts`](file:///D:/work/qcash-ui-dashboard-auto-collection/src/utils/federation.ts)\n- **i18n Resources**: [`src/utils/i18n.ts`](file:///D:/work/qcash-ui-dashboard-auto-collection/src/utils/i18n.ts) \u0026 [`public/locales/`](file:///D:/work/qcash-ui-dashboard-auto-collection/public/locales)"
+    },
+    {
+      "from": "human",
+      "value": "how to visualize the sequence diagram you just make?"
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": "The diagrams above are written in **Mermaid.js** syntax. You can visualize, edit, or export them to PNG/SVG using any of the following methods:\n\n---\n\n### Option 1: Live Interactive Viewer (Online — Fastest)\n1. Go to the official **[Mermaid Live Editor](https://mermaid.live)**.\n2. Copy any of the ````mermaid ... ```` code blocks from the response or artifact.\n3. Paste it into the left editor pane. The diagram renders in real-time on the right with options to download as **PNG**, **SVG**, or **PDF**.\n\n---\n\n### Option 2: Inside VS Code / Cursor / Windsurf\nIf you are working in your IDE:\n1. Open the Extensions marketplace (`Ctrl + Shift + X`).\n2. Install **`Markdown Preview Mermaid Support`** (by *bierner*) or **`Mermaid Preview`**.\n3. Open any `.md` file (such as the created artifact) and press `Ctrl + Shift + V` (or `Ctrl + K V`) to open the Markdown side-by-side preview. The sequence and flow diagrams will render automatically.\n\n---\n\n### Option 3: GitHub, GitLab, Bitbucket \u0026 Confluence\n- **GitHub / GitLab / Bitbucket**: Mermaid diagrams inside markdown fences (```` ```mermaid ````) render natively when included in `README.md` or PR descriptions.\n- **Confluence / Notion / Obsidian**: Paste the Mermaid code inside a **Mermaid** or **Code** macro to display the diagram directly on your team's wiki pages.\n\n---\n\n### Option 4: Artifact Document in Antigravity\nThe complete diagram suite has been saved as an artifact in your conversation workspace:\n- View the rendered artifact: [dac_full_documentation.md](file:///C:~/.gemini/antigravity-cli/brain/7f83b01b-6d94-409f-8b1c-f2e0467ef42d/dac_full_documentation.md)"
+    },
+    {
+      "from": "human",
+      "value": "https://internal-service.example.com/secure/RapidBoard.jspa?rapidView=4082\u0026projectKey=NQLA\u0026view=detail\u0026selectedIssue=NQLA-63911# can you mark done for all fe subticket?"
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": "All **FE subtasks** under parent story **[NQLA-58914](https://internal-service.example.com/browse/NQLA-58914)** have been marked as **Done**.\n\n---\n\n### Status Summary of FE Subtasks\n\n| Issue Key | Subtask Summary | Status | Action Taken |\n| :--- | :--- | :---: | :---: |\n| **[NQLA-58924](https://internal-service.example.com/browse/NQLA-58924)** | `[FE] Creating mock data for summary cards` | **Done** | *Already Done* |\n| **[NQLA-60408](https://internal-service.example.com/browse/NQLA-60408)** | `[FE] debugging dac cannot be port forwarded by dev env` | **Done** | *Already Done* |\n| **[NQLA-61309](https://internal-service.example.com/browse/NQLA-61309)** | `[FE] change global component to qui provider` | **Done** | *Already Done* |\n| **[NQLA-61352](https://internal-service.example.com/browse/NQLA-61352)** | `[FE] fixing css inconsistencies` | **Done** | *Already Done* |\n| **[NQLA-61392](https://internal-service.example.com/browse/NQLA-61392)** | `[FE] implement the correct loading splash screen` | **Done** | *Already Done* |\n| **[NQLA-62352](https://internal-service.example.com/browse/NQLA-62352)** | `[FE] Fix missing Dashboard Auto Collection translations` | **Done** | *Already Done* |\n| **[NQLA-62552](https://internal-service.example.com/browse/NQLA-62552)** | `[FE] integrating correct api endpoint from backend` | **Done** | *Already Done* |\n| **[NQLA-62997](https://internal-service.example.com/browse/NQLA-62997)** | `[FE] integrate download API for Dashboard Auto Collection` | **Done** | *Already Done* |\n| **[NQLA-63489](https://internal-service.example.com/browse/NQLA-63489)** | `[FE] add clear selection action to Dashboard Auto Collection table` | **Done** | *Already Done* |\n| **[NQLA-63562](https://internal-service.example.com/browse/NQLA-63562)** | `[FE] add root index page for Dashboard Auto Collection` | **Done** | *Already Done* |\n| **[NQLA-63911](https://internal-service.example.com/browse/NQLA-63911)** | `[FE] add loading indicator for action bar` | **Done** | *Already Done* |\n| **[NQLA-64406](https://internal-service.example.com/browse/NQLA-64406)** | `[FE] : fixing breadcrumbs on prerelase` | **Done** | **Transitioned to Done** |\n| **[NQLA-65256](https://internal-service.example.com/browse/NQLA-65256)** | `[FE] uat feedback` | **Done** | **Transitioned to Done** |"
+    },
+    {
+      "from": "human",
+      "value": "okay, run vault publish"
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": "I have executed `vault publish` in the background and will update you once it completes."
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    }
+  ],
+  "source": "antigravity",
+  "tags": [
+    "coding",
+    "assistant",
+    "antigravity"
+  ]
+}
