@@ -23,15 +23,16 @@ type ToolCall struct {
 
 // Conversation represents a normalized session from any coding assistant
 type Conversation struct {
-	ID          string            `json:"id"`
-	SourceTool  string            `json:"source_tool"` // "antigravity", "opencode", "aider", "cursor", "codex", etc.
-	Title       string            `json:"title"`
-	Description string            `json:"description,omitempty"`
-	CreatedAt   time.Time         `json:"created_at"`
-	Languages   []string          `json:"languages,omitempty"`
-	Tags        []string          `json:"tags,omitempty"`
-	Messages    []Message         `json:"messages"`
-	Metadata    map[string]string `json:"metadata,omitempty"`
+	SchemaVersion int               `json:"schema_version"`
+	ID            string            `json:"id"`
+	SourceTool    string            `json:"source_tool"` // "antigravity", "opencode", "aider", "cursor", "codex", etc.
+	Title         string            `json:"title"`
+	Description   string            `json:"description,omitempty"`
+	CreatedAt     time.Time         `json:"created_at"`
+	Languages     []string          `json:"languages,omitempty"`
+	Tags          []string          `json:"tags,omitempty"`
+	Messages      []Message         `json:"messages"`
+	Metadata      map[string]string `json:"metadata,omitempty"`
 }
 
 // ShareGPTFormat represents the standard ShareGPT / HuggingFace dataset format

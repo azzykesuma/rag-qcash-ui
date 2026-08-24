@@ -234,6 +234,7 @@ func (s *Sanitizer) SanitizeConversation(conv *models.Conversation) *models.Conv
 	}
 
 	cloned := *conv
+	cloned.Metadata = sanitizeStringMap(s, conv.Metadata)
 	cloned.Title = s.SanitizeText(conv.Title)
 	cloned.Description = s.SanitizeText(conv.Description)
 
@@ -241,6 +242,7 @@ func (s *Sanitizer) SanitizeConversation(conv *models.Conversation) *models.Conv
 	for i, msg := range conv.Messages {
 		sanitizedMsg := msg
 		sanitizedMsg.Content = s.SanitizeText(msg.Content)
+		sanitizedMsg.Metadata = sanitizeMetadata(s, msg.Metadata)
 
 		if len(msg.ToolCalls) > 0 {
 			sanitizedToolCalls := make([]models.ToolCall, len(msg.ToolCalls))
@@ -281,5 +283,54 @@ func (s *Sanitizer) AuditText(text string) []string {
 		matches = append(matches, "Email Address")
 	}
 
+	if s.cfg.RedactIPs && s.ipRule.ReplaceAllStringFunc(text, func(match string) string {
+		parsed := net.ParseIP(match)
+		if parsed == nil || parsed.IsLoopback() || parsed.IsUnspecified() {
+			return match
+		}
+		return "[REDACTED_IP]"
+	}) != text {
+		matches = append(matches, "IP Address")
+	}
+
 	return matches
+}
+
+func sanitizeStringMap(s *Sanitizer, values map[string]string) map[string]string {
+	if len(values) == 0 {
+		return nil
+	}
+	result := make(map[string]string, len(values))
+	for key, value := range values {
+		result[s.SanitizeText(key)] = s.SanitizeText(value)
+	}
+	return result
+}
+
+func sanitizeMetadata(s *Sanitizer, value map[string]any) map[string]any {
+	if len(value) == 0 {
+		return nil
+	}
+	result := make(map[string]any, len(value))
+	for key, item := range value {
+		result[s.SanitizeText(key)] = sanitizeMetadataValue(s, item)
+	}
+	return result
+}
+
+func sanitizeMetadataValue(s *Sanitizer, value any) any {
+	switch value := value.(type) {
+	case string:
+		return s.SanitizeText(value)
+	case map[string]any:
+		return sanitizeMetadata(s, value)
+	case []any:
+		result := make([]any, len(value))
+		for i, item := range value {
+			result[i] = sanitizeMetadataValue(s, item)
+		}
+		return result
+	default:
+		return value
+	}
 }

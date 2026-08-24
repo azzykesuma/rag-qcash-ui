@@ -12,7 +12,7 @@ import (
 )
 
 func printUsage() {
-	fmt.Println(`
+	fmt.Print(`
 llm-context-vault: Open-source repository for sanitized local LLM conversations
 
 USAGE:
@@ -36,7 +36,10 @@ OPTIONS:
 `)
 }
 
-func resolveVaultDir() string {
+func resolveVaultDir(explicitDir string) string {
+	if explicitDir != "" {
+		return explicitDir
+	}
 	// 1. Environment variable
 	if envDir := os.Getenv("LLM_VAULT_DIR"); envDir != "" {
 		if _, err := os.Stat(envDir); err == nil {
@@ -58,32 +61,27 @@ func resolveVaultDir() string {
 		}
 	}
 
-	// 4. Default persistent vault directory
-	defaultPath := filepath.Join("D:\\code", "llm-context-vault")
-	if _, err := os.Stat(defaultPath); err == nil {
-		return defaultPath
-	}
-
-	// 5. Fallback to CWD
+	// 4. Fallback to CWD
 	cwd, _ := os.Getwd()
 	return cwd
 }
 
 func main() {
-	if len(os.Args) < 2 {
+	args, vaultDir := extractGlobalOptions(os.Args[1:])
+	if len(args) == 0 {
 		printUsage()
 		return
 	}
 
-	workDir := resolveVaultDir()
+	workDir := resolveVaultDir(vaultDir)
 
-	command := strings.ToLower(os.Args[1])
+	command := strings.ToLower(args[0])
 
 	switch command {
 	case "scan", "scan-all":
 		scanCmd := flag.NewFlagSet("scan", flag.ExitOnError)
 		customWordsFlag := scanCmd.String("redact-words", "", "Comma-separated words to redact")
-		_ = scanCmd.Parse(os.Args[2:])
+		_ = scanCmd.Parse(args[1:])
 
 		cfg := sanitizer.DefaultConfig()
 		if *customWordsFlag != "" {
@@ -160,8 +158,8 @@ func main() {
 
 	case "scan-agy":
 		brainDir := ""
-		if len(os.Args) >= 3 {
-			brainDir = os.Args[2]
+		if len(args) >= 2 {
+			brainDir = args[1]
 		} else {
 			homeDir, _ := os.UserHomeDir()
 			defaultBrain := filepath.Join(homeDir, ".gemini", "antigravity-cli", "brain")
@@ -188,8 +186,8 @@ func main() {
 
 	case "scan-codex":
 		codexDir := ""
-		if len(os.Args) >= 3 {
-			codexDir = os.Args[2]
+		if len(args) >= 2 {
+			codexDir = args[1]
 		} else {
 			homeDir, _ := os.UserHomeDir()
 			defaultDir := filepath.Join(homeDir, ".codex", "sessions")
@@ -216,8 +214,8 @@ func main() {
 
 	case "scan-opencode":
 		dbPath := ""
-		if len(os.Args) >= 3 {
-			dbPath = os.Args[2]
+		if len(args) >= 2 {
+			dbPath = args[1]
 		} else {
 			homeDir, _ := os.UserHomeDir()
 			defaultDB := filepath.Join(homeDir, ".local", "share", "opencode", "opencode.db")
@@ -247,14 +245,14 @@ func main() {
 		toolFlag := importCmd.String("tool", "", "Explicit tool name: agy, codex, opencode, aider, generic")
 		customWordsFlag := importCmd.String("redact-words", "", "Comma-separated words to redact")
 
-		if len(os.Args) < 3 {
+		if len(args) < 2 {
 			fmt.Println("Error: Target path required for import.")
 			fmt.Println("Example: vault import C:/path/to/transcript.jsonl --tool agy")
 			os.Exit(1)
 		}
 
-		targetPath := os.Args[2]
-		_ = importCmd.Parse(os.Args[3:])
+		targetPath := args[1]
+		_ = importCmd.Parse(args[2:])
 
 		var customKeywords []string
 		if *customWordsFlag != "" {
@@ -271,18 +269,20 @@ func main() {
 		v := vault.New(workDir, s)
 
 		fmt.Printf("📦 Importing and sanitizing from %s...\n", targetPath)
-		conv, warnings, err := v.ProcessAndStore(targetPath, *toolFlag)
+		conversations, warnings, skipped, err := v.ProcessAndStoreAll(targetPath, *toolFlag)
 		if err != nil {
 			fmt.Printf("❌ Failed to process conversation: %v\n", err)
 			os.Exit(1)
 		}
-		if conv == nil {
+		if len(conversations) == 0 {
 			fmt.Println("ℹ️ Skipped: Conversation was classified as a trivial greeting or empty session.")
 			return
 		}
 
-		fmt.Printf("✅ Successfully imported conversation: %s (%s)\n", conv.Title, conv.ID)
-		fmt.Printf("   Messages: %d | Source: %s\n", len(conv.Messages), conv.SourceTool)
+		fmt.Printf("✅ Successfully imported %d conversation(s) (%d skipped).\n", len(conversations), skipped)
+		for _, conv := range conversations {
+			fmt.Printf("   - %s (%s), %d messages from %s\n", conv.Title, conv.ID, len(conv.Messages), conv.SourceTool)
+		}
 
 		if len(warnings) > 0 {
 			fmt.Printf("⚠️ Warning: Detected sensitive patterns during audit:\n")
@@ -292,12 +292,12 @@ func main() {
 		}
 
 	case "search":
-		if len(os.Args) < 3 {
+		if len(args) < 2 {
 			fmt.Println("Error: Query string required.")
 			fmt.Println("Example: vault search \"JWT validation\"")
 			os.Exit(1)
 		}
-		query := strings.Join(os.Args[2:], " ")
+		query := strings.Join(args[1:], " ")
 		v := vault.New(workDir, sanitizer.New(sanitizer.DefaultConfig()))
 
 		results, err := v.Search(query)
@@ -319,12 +319,12 @@ func main() {
 		}
 
 	case "context":
-		if len(os.Args) < 3 {
+		if len(args) < 2 {
 			fmt.Println("Error: Query string required.")
 			fmt.Println("Example: vault context \"how to fix CORS in Express\"")
 			os.Exit(1)
 		}
-		query := strings.Join(os.Args[2:], " ")
+		query := strings.Join(args[1:], " ")
 		v := vault.New(workDir, sanitizer.New(sanitizer.DefaultConfig()))
 
 		snippet, err := v.GenerateContextSnippet(query, 3)
@@ -364,6 +364,24 @@ func main() {
 		fmt.Printf("Unknown command: %s\n", command)
 		printUsage()
 	}
+}
+
+func extractGlobalOptions(args []string) ([]string, string) {
+	result := make([]string, 0, len(args))
+	var vaultDir string
+	for i := 0; i < len(args); i++ {
+		if args[i] == "--vault-dir" && i+1 < len(args) {
+			vaultDir = args[i+1]
+			i++
+			continue
+		}
+		if strings.HasPrefix(args[i], "--vault-dir=") {
+			vaultDir = strings.TrimPrefix(args[i], "--vault-dir=")
+			continue
+		}
+		result = append(result, args[i])
+	}
+	return result, vaultDir
 }
 
 func showStats(baseDir string) {

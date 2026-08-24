@@ -23,5 +23,11 @@ jobs:
       - name: Build Vault Tool
         run: go build -o vault ./cmd/vault
 
+      - name: Run Go Tests
+        run: go test ./...
+
+      - name: Run Go Vet
+        run: go vet ./...
+
       - name: Run Privacy & Secret Audit
         run: ./vault audit

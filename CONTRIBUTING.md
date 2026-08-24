@@ -22,19 +22,19 @@ The built-in `vault` CLI automatically discovers and parses sessions from:
 ### Step 1: Fork & Clone
 Fork this repository on GitHub, then clone your fork locally:
 ```bash
-git clone https://github.com/<your-username>/rag-qcash-ui.git
-cd rag-qcash-ui
+git clone https://github.com/<your-username>/llm-context-vault.git
+cd llm-context-vault
 ```
 
 ---
 
 ### Step 2: Download the `vault` CLI
-Download the standalone executable for your operating system from our [Latest Releases](https://github.com/azzykesuma/rag-qcash-ui/releases/latest):
+Download the standalone executable for your operating system from our [Latest Releases](https://github.com/azzykesuma/llm-context-vault/releases/latest):
 
-- **Windows**: [`vault-windows-amd64.exe`](https://github.com/azzykesuma/rag-qcash-ui/releases/latest/download/vault-windows-amd64.exe) (rename to `vault.exe`)
-- **Linux**: [`vault-linux-amd64`](https://github.com/azzykesuma/rag-qcash-ui/releases/latest/download/vault-linux-amd64) (`chmod +x vault-linux-amd64 && mv vault-linux-amd64 vault`)
-- **macOS (Apple Silicon)**: [`vault-darwin-arm64`](https://github.com/azzykesuma/rag-qcash-ui/releases/latest/download/vault-darwin-arm64)
-- **macOS (Intel)**: [`vault-darwin-amd64`](https://github.com/azzykesuma/rag-qcash-ui/releases/latest/download/vault-darwin-amd64)
+- **Windows**: [`vault-windows-amd64.exe`](https://github.com/azzykesuma/llm-context-vault/releases/latest/download/vault-windows-amd64.exe) (rename to `vault.exe`)
+- **Linux**: [`vault-linux-amd64`](https://github.com/azzykesuma/llm-context-vault/releases/latest/download/vault-linux-amd64) (`chmod +x vault-linux-amd64 && mv vault-linux-amd64 vault`)
+- **macOS (Apple Silicon)**: [`vault-darwin-arm64`](https://github.com/azzykesuma/llm-context-vault/releases/latest/download/vault-darwin-arm64)
+- **macOS (Intel)**: [`vault-darwin-amd64`](https://github.com/azzykesuma/llm-context-vault/releases/latest/download/vault-darwin-amd64)
 
 *(Alternatively, build directly from source if you have Go installed: `go build -o vault ./cmd/vault`)*
 
@@ -55,7 +55,7 @@ Run the unified scan command inside the repository root:
 1. **Low-Value Filtering**: Skips empty turns, aborted runs, and greeting-only chats (`"hi"`, `"test"`, `"halo"`).
 2. **Multi-Layer Secret Redaction**: Replaces OpenAI keys (`sk-...`), Anthropic keys, GitHub PATs, Bitbucket tokens, SonarQube tokens, JWTs, AWS credentials, and database passwords with safe placeholders like `[REDACTED_SECRET]`.
 3. **Machine Path Anonymization**: Converts `C:\Users\username\...` and `/home/username/...` to relative `~/` paths.
-4. **Readable Slugs**: Generates human-readable Markdown files in `conversations/markdown/` based on your initial prompt.
+4. **Stable Exports**: Generates human-readable Markdown files with a content-derived suffix, so repeated scans update existing records rather than duplicating them.
 
 ---
 
@@ -98,7 +98,9 @@ Finally, open a **Pull Request (PR)** on GitHub targeting the `main` branch.
 ## 🛡️ Automated CI Security Gate
 
 Every Pull Request is automatically audited by our GitHub Actions workflow ([`audit.yml`](.github/workflows/audit.yml)):
-- Runs `./vault audit` across all added/modified files.
+- Runs `go test ./...`, `go vet ./...`, and `./vault audit`.
 - Blocks merging if any unredacted token, private key, or machine path is detected.
+
+Read [DATA_GOVERNANCE.md](DATA_GOVERNANCE.md) before submitting dataset content. It covers publication authorization, retention, deletion, schema versioning, and source attribution.
 
 Thank you for helping build a better, shared context library for local LLMs!

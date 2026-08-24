@@ -1,6 +1,9 @@
 package vault
 
 import (
+	"crypto/sha256"
+	"encoding/hex"
+	"encoding/json"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -154,7 +157,39 @@ func (v *Vault) ProcessAndStore(sourcePath string, explicitTool string) (*models
 	return v.StoreConversation(rawConv)
 }
 
-// StoreConversation filters trivial sessions, sanitizes, audits, and persists conversation with a human-readable slug filename
+// ProcessAndStoreAll imports every record from generic JSON/JSONL input.
+func (v *Vault) ProcessAndStoreAll(sourcePath string, explicitTool string) ([]*models.Conversation, []string, int, error) {
+	if explicitTool != "" && !strings.EqualFold(explicitTool, "generic") {
+		conversation, warnings, err := v.ProcessAndStore(sourcePath, explicitTool)
+		if conversation == nil {
+			return nil, warnings, 1, err
+		}
+		return []*models.Conversation{conversation}, warnings, 0, err
+	}
+
+	conversations, err := v.genericExtractor.ExtractAll(sourcePath)
+	if err != nil {
+		return nil, nil, 0, err
+	}
+	var stored []*models.Conversation
+	var warnings []string
+	skipped := 0
+	for _, conversation := range conversations {
+		cleanConversation, auditWarnings, err := v.StoreConversation(conversation)
+		if err != nil {
+			return stored, warnings, skipped, fmt.Errorf("failed to store %s: %w", conversation.ID, err)
+		}
+		if cleanConversation == nil {
+			skipped++
+			continue
+		}
+		stored = append(stored, cleanConversation)
+		warnings = append(warnings, auditWarnings...)
+	}
+	return stored, warnings, skipped, nil
+}
+
+// StoreConversation filters trivial sessions, sanitizes, audits, and persists a stable export.
 func (v *Vault) StoreConversation(rawConv *models.Conversation) (*models.Conversation, []string, error) {
 	if rawConv == nil {
 		return nil, nil, nil
@@ -166,16 +201,16 @@ func (v *Vault) StoreConversation(rawConv *models.Conversation) (*models.Convers
 	}
 
 	cleanConv := v.Sanitizer.SanitizeConversation(rawConv)
+	cleanConv.SchemaVersion = 1
+	cleanConv.ID = stableConversationID(cleanConv)
 
 	var auditWarnings []string
-	for _, msg := range cleanConv.Messages {
-		if warnings := v.Sanitizer.AuditText(msg.Content); len(warnings) > 0 {
-			auditWarnings = append(auditWarnings, warnings...)
-		}
+	if serialized, err := json.Marshal(cleanConv); err == nil {
+		auditWarnings = v.Sanitizer.AuditText(string(serialized))
 	}
 
 	// Generate human-readable filename from first chat/query
-	fileSlug := generateConversationSlug(cleanConv)
+	fileSlug := fmt.Sprintf("%s-%s", generateConversationSlug(cleanConv), cleanConv.ID[len(cleanConv.ID)-12:])
 
 	mdDir := filepath.Join(v.BaseDir, "conversations", "markdown")
 	shareDir := filepath.Join(v.BaseDir, "conversations", "sharegpt")
@@ -193,12 +228,40 @@ func (v *Vault) StoreConversation(rawConv *models.Conversation) (*models.Convers
 		return nil, nil, fmt.Errorf("failed to write sharegpt format: %w", err)
 	}
 
-	// 3. Append to master dataset JSONL
-	if err := v.jsonExport.AppendToJSONL(cleanConv, datasetPath); err != nil {
-		return nil, nil, fmt.Errorf("failed to append to dataset.jsonl: %w", err)
+	// 3. Upsert master dataset JSONL by stable content ID.
+	if err := v.jsonExport.UpsertJSONL(cleanConv, datasetPath); err != nil {
+		return nil, nil, fmt.Errorf("failed to update dataset.jsonl: %w", err)
 	}
 
 	return cleanConv, auditWarnings, nil
+}
+
+func stableConversationID(conv *models.Conversation) string {
+	// Exclude volatile source IDs and timestamps so re-importing unchanged content is idempotent.
+	payload := struct {
+		SourceTool  string            `json:"source_tool"`
+		Title       string            `json:"title"`
+		Description string            `json:"description"`
+		Languages   []string          `json:"languages"`
+		Tags        []string          `json:"tags"`
+		Messages    []models.Message  `json:"messages"`
+		Metadata    map[string]string `json:"metadata"`
+	}{
+		SourceTool:  conv.SourceTool,
+		Title:       conv.Title,
+		Description: conv.Description,
+		Languages:   conv.Languages,
+		Tags:        conv.Tags,
+		Messages:    conv.Messages,
+		Metadata:    conv.Metadata,
+	}
+	data, _ := json.Marshal(payload)
+	hash := sha256.Sum256(data)
+	prefix := toKebabCase(conv.SourceTool, 20)
+	if prefix == "" {
+		prefix = "llm"
+	}
+	return fmt.Sprintf("%s-%s", prefix, hex.EncodeToString(hash[:]))
 }
 
 // generateConversationSlug builds a clean, readable filename slug from the first user message
@@ -427,6 +490,8 @@ func (v *Vault) ScanAGYBrain(brainDir string) (int, int, []string, error) {
 				} else {
 					skippedCount++
 				}
+			} else {
+				allWarnings = append(allWarnings, fmt.Sprintf("[%s] %v", targetFile, err))
 			}
 		}
 	}
@@ -456,6 +521,8 @@ func (v *Vault) ScanOpenCodeDB(dbPath string) (int, int, []string, error) {
 			} else {
 				skippedCount++
 			}
+		} else {
+			allWarnings = append(allWarnings, fmt.Sprintf("[%s] %v", conv.ID, err))
 		}
 	}
 
@@ -496,6 +563,8 @@ func (v *Vault) ScanCodexSessions(sessionsDir string) (int, int, []string, error
 			} else {
 				skippedCount++
 			}
+		} else {
+			allWarnings = append(allWarnings, fmt.Sprintf("[%s] %v", f, err))
 		}
 	}
 

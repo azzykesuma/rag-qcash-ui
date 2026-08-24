@@ -68,11 +68,11 @@ Before any conversation is added to the repository, the engine executes a multi-
 ## 📥 Installation & Global Setup
 
 ### 1. Download Pre-Compiled Binary
-Grab the executable for your OS from [GitHub Releases](https://github.com/azzykesuma/rag-qcash-ui/releases/latest):
-- **Windows**: [`vault-windows-amd64.exe`](https://github.com/azzykesuma/rag-qcash-ui/releases/latest/download/vault-windows-amd64.exe) (rename to `vault.exe`)
-- **Linux**: [`vault-linux-amd64`](https://github.com/azzykesuma/rag-qcash-ui/releases/latest/download/vault-linux-amd64)
-- **macOS (Apple Silicon)**: [`vault-darwin-arm64`](https://github.com/azzykesuma/rag-qcash-ui/releases/latest/download/vault-darwin-arm64)
-- **macOS (Intel)**: [`vault-darwin-amd64`](https://github.com/azzykesuma/rag-qcash-ui/releases/latest/download/vault-darwin-amd64)
+Grab the executable for your OS from [GitHub Releases](https://github.com/azzykesuma/llm-context-vault/releases/latest):
+- **Windows**: [`vault-windows-amd64.exe`](https://github.com/azzykesuma/llm-context-vault/releases/latest/download/vault-windows-amd64.exe) (rename to `vault.exe`)
+- **Linux**: [`vault-linux-amd64`](https://github.com/azzykesuma/llm-context-vault/releases/latest/download/vault-linux-amd64)
+- **macOS (Apple Silicon)**: [`vault-darwin-arm64`](https://github.com/azzykesuma/llm-context-vault/releases/latest/download/vault-darwin-arm64)
+- **macOS (Intel)**: [`vault-darwin-amd64`](https://github.com/azzykesuma/llm-context-vault/releases/latest/download/vault-darwin-amd64)
 
 ### 2. Make `vault` Available Globally (Terminal & VS Code)
 
@@ -138,6 +138,17 @@ Redact specific client names, internal projects, or company code names:
 vault scan --redact-words "SecretClient,ProjectTitan,InternalService"
 ```
 
+### Vault Location And Repeatable Imports
+Use `--vault-dir` from any working directory to select the repository that receives exports:
+```bash
+vault scan --vault-dir /path/to/llm-context-vault
+```
+
+Exports use a stable ID derived from sanitized content. Re-importing unchanged content updates the same Markdown, ShareGPT, and JSONL records instead of creating duplicates. Generic JSON and JSONL imports support one or many normalized or ShareGPT conversations:
+```bash
+vault import conversations.jsonl --tool generic
+```
+
 ### 3. Tool-Specific Scans
 ```bash
 vault scan-agy       # Antigravity sessions only
@@ -164,6 +175,8 @@ vault audit
 
 ## 🤝 Contributing
 Contributions are welcome! Please check out our [Contributing Guidelines](CONTRIBUTING.md) to see how you can safely scan and submit your own local assistant problem-solving sessions via Pull Request.
+
+Dataset publication, retention, removal, schema, and attribution requirements are documented in [DATA_GOVERNANCE.md](DATA_GOVERNANCE.md).
 
 ---
 

@@ -1,6 +1,7 @@
 package exporter
 
 import (
+	"bufio"
 	"encoding/json"
 	"fmt"
 	"os"
@@ -50,23 +51,70 @@ func (e *JSONLExporter) ExportShareGPT(conv *models.Conversation, outPath string
 	return os.WriteFile(outPath, data, 0644)
 }
 
-// AppendToJSONL appends normalized conversation as a single line in a dataset JSONL file
-func (e *JSONLExporter) AppendToJSONL(conv *models.Conversation, jsonlPath string) error {
+// UpsertJSONL replaces an existing conversation with the same stable ID or appends it.
+func (e *JSONLExporter) UpsertJSONL(conv *models.Conversation, jsonlPath string) error {
 	if err := os.MkdirAll(filepath.Dir(jsonlPath), 0755); err != nil {
 		return fmt.Errorf("failed to create directory: %w", err)
 	}
 
-	file, err := os.OpenFile(jsonlPath, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0644)
+	conversations, err := readJSONL(jsonlPath)
 	if err != nil {
-		return fmt.Errorf("failed to open dataset file: %w", err)
+		return err
+	}
+
+	found := false
+	for i, existing := range conversations {
+		if existing.ID == conv.ID {
+			conversations[i] = *conv
+			found = true
+			break
+		}
+	}
+	if !found {
+		conversations = append(conversations, *conv)
+	}
+
+	file, err := os.Create(jsonlPath)
+	if err != nil {
+		return fmt.Errorf("failed to rewrite dataset file: %w", err)
+	}
+	defer file.Close()
+	encoder := json.NewEncoder(file)
+	for _, conversation := range conversations {
+		if err := encoder.Encode(conversation); err != nil {
+			return fmt.Errorf("failed to encode dataset conversation: %w", err)
+		}
+	}
+	return nil
+}
+
+func readJSONL(path string) ([]models.Conversation, error) {
+	file, err := os.Open(path)
+	if os.IsNotExist(err) {
+		return nil, nil
+	}
+	if err != nil {
+		return nil, fmt.Errorf("failed to open dataset file: %w", err)
 	}
 	defer file.Close()
 
-	line, err := json.Marshal(conv)
-	if err != nil {
-		return fmt.Errorf("failed to marshal conversation: %w", err)
+	scanner := bufio.NewScanner(file)
+	scanner.Buffer(make([]byte, 64*1024), 16*1024*1024)
+	var conversations []models.Conversation
+	lineNumber := 0
+	for scanner.Scan() {
+		lineNumber++
+		if len(scanner.Bytes()) == 0 {
+			continue
+		}
+		var conversation models.Conversation
+		if err := json.Unmarshal(scanner.Bytes(), &conversation); err != nil {
+			return nil, fmt.Errorf("invalid dataset JSONL at line %d: %w", lineNumber, err)
+		}
+		conversations = append(conversations, conversation)
 	}
-
-	_, err = file.Write(append(line, '\n'))
-	return err
+	if err := scanner.Err(); err != nil {
+		return nil, fmt.Errorf("failed to read dataset file: %w", err)
+	}
+	return conversations, nil
 }
