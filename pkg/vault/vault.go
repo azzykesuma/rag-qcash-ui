@@ -660,13 +660,20 @@ func (v *Vault) AuditAll() (map[string][]string, error) {
 	convDir := filepath.Join(v.BaseDir, "conversations")
 
 	err := filepath.Walk(convDir, func(path string, info os.FileInfo, err error) error {
-		if err != nil || info.IsDir() {
+		if err != nil {
+			return err
+		}
+		if info.IsDir() {
+			return nil
+		}
+		extension := strings.ToLower(filepath.Ext(path))
+		if extension != ".md" && extension != ".json" && extension != ".jsonl" {
 			return nil
 		}
 
 		contentBytes, err := os.ReadFile(path)
 		if err != nil {
-			return nil
+			return fmt.Errorf("failed to read %s: %w", path, err)
 		}
 
 		warnings := v.Sanitizer.AuditText(string(contentBytes))

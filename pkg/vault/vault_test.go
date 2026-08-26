@@ -63,6 +63,25 @@ func TestStoreConversationAuditsAllSanitizedFields(t *testing.T) {
 	}
 }
 
+func TestAuditAllIgnoresNonPublishableFiles(t *testing.T) {
+	baseDir := t.TempDir()
+	conversationDir := filepath.Join(baseDir, "conversations")
+	if err := os.MkdirAll(conversationDir, 0755); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(filepath.Join(conversationDir, "index.db"), []byte("ghp_abcdefghijklmnopqrstuvwxyz0123456789AB"), 0644); err != nil {
+		t.Fatal(err)
+	}
+
+	findings, err := New(baseDir, sanitizer.New(sanitizer.DefaultConfig())).AuditAll()
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(findings) != 0 {
+		t.Fatalf("unexpected audit findings for ignored binary artifact: %v", findings)
+	}
+}
+
 func conversation(id, prompt string) *models.Conversation {
 	return &models.Conversation{
 		ID:         id,
