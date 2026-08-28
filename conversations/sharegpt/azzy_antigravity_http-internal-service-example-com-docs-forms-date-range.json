@@ -1,0 +1,780 @@
+{
+  "id": "093c4c71-8f51-4486-98f6-f98135aa6893",
+  "author": "azzy",
+  "conversations": [
+    {
+      "from": "human",
+      "value": "http://internal-service.example.com/docs/forms/date-range-picker can you read the content of this website?"
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": "Yes, I can read the content of that page.\n\nHere is a comprehensive summary of the **Date Range Picker** documentation from the QCash UI Design System (`@qui/components`):\n\n---\n\n### **Overview**\nThe **`DateRangePicker`** is a paired date input component for selecting start and end dates. Built on `rc-picker` with QUI styling, it supports form field variants, filter chips, Dayjs date handling, and validation workflows.\n\n---\n\n### **Key Highlights \u0026 Features**\n\n#### 1. **Import**\n```tsx\nimport { \n  DateRangePicker, \n  type DateRangePickerLocale, \n  type DateRangePickerValue \n} from \"@qui/components\";\n```\n\n#### 2. **Component Anatomy \u0026 Slots**\n- **`DateRangePicker` / `DateRangePicker.Root`**: Root range control.\n- **`DateRangePicker.Label`**: Visible field label connected to the start input.\n- **`DateRangePicker.Description`**: Helper copy connected via `aria-describedby`.\n- **`DateRangePicker.FieldError`**: Validation message displayed when `isInvalid={true}`.\n\n#### 3. **Variants**\n- `\"outlined\"` *(default)*: Standard form field treatment.\n- `\"filled\"`: Filled background variant.\n- `\"underline\"`: Underlined border variant.\n- `\"filter\"`: Compact trigger designed for toolbars and data tables with built-in clear button affordance.\n\n#### 4. **Locales \u0026 Formatting**\n- Supported locales: `\"id-ID\"` *(default: `DD / MMMM / YYYY`)*, `\"en-US\"` *(`MMMM / DD / YYYY`)*, `\"zh-CN\"` *(`YYYY / MMMM / DD`)*.\n- Format customization via the `format` prop (e.g., `\"DD / MM / YY\"` with tokens `D`, `DD`, `M`, `MM`, `MMM`, `MMMM`, `YY`, `YYYY`).\n- `picker` modes: `\"date\"` *(default)*, `\"week\"`, `\"month\"`, `\"quarter\"`, `\"year\"`.\n\n#### 5. **Value \u0026 State Handling**\n- **Value types**:\n  ```typescript\n  type DateRangePickerValue =\n    | [Dayjs | null, Dayjs | null]\n    | { start?: DateValue | null; end?: DateValue | null }\n    | null;\n  ```\n- **Important**: Uses **Dayjs** (Moment.js is not supported).\n- `onChange`: Emits `(value: DateRangePickerValue, dateStrings: [string, string]) =\u003e void`.\n- When both dates are cleared, the value normalizes to `null`.\n\n#### 6. **Disabled Date Rules \u0026 Pattern Example**\nSupports dynamic constraints via `disabledDate={(date, info) =\u003e boolean}`, where `info.from` contains the selected start date:\n```tsx\nimport dayjs from \"dayjs\";\n\nconst disableFutureDates = (date) =\u003e date.isAfter(new Date(), \"day\");\nconst disablePastDates = (date) =\u003e date.isBefore(new Date(), \"day\");\nconst maxThirtyOneDays = (date, info) =\u003e {\n  if (!info.from) return false;\n  return Math.abs(date.diff(info.from, \"day\")) \u003e 31;\n};\n\n\u003cDateRangePicker disabledDate={disableFutureDates}\u003e\n  \u003cDateRangePicker.Label\u003eReport period\u003c/DateRangePicker.Label\u003e\n\u003c/DateRangePicker\u003e\n```\n\n#### 7. **Modal \u0026 Popup Behavior**\n- Automatically renders inside the nearest modal container with proper z-index scoping when placed inside a `Modal`.\n- Default popup placement is `bottomLeft` with automatic overflow adjustment.\n\n---\n\n### **Key Props Reference**\n\n| Prop | Type | Default | Description |\n| :--- | :--- | :--- | :--- |\n| `variant` | `\"outlined\" \\| \"filled\" \\| \"underline\" \\| \"filter\"` | `\"outlined\"` | Visual style variant |\n| `locale` | `\"id-ID\" \\| \"en-US\" \\| \"zh-CN\"` | `\"id-ID\"` | Locale for calendars, masks, labels |\n| `format` | `string` | Locale-dependent | Custom Dayjs display format |\n| `picker` | `\"date\" \\| \"week\" \\| \"month\" \\| \"quarter\" \\| \"year\"` | `\"date\"` | Selection mode |\n| `value` / `defaultValue` | `DateRangePickerValue` | — | Controlled / uncontrolled range value |\n| `onChange` | `(value, dateStrings) =\u003e void` | — | Selection change callback |\n| `disabledDate` | `(date: Dayjs, info: { from?: Dayjs }) =\u003e boolean` | — | Function to disable specific dates |\n| `isDisabled` | `boolean` | `false` | Disables the inputs |\n| `isInvalid` | `boolean` | `false` | Toggles error styling \u0026 slot |\n| `isRequired` | `boolean` | `false` | Marks field as required |\n| `isBlock` | `boolean` | `false` | Expands to full width |\n| `placeholder` | `string \\| [string, string]` | Locale-dependent | Custom empty segment placeholder |\n| `open` / `defaultOpen` / `onOpenChange` | `boolean` / `(open: boolean) =\u003e void` | — | Calendar disclosure state controls |\n\n---\n*Let me know if you need specific code examples, integration help, or details about any particular feature!*"
+    },
+    {
+      "from": "human",
+      "value": "okay now this https://github.com/harshkedia177/axon , check the content and explain to me the mcp detail that the repo is providing"
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": "The repository **[harshkedia177/axon](https://github.com/harshkedia177/axon)** (PyPI package: `axoniq`) provides a **codebase knowledge graph** designed to give AI coding agents deep structural understanding of a repository rather than relying solely on raw text/file grep.\n\n---\n\n### **How Axon's MCP Works**\n\nAxon indexes the repository locally into an embedded **Kùzu graph database** using AST parsing (Tree-sitter), call graph tracing, type inference, Leiden community clustering, local vector embeddings (`bge-small-en-v1.5`), and 6 months of Git co-change history.\n\nIt runs completely **locally with zero cloud dependencies** and exposes its knowledge graph over **stdio** or **Streamable HTTP**.\n\n#### **MCP Client Configuration**\nTo configure Axon in `.mcp.json` or your MCP client config:\n```json\n{\n  \"mcpServers\": {\n    \"axon\": {\n      \"command\": \"axon\",\n      \"args\": [\"serve\", \"--watch\"]\n    }\n  }\n}\n```\n\n---\n\n### **1. MCP Tools Provided (15 Tools)**\n\nAxon registers **15 specialized tools** under `src/axon/mcp/tools.py` and `src/axon/mcp/server.py`:\n\n#### 🔍 **Code Search \u0026 Navigation**\n1. **`axon_query`**: \n   - Hybrid search fusing **BM25 full-text**, **384-dim semantic embeddings**, and **Levenshtein fuzzy matching** with Reciprocal Rank Fusion (RRF).\n   - Down-ranks test files and groups matches by execution flow.\n2. **`axon_context`**: \n   - 360-degree architectural view of a symbol (callers, callees, type references, file location, and community cluster).\n3. **`axon_explain`**: \n   - High-level onboarding explanation of what a symbol does, why it exists, its callers/callees, and process workflows.\n4. **`axon_call_path`**: \n   - Finds the shortest call chain between two symbols using BFS graph traversal.\n5. **`axon_file_context`**: \n   - Returns all symbols in a file, outgoing/incoming imports, coupled files from git history, dead code, and community membership in one call.\n\n---\n\n#### 💥 **Change Impact \u0026 PR Risk Assessment**\n6. **`axon_impact`**: \n   - Blast radius analysis for changing a symbol. Groups affected callers by depth:\n     - **Depth 1**: Direct callers (*will break*)\n     - **Depth 2**: Indirect callers (*may break*)\n     - **Depth 3+**: Transitive (*review*)\n7. **`axon_detect_changes`**: \n   - Parses a raw Git diff and maps modified files and line ranges directly to graph symbols.\n8. **`axon_review_risk`**: \n   - PR risk assessment from a Git diff. Evaluates affected blast radius, missing co-changed files, and architectural boundary crossings to calculate a risk score.\n9. **`axon_test_impact`**: \n   - Traces callers upstream from changed lines/symbols to identify which specific test files and test functions need to run.\n\n---\n\n#### 🏗️ **Architecture \u0026 Code Health**\n10. **`axon_dead_code`**: \n    - Framework-aware dead code detector (filters out framework entry points, routes, decorators, properties, protocol stubs, and constructors).\n11. **`axon_cycles`**: \n    - Detects circular dependencies using Strongly Connected Component (SCC) analysis.\n12. **`axon_coupling`**: \n    - Identifies temporal dependencies and co-change patterns based on Git commit history (`COUPLED_WITH` edges).\n13. **`axon_communities`**: \n    - Lists functional architectural clusters discovered by the Leiden algorithm, or inspects symbols within a specific cluster.\n\n---\n\n#### 🛠️ **Power \u0026 Administration Tools**\n14. **`axon_cypher`**: \n    - Executes raw Cypher graph queries directly against the Kùzu database (e.g., `MATCH (f:Function)-[:CALLS]-\u003e(m:Method) RETURN f.name, m.name`).\n15. **`axon_list_repos`**: \n    - Lists all indexed local repositories and their database statistics.\n\n---\n\n### **2. MCP Resources Provided (3 Resources)**\n\nAxon also exposes read-only graph snapshots as MCP resources:\n\n| Resource URI | Name | Description |\n| :--- | :--- | :--- |\n| `axon://overview` | **Codebase Overview** | Summary of total indexed nodes, symbol counts by type (`Function`, `Class`, `Method`, etc.), and relationship counts. |\n| `axon://dead-code` | **Dead Code Report** | Formatted report of all unreachable symbols across the codebase with line numbers. |\n| `axon://schema` | **Graph Schema** | Documentation of node labels (`File`, `Folder`, `Function`, `Class`, `Community`, `Process`) and edge types (`CALLS`, `IMPORTS`, `EXTENDS`, `IMPLEMENTS`, `MEMBER_OF`, `COUPLED_WITH`, etc.). |\n\n---\n\n### **Summary of Value for AI Coding Agents**\nInstead of having an AI agent make 10–20 file reading and regex grepping calls to understand dependencies, Axon allows the agent to call tools like `axon_impact` or `axon_context` to receive the full call tree, blast radius, coupled files, and test requirements in a **single tool call**."
+    },
+    {
+      "from": "human",
+      "value": "okay please add this mcp"
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": "I am currently installing the `axoniq` package via pip and will configure the MCP server once the installation finishes."
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": "I will notify you once the installation and MCP configuration are complete."
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": "The **Axon** MCP server has been installed and added to your configuration!\n\n---\n\n### **What Was Done**\n1. **Installed Axon**: Installed the `axoniq` package (and compatible `mcp` runtime) into your Python environment.\n2. **Configured MCP**: Added `axon` to your global Antigravity MCP configuration (`~/.gemini/config/mcp_config.json`):\n   ```json\n   \"axon\": {\n     \"command\": \"axon\",\n     \"args\": [\n       \"serve\",\n       \"--watch\"\n     ]\n   }\n   ```\n\n---\n\n### **How to Use Axon in Any Repository**\n\nBefore Axon's MCP tools can query a repository, the repo must be indexed once:\n\n1. **Index your repository** (takes ~5s for most codebases):\n   ```bash\n   cd D:\\work\\qcash-ui\n   axon analyze .\n   ```\n2. **(Optional) Explore visually in the Web UI**:\n   ```bash\n   axon ui\n   ```\n   *Opens the interactive Sigma.js / WebGL force-directed graph dashboard at `http://localhost:8420`.*\n\n---\n\n### **Available MCP Tools**\nOnce initialized, the following 15 tools are available for AI agents:\n- `axon_query`: Hybrid search (BM25 + Semantic Embeddings + Fuzzy) grouped by execution flow.\n- `axon_context`: 360° architectural view of a symbol (callers, callees, types, community).\n- `axon_impact`: Blast radius analysis grouped by depth (`will break` / `may break` / `review`).\n- `axon_call_path`: Shortest call chain between two symbols.\n- `axon_file_context`: Symbols, imports, git coupling, and dead code for a file.\n- `axon_review_risk`: PR risk assessment \u0026 score from a Git diff.\n- `axon_test_impact`: Finds tests affected by code changes.\n- `axon_dead_code`: Framework-aware unreachable code detector.\n- `axon_cycles`: Circular dependency detection.\n- `axon_coupling`: Git history temporal co-change analysis.\n- `axon_communities`: Leiden architectural clustering.\n- `axon_cypher`: Raw graph queries against KùzuDB."
+    },
+    {
+      "from": "human",
+      "value": "can you fix the axon mcp config?"
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": "The Axon MCP server configuration in `~/.gemini/config/mcp_config.json` has been fixed and verified.\n\n---\n\n### **What Was Fixed**\n\n1. **Resolved Stdio Transport Conflict**:\n   - `axon serve --watch` attempts to spawn a separate background HTTP host and bridge sockets, which fails under direct stdio MCP process spawning.\n   - Replaced with direct stdio entrypoint: `python -m axon.cli.main mcp`.\n2. **Fixed Windows Process Resolution**:\n   - Explicitly configured the runner to use `python` with the module argument `[\"-m\", \"axon.cli.main\", \"mcp\"]` to avoid Windows executable lookup/extension (`.exe` / `.cmd`) issues in Node's child process spawner.\n3. **Fixed Dependency Compatibility**:\n   - Pinned `mcp\u003c2` (`mcp==1.29.1`) required by `axoniq` to resolve the breaking changes between `FastMCP` and `MCPServer` in MCP 2.x.\n4. **Verified Handshake**:\n   - Tested the JSON-RPC initialization handshake directly and confirmed clean responses.\n\n---\n\n### **Updated Configuration (`~/.gemini/config/mcp_config.json`)**\n```json\n\"axon\": {\n  \"command\": \"python\",\n  \"args\": [\n    \"-m\",\n    \"axon.cli.main\",\n    \"mcp\"\n  ]\n}\n```"
+    },
+    {
+      "from": "human",
+      "value": "okay run the axon scan"
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": "I have started running `axon analyze .` on the codebase. I will notify you with the analysis report as soon as it completes."
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": "The Axon scan has completed successfully for **`qcash-ui`**!\n\n---\n\n### **Repository Indexing Summary**\n\n| Metric | Result |\n| :--- | :--- |\n| **Indexed Path** | `D:\\work\\qcash-ui` |\n| **Files Scanned** | **782** files |\n| **Symbols Resolved** | **859** symbols (functions, classes, methods, components) |\n| **Relationships Mapped** | **2,097** edges (`CALLS`, `IMPORTS`, `EXTENDS`, etc.) |\n| **Architectural Clusters** | **39** Leiden communities |\n| **Execution Flows** | **37** process workflows |\n| **Dead Code Flagged** | **194** unreachable symbols |\n| **Database Storage** | `.axon/kuzu` |\n\n---\n\n### **MCP Server \u0026 Graph Status**\nThe knowledge graph database is active and ready. All 15 MCP tools (such as `axon_context`, `axon_impact`, `axon_review_risk`, `axon_dead_code`, `axon_cycles`, `axon_coupling`, etc.) can now query this repository directly.\n\n#### **Quick Commands to Try**\n- **View Symbol Context**:\n  ```bash\n  axon context initFederation\n  ```\n- **Show Blast Radius of a Symbol**:\n  ```bash\n  axon impact \u003csymbol_name\u003e\n  ```\n- **Launch Interactive Web UI Graph**:\n  ```bash\n  axon ui\n  ```"
+    },
+    {
+      "from": "human",
+      "value": "run the axon ui"
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": "The **Axon UI** web dashboard has been launched and is running in the background!\n\n### 🌐 **Dashboard URL**\n**[http://127.0.0.1:8420](http://127.0.0.1:8420)**\n\n---\n\n### **What You Can Explore**\n- **Graph Explorer**: Interactive force-directed WebGL graph (Sigma.js). Click on any symbol or file node to view its caller/callee trees, blast radius, and architectural cluster hulls.\n- **Analysis Dashboard**: Codebase health metrics, coupling heatmaps, dead code reports, and execution workflows.\n- **Cypher Console**: Execute graph queries against the knowledge graph with syntax highlighting and presets.\n- **Search \u0026 Filter**: Press `Cmd+K` / `Ctrl+K` to open the command palette and jump to any symbol."
+    },
+    {
+      "from": "human",
+      "value": "okay how exactly this mcp is going to help me?"
+    },
+    {
+      "from": "gpt",
+      "value": "Having the **Axon MCP server** active transforms how I (your AI assistant) understand and interact with your codebase. \n\nInstead of treating your project as a collection of disconnected text files that I have to blindly `grep` and guess through, Axon provides me with a **precomputed structural knowledge graph** of all 782 files and 859 symbols in `qcash-ui`.\n\nHere is how this directly helps you in real engineering workflows:\n\n---\n\n### **1. 💥 Instant Blast Radius \u0026 Safe Refactoring**\n* **Without Axon**: If you ask *\"Can I change the signature of `customAxios` or refactor `urshifuPlugin`?\"*, I would run regex searches across the repo, read 10+ files one by one, and might still miss indirect/transitive callers or runtime dependencies.\n* **With Axon**: I call `axon_impact(\"customAxios\")` once. It instantly returns the full downstream dependency tree categorized into:\n  - **Depth 1 (Direct Callers)**: What will break immediately.\n  - **Depth 2 (Indirect Callers)**: What may break.\n  - **Depth 3+ (Transitive)**: What needs architectural review.\n\n---\n\n### **2. 🧪 PR Risk Assessment \u0026 Targeted Testing**\n* **The Problem**: When you make changes across multiple files, it's easy to miss updating a coupled file or forget to run specific unit tests.\n* **With Axon**:\n  - `axon_review_risk(diff)`: Analyzes your Git diff to calculate a risk score, checks if you changed symbols that cross architectural boundaries, and checks if you forgot to edit **co-change files** (files that historically change together in Git 80%+ of the time).\n  - `axon_test_impact(diff)`: Tells you the exact test files (e.g., `services/__tests__/custom-axios.test.ts`) that actually execute the changed code, so you only run the relevant tests.\n\n---\n\n### **3. 🔍 360° Architectural Context in a Single Shot**\n* When exploring or onboarding onto an unfamiliar component (e.g., `services/federation/urshifuPlugin.tsx` or `pages/_app.tsx`), calling `axon_context` or `axon_explain` gives:\n  - Every caller and callee.\n  - Type dependencies (`USES_TYPE`).\n  - Which architectural community/module it belongs to.\n  - Whether it's dead code or an active entry point.\n* **Benefit for you**: Answers are faster, more accurate, and don't waste your context window on iterative file searching.\n\n---\n\n### **4. 🧹 Confident Dead Code \u0026 Tech Debt Cleanup**\n* Static linters often report false positives on dead code (e.g., missing framework entry points or dynamic exports).\n* Axon's `axon_dead_code` tool uses a multi-pass analyzer that accounts for Next.js pages, exported MFE components, and test fixtures. It already flagged **194 unreachable symbols** across `qcash-ui` (such as deprecated skeletons and unused helper functions) that can be safely pruned to reduce bundle size.\n\n---\n\n### **5. 🔄 Detecting Circular Dependencies in Micro-Frontends**\n* In Module Federation / Micro-Frontend architectures, circular imports (`A -\u003e B -\u003e C -\u003e A`) can silently cause runtime bundle chunk evaluation failures or `undefined` imports.\n* `axon_cycles` uses Strongly Connected Component (SCC) graph analysis to detect and flag cyclical import chains before they break production builds.\n\n---\n\n### **Summary of Benefits**\n\n| Feature | Flat Grep / File Reading | With Axon Knowledge Graph |\n| :--- | :--- | :--- |\n| **Call Tree Resolution** | ❌ Manual, misses indirect calls | ✅ Complete multi-hop graph |\n| **Token \u0026 Time Cost** | ❌ 10–20 tool calls, high latency | ✅ 1 tool call, instant response |\n| **Git Co-change Awareness** | ❌ None | ✅ Learns from 6 months of Git history |\n| **MFE / Circular Import Safety** | ❌ Hard to trace manually | ✅ Automated cycle detection |"
+    },
+    {
+      "from": "human",
+      "value": "should i invoke axon manually or should i run specific command for it?"
+    },
+    {
+      "from": "gpt",
+      "value": "**You do not need to invoke Axon manually in our conversations.**\n\nAxon operates on two levels:\n\n---\n\n### **1. Inside the AI Chat (100% Automatic)**\nBecause Axon is registered as an MCP server, **I will automatically call its tools behind the scenes** whenever you ask architectural, refactoring, or code-relation questions.\n\nYou can just speak naturally. For example:\n- *\"What will break if I change `customAxios`?\"* *(I will automatically call `axon_impact`)*\n- *\"Review the risk of my current git changes.\"* *(I will automatically call `axon_review_risk` and `axon_test_impact`)*\n- *\"What does `urshifuPlugin` connect to?\"* *(I will automatically call `axon_context`)*\n- *\"Show me dead code in `services/federation`.\"* *(I will automatically call `axon_dead_code`)*\n- *\"Are there any circular dependencies?\"* *(I will automatically call `axon_cycles`)*\n\n---\n\n### **2. When You Might Want to Use the CLI / UI Manually**\nYou only need to run Axon commands yourself in a few specific scenarios:\n\n| Command | When to use it yourself |\n| :--- | :--- |\n| **`axon ui`** | When you want to visually interact with the 3D/WebGL graph, trace paths, or show architectural diagrams to team members at `http://localhost:8420`. |\n| **`axon analyze .`** | When you switch branches or pull major upstream changes from Git and want to refresh the local knowledge graph index. |\n| **`axon diff \u003cbranch\u003e`** | Quick terminal check of structural changes between Git branches. |\n\n---\n\n### **TL;DR**\nJust ask your normal coding and refactoring questions in chat—I'll handle querying Axon for you automatically!"
+    },
+    {
+      "from": "human",
+      "value": "okay, check the architectural integrity of qcash ui please"
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": "Here is the **Architectural Integrity Report** for **`qcash-ui`** based on the Axon knowledge graph analysis:\n\n---\n\n### 📊 **Executive Summary**\n\n| Metric | Status / Value | Health Assessment |\n| :--- | :--- | :--- |\n| **Circular Dependencies** | **0 cycles** | 🟢 **Healthy (Pass)** |\n| **Total Files** | **782** files | — |\n| **Symbols Analyzed** | **859** (505 functions/components, 259 types, 95 classes/methods) | — |\n| **Inter-symbol Call Edges** | **549** direct call paths | 🟢 **Clean DAG Structure** |\n| **Execution Flows (Workflows)** | **37** key runtime process flows | 🟢 **Well-defined pipelines** |\n| **Dead Code / Tech Debt** | **194** unreachable symbols | 🟡 **Cleanup Opportunity** |\n\n---\n\n### **1. 🔄 Circular Dependency Check: Passed (0 Cycles)**\n* **Finding**: No strongly connected components or cyclical import chains (`A → B → C → A`) were detected.\n* **Why this matters**: In Next.js and Webpack Module Federation, circular dependencies are a primary cause of `undefined` runtime imports and chunk loading stalls. The codebase maintains a clean directed acyclic graph (DAG).\n\n---\n\n### **2. 🚀 Key Architectural Pipelines Identified**\n\nAxon traced **37 core execution flows** across authentication, module federation, and layout orchestration:\n\n1. **Host Authentication \u0026 Token Gate**:\n   $$\\text{HostAuthGate} \\longrightarrow \\text{isPublicRoute} \\longrightarrow \\text{setHostAuthGuardState} \\longrightarrow \\text{getAccessToken}$$\n2. **Auth Bridge Synchronization**:\n   $$\\text{AuthBridgeSync} \\longrightarrow \\text{shouldUseBriAuth} \\longrightarrow \\text{sync} \\longrightarrow \\text{clearBridgeData}$$\n3. **Request Deduplication \u0026 Adapter Coalescing**:\n   $$\\text{BriProviders} \\longrightarrow \\text{setupAuthRequestDeduplication} \\longrightarrow \\text{installCoalescingAdapter} \\longrightarrow \\text{clearAuthRequestCache}$$\n4. **Dynamic DevPort \u0026 Remote MFE Orchestration**:\n   $$\\text{ModuleDevProvider} \\longrightarrow \\text{getAllPortEntries} \\longrightarrow \\text{getAvailableModuleNames} \\longrightarrow \\text{addDynamicDevPort}$$\n5. **Loading \u0026 MFA Overlay Management**:\n   $$\\text{LoadingOverlay} \\longrightarrow \\text{applyVisibility} \\longrightarrow \\text{onMfaModalChange} \\longrightarrow \\text{observe}$$\n\n---\n\n### **3. 🧹 Technical Debt \u0026 Dead Code Hotspots (194 Unreachable Symbols)**\n\nAxon identified **194 unused functions, methods, and types** that have no incoming callers across the active page tree. \n\n#### **Top Hotspots for Bundle Optimization:**\n1. **`services/federation/urshifuPlugin.tsx`** *(19 unused symbols)*:\n   - Deprecated cache and metric inspection methods (`getMetrics`, `destroy`, `check`, internal logger overrides).\n2. **`components/federation/monitor/devport/index.tsx`** *(9 unused symbols)*:\n   - Unreferenced devport monitor helper functions and debug handlers.\n3. **`services/federation/utils/security.ts`** *(8 unused symbols)*:\n   - Unused audit log accessors (`getAuditLog`, `clearAuditLog`, `reset`).\n4. **`components/promo-carousel-modal/Carousel.tsx`** *(5 unused symbols)*:\n   - Legacy carousel callbacks and event handlers.\n5. **Unused Skeleton Components**:\n   - `account-receivable` skeleton variations (`ReceivableBatchDetailSkeleton`, `ReceivableReportsSkeleton`) not wired to active pages.\n\n---\n\n### **💡 Recommendations**\n1. **Keep the DAG Clean**: Continue avoiding circular imports between `components/providers` and `services/federation`.\n2. **Prune `urshifuPlugin.tsx` \u0026 `security.ts`**: Safely remove the 27 unused helper methods to trim client-side bundle size.\n3. **Test Helper Housekeeping**: Several test helper utilities in `LoadingNewQlola.test.tsx` and `SessionExpiredLayout.test.tsx` can be refactored into shared test mocks."
+    }
+  ],
+  "source": "antigravity",
+  "tags": [
+    "coding",
+    "assistant",
+    "antigravity"
+  ]
+}
