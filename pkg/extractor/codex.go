@@ -33,13 +33,13 @@ type CodexEventMsgPayload struct {
 }
 
 type CodexResponseItemPayload struct {
-	Type      string                 `json:"type"` // message, reasoning, custom_tool_call
-	Role      string                 `json:"role"` // developer, user, assistant
-	Content   []CodexContentFragment `json:"content"`
-	Name      string                 `json:"name"` // For custom_tool_call
-	Input     string                 `json:"input"`
-	CallID    string                 `json:"call_id"`
-	Status    string                 `json:"status"`
+	Type    string                 `json:"type"` // message, reasoning, custom_tool_call
+	Role    string                 `json:"role"` // developer, user, assistant
+	Content []CodexContentFragment `json:"content"`
+	Name    string                 `json:"name"` // For custom_tool_call
+	Input   string                 `json:"input"`
+	CallID  string                 `json:"call_id"`
+	Status  string                 `json:"status"`
 }
 
 type CodexContentFragment struct {
@@ -73,6 +73,7 @@ func (e *CodexExtractor) Extract(targetPath string) (*models.Conversation, error
 	var messages []models.Message
 	var firstUserInput string
 	var sessionID string
+	var project string
 	var sessionTime time.Time
 
 	scanner := bufio.NewScanner(file)
@@ -94,6 +95,7 @@ func (e *CodexExtractor) Extract(targetPath string) (*models.Conversation, error
 		case "session_meta":
 			var meta CodexSessionMetaPayload
 			if err := json.Unmarshal(item.Payload, &meta); err == nil {
+				project = projectName(meta.Cwd)
 				sessionID = meta.SessionID
 				if sessionID == "" {
 					sessionID = meta.ID
@@ -189,7 +191,11 @@ func (e *CodexExtractor) Extract(targetPath string) (*models.Conversation, error
 		sessionID = strings.TrimSuffix(filepath.Base(targetPath), ".jsonl")
 	}
 	if sessionTime.IsZero() {
-		sessionTime = time.Now()
+		info, err := file.Stat()
+		if err != nil {
+			return nil, err
+		}
+		sessionTime = info.ModTime()
 	}
 
 	title := generateTitle(firstUserInput)
@@ -201,6 +207,7 @@ func (e *CodexExtractor) Extract(targetPath string) (*models.Conversation, error
 		ID:         sessionID,
 		SourceTool: "codex",
 		Title:      title,
+		Project:    project,
 		CreatedAt:  sessionTime,
 		Tags:       []string{"coding", "assistant", "codex", "gpt-5"},
 		Messages:   deduped,

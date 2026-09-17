@@ -6,8 +6,8 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"sort"
 	"strings"
-	"time"
 
 	"llm-context-vault/pkg/models"
 )
@@ -177,6 +177,13 @@ func (e *AGYExtractor) Extract(targetPath string) (*models.Conversation, error) 
 	for l := range langMap {
 		languages = append(languages, l)
 	}
+	sort.Strings(languages)
+	// AGY logs do not expose a reliable creation timestamp. Use the source's
+	// modification time as a stable fallback, never the current scan time.
+	sourceInfo, err := file.Stat()
+	if err != nil {
+		return nil, err
+	}
 
 	// Generate title from first user prompt
 	title := generateTitle(firstUserInput)
@@ -185,7 +192,7 @@ func (e *AGYExtractor) Extract(targetPath string) (*models.Conversation, error) 
 		ID:         convID,
 		SourceTool: "antigravity",
 		Title:      title,
-		CreatedAt:  time.Now(),
+		CreatedAt:  sourceInfo.ModTime(),
 		Languages:  languages,
 		Tags:       []string{"coding", "assistant", "antigravity"},
 		Messages:   messages,

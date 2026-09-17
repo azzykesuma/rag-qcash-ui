@@ -6,7 +6,6 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
-	"time"
 
 	"llm-context-vault/pkg/models"
 )
@@ -82,6 +81,13 @@ func (e *AiderExtractor) Extract(targetPath string) (*models.Conversation, error
 	}
 
 	flushTurn()
+	if err := scanner.Err(); err != nil {
+		return nil, err
+	}
+	info, err := file.Stat()
+	if err != nil {
+		return nil, err
+	}
 
 	if len(messages) == 0 {
 		return nil, fmt.Errorf("no messages extracted from aider history %s", targetPath)
@@ -93,10 +99,10 @@ func (e *AiderExtractor) Extract(targetPath string) (*models.Conversation, error
 	}
 
 	return &models.Conversation{
-		ID:         fmt.Sprintf("aider_%d", time.Now().Unix()),
+		ID:         filepath.Base(targetPath),
 		SourceTool: "aider",
 		Title:      title,
-		CreatedAt:  time.Now(),
+		CreatedAt:  info.ModTime(),
 		Tags:       []string{"aider", "terminal", "coding"},
 		Messages:   messages,
 	}, nil

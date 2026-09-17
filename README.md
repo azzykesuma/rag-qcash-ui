@@ -115,21 +115,25 @@ Auto-detects and harvests sessions from **Antigravity (AGY)**, **OpenCode**, **O
 vault scan
 ```
 
+Scans are incremental. Unchanged sessions are skipped, changed sessions are processed concurrently, and `dataset.jsonl` is merged once at the end instead of being rewritten for every conversation. Progress and timings are printed while the scan runs. Use a full scan after manual source recovery or for troubleshooting:
+
+```bash
+vault scan --full
+vault scan --workers 8
+```
+
+The local scan state and search index live under `.vault/` and are excluded from Git. They can be deleted safely; the next scan or search rebuilds them from source sessions and sanitized exports. A per-vault writer lock prevents concurrent scans from corrupting output.
+
 Output:
 ```text
-🔍 Unified Scanner: Auto-detecting and harvesting local AI assistant sessions...
+Assistant          New Changed  Unchanged Trivial Failed       Time
+antigravity          2       1        115       4      0      1.2s
+opencode             1       0        121       3      0     540ms
+codex                0       0         14       0      0      12ms
+Import phase: 1.8s
+Search index: 24ms
 
------------------------------------------------------------------------------------------
-Assistant            Discovered Location                              Status     Imported
------------------------------------------------------------------------------------------
-Antigravity (AGY)    ...sers\dev\.gemini\antigravity-cli\brain        SUCCESS    18 session(s)
-OpenCode             ...\dev\.local\share\opencode\opencode.db        SUCCESS    121 session(s)
-Codex                C:\Users\dev\.codex\sessions                     SUCCESS    4 session(s)
------------------------------------------------------------------------------------------
-🎉 Total conversations imported & sanitized: 143
-
-🛡️ Running instant security & privacy audit...
-✅ Privacy Audit PASSED: 0 secrets, 0 private keys, 0 user paths detected.
+Privacy audit passed.
 ```
 
 ### 2. Custom Redaction Keywords
@@ -144,7 +148,7 @@ Use `--vault-dir` from any working directory to select the repository that recei
 vault scan --vault-dir /path/to/llm-context-vault
 ```
 
-Exports use a stable ID derived from sanitized content. Re-importing unchanged content updates the same Markdown, ShareGPT, and JSONL records instead of creating duplicates. Generic JSON and JSONL imports support one or many normalized or ShareGPT conversations:
+Exports use a stable ID derived from sanitized content. Re-importing unchanged content updates the same Markdown, ShareGPT, and JSONL records instead of creating duplicates. New exports receive an offline, conversation-aware filename based on recurring topics across the session, rather than the opening words alone. Existing filenames are preserved. Generic JSON and JSONL imports support one or many normalized or ShareGPT conversations:
 ```bash
 vault import conversations.jsonl --tool generic
 ```
@@ -163,13 +167,47 @@ vault search "JWT validation"
 
 # Output context snippet to pipe into an LLM prompt
 vault context "how to fix splash screen crash"
+
+# Rank passages within one project and date range
+vault search "session expiration" --project qcash-ui --after 2026-01-01 --limit 10
+
+# Generate bounded, source-cited context for an assistant
+vault context "why does the session expire early?" --project qcash-ui --max-chars 12000
 ```
 
-### 5. Audit Before Git Push
+Search uses a local SQLite FTS index and ranks conversation passages instead of requiring an exact full-query substring. Results are deduplicated by session and content. Context output includes the export path, source line range, and turn range, and is explicitly marked as historical reference rather than current instructions.
+
+Project aliases are captured from source metadata when available. For older exports, create a local `.vault/projects.json` mapping from the Markdown filename to your preferred project alias:
+
+```json
+{
+  "opencode_session-expiration-a1b2c3d4e5f6.md": "qcash-ui"
+}
+```
+
+This mapping remains local and is not committed.
+
+### 5. Local Web Dashboard
+Launch the embedded dashboard to browse conversations, filter by assistant/project/date, run ranked search, generate bounded prompt context, and run a privacy audit:
+```bash
+vault ui
+vault ui --port 3000 --no-browser
+vault ui --vault-dir /path/to/llm-context-vault
+```
+By default, the dashboard opens your browser at `http://127.0.0.1:8080`. It runs locally with no external web assets or runtime dependencies. Conversations are displayed as exported Markdown text. Press `Ctrl+C` in the terminal to stop it.
+
+### 6. Audit Before Git Push
 Verify that 0 secrets or machine paths exist in your repository:
 ```bash
 vault audit
 ```
+
+### 7. Pull Latest Changes
+Fetch and fast-forward the vault repository to the latest changes from GitHub:
+```bash
+vault pull
+```
+Extra arguments are forwarded to `git pull` (e.g. `vault pull --rebase`).
 
 ---
 

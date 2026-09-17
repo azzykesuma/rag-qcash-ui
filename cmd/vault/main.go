@@ -4,11 +4,14 @@ import (
 	"flag"
 	"fmt"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"strings"
+	"time"
 
 	"llm-context-vault/pkg/sanitizer"
 	"llm-context-vault/pkg/vault"
+	"llm-context-vault/pkg/webui"
 )
 
 func printUsage() {
@@ -28,11 +31,25 @@ COMMANDS:
   context <query>        Generate context snippet to inject into local LLM prompt
   audit                  Audit all stored conversations for secrets / leaked paths
   stats                  Display statistics about stored conversations
+  ui                     Launch the local web dashboard (--port 8080, --no-browser)
+  pull [git args...]     Pull the latest changes from GitHub into the vault repository
+  publish [git args...]  Audit, commit, and push sanitized conversations to GitHub
 
 OPTIONS:
   --vault-dir <path>     Explicit path to the vault repository (defaults to current dir or LLM_VAULT_DIR)
   --redact-words <w1,w2> Comma-separated list of custom words/company names to redact
   --tool <name>          Explicit tool name for 'import' (agy, codex, opencode, aider)
+
+SCAN OPTIONS:
+  --full                 Reprocess every source instead of using the incremental cache
+  --workers <n>          Parallel session workers (0 = automatic, up to 4)
+
+SEARCH / CONTEXT OPTIONS:
+  --project <alias>      Filter by exact project alias
+  --tool <name>          Filter by source assistant
+  --after/--before <day> Inclusive date filters in YYYY-MM-DD format
+  --limit <n>            Maximum distinct conversations (search: 10, context: 3)
+  --max-chars <n>        Context output budget in Unicode characters (context only)
 `)
 }
 
@@ -78,166 +95,24 @@ func main() {
 	command := strings.ToLower(args[0])
 
 	switch command {
-	case "scan", "scan-all":
-		scanCmd := flag.NewFlagSet("scan", flag.ExitOnError)
-		customWordsFlag := scanCmd.String("redact-words", "", "Comma-separated words to redact")
-		_ = scanCmd.Parse(args[1:])
-
-		cfg := sanitizer.DefaultConfig()
-		if *customWordsFlag != "" {
-			for _, w := range strings.Split(*customWordsFlag, ",") {
-				if trimmed := strings.TrimSpace(w); trimmed != "" {
-					cfg.CustomKeywords = append(cfg.CustomKeywords, trimmed)
-				}
-			}
+	case "ui":
+		uiCmd := flag.NewFlagSet("ui", flag.ExitOnError)
+		port := uiCmd.Int("port", 8080, "Local dashboard port (0 selects an available port)")
+		noBrowser := uiCmd.Bool("no-browser", false, "Do not automatically open the browser")
+		_ = uiCmd.Parse(args[1:])
+		if uiCmd.NArg() != 0 {
+			fmt.Println("Error: ui accepts only --port, --no-browser, and --vault-dir options.")
+			os.Exit(1)
 		}
-
-		s := sanitizer.New(cfg)
-		v := vault.New(workDir, s)
-
-		fmt.Println("🔍 Unified Scanner: Auto-detecting and harvesting local AI assistant sessions...")
-		fmt.Println()
-
-		reports, err := v.ScanAll()
-		if err != nil {
-			fmt.Printf("❌ Unified scan error: %v\n", err)
+		if err := webui.Run(workDir, *port, !*noBrowser); err != nil {
+			fmt.Printf("❌ UI failed: %v\n", err)
 			os.Exit(1)
 		}
 
-		fmt.Println("--------------------------------------------------------------------------------------------------------")
-		fmt.Printf("%-20s %-40s %-10s %-16s %s\n", "Assistant", "Discovered Location", "Status", "Imported", "Skipped (Trivial/Greeting)")
-		fmt.Println("--------------------------------------------------------------------------------------------------------")
-
-		totalImported := 0
-		totalSkipped := 0
-		var allWarnings []string
-
-		for _, rep := range reports {
-			status := "SUCCESS"
-			if len(rep.Warnings) > 0 && rep.ImportedCount == 0 {
-				status = "FAILED"
-			} else if len(rep.Warnings) > 0 {
-				status = "WARN"
-			}
-
-			locPreview := rep.Location
-			if len(locPreview) > 38 {
-				locPreview = "..." + locPreview[len(locPreview)-35:]
-			}
-
-			fmt.Printf("%-20s %-40s %-10s %-16s %d session(s)\n",
-				rep.ToolName,
-				locPreview,
-				status,
-				fmt.Sprintf("%d session(s)", rep.ImportedCount),
-				rep.SkippedCount,
-			)
-			totalImported += rep.ImportedCount
-			totalSkipped += rep.SkippedCount
-			for _, w := range rep.Warnings {
-				allWarnings = append(allWarnings, fmt.Sprintf("[%s] %s", rep.ToolName, w))
-			}
-		}
-
-		fmt.Println("--------------------------------------------------------------------------------------------------------")
-		fmt.Printf("🎉 Total conversations imported & sanitized: %d (Skipped %d trivial greetings)\n\n", totalImported, totalSkipped)
-
-		// Post-scan privacy audit
-		fmt.Println("🛡️ Running instant security & privacy audit...")
-		violations, err := v.AuditAll()
-		if err != nil {
-			fmt.Printf("⚠️ Audit error: %v\n", err)
-		} else if len(violations) == 0 {
-			fmt.Println("✅ Privacy Audit PASSED: 0 secrets, 0 private keys, 0 user paths detected.")
-		} else {
-			fmt.Printf("⚠️ Found %d file(s) with potential notices:\n", len(violations))
-			for f, ws := range violations {
-				fmt.Printf("   - %s: %s\n", filepath.Base(f), strings.Join(ws, ", "))
-			}
-		}
-
-	case "scan-agy":
-		brainDir := ""
-		if len(args) >= 2 {
-			brainDir = args[1]
-		} else {
-			homeDir, _ := os.UserHomeDir()
-			defaultBrain := filepath.Join(homeDir, ".gemini", "antigravity-cli", "brain")
-			if _, err := os.Stat(defaultBrain); err == nil {
-				brainDir = defaultBrain
-			}
-		}
-
-		if brainDir == "" {
-			fmt.Println("❌ Could not automatically find Antigravity brain directory.")
+	case "scan", "scan-all", "scan-agy", "scan-codex", "scan-opencode":
+		if err := runScan(workDir, command, args[1:]); err != nil {
+			fmt.Fprintf(os.Stderr, "Scan failed: %v\n", err)
 			os.Exit(1)
-		}
-
-		v := vault.New(workDir, sanitizer.New(sanitizer.DefaultConfig()))
-		imported, skipped, warnings, err := v.ScanAGYBrain(brainDir)
-		if err != nil {
-			fmt.Printf("❌ Error: %v\n", err)
-			os.Exit(1)
-		}
-		fmt.Printf("✅ Imported %d Antigravity conversations (Skipped %d greetings/trivial)!\n", imported, skipped)
-		if len(warnings) > 0 {
-			fmt.Printf("⚠️ Notices (%d)\n", len(warnings))
-		}
-
-	case "scan-codex":
-		codexDir := ""
-		if len(args) >= 2 {
-			codexDir = args[1]
-		} else {
-			homeDir, _ := os.UserHomeDir()
-			defaultDir := filepath.Join(homeDir, ".codex", "sessions")
-			if _, err := os.Stat(defaultDir); err == nil {
-				codexDir = defaultDir
-			}
-		}
-
-		if codexDir == "" {
-			fmt.Println("❌ Could not automatically find Codex sessions directory.")
-			os.Exit(1)
-		}
-
-		v := vault.New(workDir, sanitizer.New(sanitizer.DefaultConfig()))
-		imported, skipped, warnings, err := v.ScanCodexSessions(codexDir)
-		if err != nil {
-			fmt.Printf("❌ Error: %v\n", err)
-			os.Exit(1)
-		}
-		fmt.Printf("✅ Imported %d Codex conversations (Skipped %d greetings/trivial)!\n", imported, skipped)
-		if len(warnings) > 0 {
-			fmt.Printf("⚠️ Notices (%d)\n", len(warnings))
-		}
-
-	case "scan-opencode":
-		dbPath := ""
-		if len(args) >= 2 {
-			dbPath = args[1]
-		} else {
-			homeDir, _ := os.UserHomeDir()
-			defaultDB := filepath.Join(homeDir, ".local", "share", "opencode", "opencode.db")
-			if _, err := os.Stat(defaultDB); err == nil {
-				dbPath = defaultDB
-			}
-		}
-
-		if dbPath == "" {
-			fmt.Println("❌ Could not automatically find OpenCode opencode.db file.")
-			os.Exit(1)
-		}
-
-		v := vault.New(workDir, sanitizer.New(sanitizer.DefaultConfig()))
-		imported, skipped, warnings, err := v.ScanOpenCodeDB(dbPath)
-		if err != nil {
-			fmt.Printf("❌ Error: %v\n", err)
-			os.Exit(1)
-		}
-		fmt.Printf("✅ Imported %d OpenCode conversations (Skipped %d greetings/trivial)!\n", imported, skipped)
-		if len(warnings) > 0 {
-			fmt.Printf("⚠️ Notices (%d)\n", len(warnings))
 		}
 
 	case "import":
@@ -291,49 +166,11 @@ func main() {
 			}
 		}
 
-	case "search":
-		if len(args) < 2 {
-			fmt.Println("Error: Query string required.")
-			fmt.Println("Example: vault search \"JWT validation\"")
+	case "search", "context":
+		if err := runQuery(workDir, command, args[1:]); err != nil {
+			fmt.Fprintf(os.Stderr, "%s failed: %v\n", command, err)
 			os.Exit(1)
 		}
-		query := strings.Join(args[1:], " ")
-		v := vault.New(workDir, sanitizer.New(sanitizer.DefaultConfig()))
-
-		results, err := v.Search(query)
-		if err != nil {
-			fmt.Printf("❌ Search failed: %v\n", err)
-			os.Exit(1)
-		}
-
-		if len(results) == 0 {
-			fmt.Println("No matching conversations found.")
-			return
-		}
-
-		fmt.Printf("🔍 Found %d matching conversation(s) for '%s':\n\n", len(results), query)
-		for i, res := range results {
-			fmt.Printf("[%d] Tool: %-12s | File: %s.md\n", i+1, res.SourceTool, res.ConversationID)
-			fmt.Printf("    Path: %s\n", res.Path)
-			fmt.Printf("    Preview:\n%s\n\n", indent(res.Snippet, "      "))
-		}
-
-	case "context":
-		if len(args) < 2 {
-			fmt.Println("Error: Query string required.")
-			fmt.Println("Example: vault context \"how to fix CORS in Express\"")
-			os.Exit(1)
-		}
-		query := strings.Join(args[1:], " ")
-		v := vault.New(workDir, sanitizer.New(sanitizer.DefaultConfig()))
-
-		snippet, err := v.GenerateContextSnippet(query, 3)
-		if err != nil {
-			fmt.Printf("❌ Failed to generate context: %v\n", err)
-			os.Exit(1)
-		}
-
-		fmt.Println(snippet)
 
 	case "audit":
 		fmt.Println("🛡️ Auditing stored conversations for potential secret leaks...")
@@ -360,6 +197,18 @@ func main() {
 	case "stats":
 		showStats(workDir)
 
+	case "pull":
+		if err := pullRepo(workDir, args[1:]); err != nil {
+			fmt.Printf("❌ Pull failed: %v\n", err)
+			os.Exit(1)
+		}
+
+	case "publish":
+		if err := publishRepo(workDir, args[1:]); err != nil {
+			fmt.Printf("❌ Publish failed: %v\n", err)
+			os.Exit(1)
+		}
+
 	default:
 		fmt.Printf("Unknown command: %s\n", command)
 		printUsage()
@@ -382,6 +231,137 @@ func extractGlobalOptions(args []string) ([]string, string) {
 		result = append(result, args[i])
 	}
 	return result, vaultDir
+}
+
+func publishRepo(baseDir string, extraArgs []string) error {
+	if _, err := os.Stat(filepath.Join(baseDir, ".git")); err != nil {
+		return fmt.Errorf("%s is not a git repository (no .git directory)", baseDir)
+	}
+	v := vault.New(baseDir, sanitizer.New(sanitizer.DefaultConfig()))
+	release, err := v.AcquireWriterLock()
+	if err != nil {
+		return err
+	}
+	defer release()
+
+	// 1. Run Pre-Publish Security Audit
+	fmt.Println("🛡️ Pre-publish Security & Privacy Audit...")
+	violations, err := v.AuditAll()
+	if err != nil {
+		return fmt.Errorf("audit failed: %w", err)
+	}
+	if len(violations) > 0 {
+		fmt.Printf("❌ Publish ABORTED! Found %d file(s) with potential secrets/paths:\n", len(violations))
+		for file, warnings := range violations {
+			fmt.Printf("  - %s:\n", file)
+			for _, w := range warnings {
+				fmt.Printf("      * %s\n", w)
+			}
+		}
+		return fmt.Errorf("cannot publish while security warnings exist")
+	}
+	fmt.Println("✅ Privacy Audit PASSED: 0 secrets or sensitive paths detected.")
+	fmt.Println()
+
+	// 2. Stage conversations directory
+	fmt.Println("📦 Staging sanitized conversations...")
+	for _, addArgs := range [][]string{
+		{"add", "-u", "--", "conversations/"},
+		{"add", "--", "conversations/dataset.jsonl", ":(glob)conversations/markdown/*.md", ":(glob)conversations/sharegpt/*.json"},
+	} {
+		addCmd := exec.Command("git", addArgs...)
+		addCmd.Dir = baseDir
+		addCmd.Stdout = os.Stdout
+		addCmd.Stderr = os.Stderr
+		if err := addCmd.Run(); err != nil {
+			return fmt.Errorf("git add failed: %w", err)
+		}
+	}
+
+	// 3. Check status to see if anything needs committing
+	statusCmd := exec.Command("git", "status", "--porcelain", "conversations/")
+	statusCmd.Dir = baseDir
+	statusOutput, err := statusCmd.Output()
+	if err != nil {
+		return fmt.Errorf("git status check failed: %w", err)
+	}
+
+	customMsg := ""
+	for i := 0; i < len(extraArgs); i++ {
+		if (extraArgs[i] == "-m" || extraArgs[i] == "--message") && i+1 < len(extraArgs) {
+			customMsg = extraArgs[i+1]
+			break
+		}
+	}
+
+	if len(strings.TrimSpace(string(statusOutput))) > 0 {
+		commitMsg := customMsg
+		if commitMsg == "" {
+			mdDir := filepath.Join(baseDir, "conversations", "markdown")
+			mdFiles, _ := os.ReadDir(mdDir)
+			timestamp := time.Now().Format("2006-01-02 15:04")
+			commitMsg = fmt.Sprintf("chore(vault): sync %d sanitized conversation session(s) [%s]", len(mdFiles), timestamp)
+		}
+
+		fmt.Printf("💾 Committing changes: %s\n", commitMsg)
+		commitCmd := exec.Command("git", "commit", "-m", commitMsg)
+		commitCmd.Dir = baseDir
+		commitCmd.Stdout = os.Stdout
+		commitCmd.Stderr = os.Stderr
+		if err := commitCmd.Run(); err != nil {
+			return fmt.Errorf("git commit failed: %w", err)
+		}
+	} else {
+		fmt.Println("ℹ️ No new changes to commit in conversations/ directory.")
+	}
+
+	// 4. Push to remote
+	fmt.Println()
+	fmt.Printf("🚀 Pushing to remote repository...\n")
+	pushArgs := []string{"push"}
+	if len(extraArgs) > 0 && customMsg == "" {
+		pushArgs = append(pushArgs, extraArgs...)
+	}
+	pushCmd := exec.Command("git", pushArgs...)
+	pushCmd.Dir = baseDir
+	pushCmd.Stdout = os.Stdout
+	pushCmd.Stderr = os.Stderr
+	if err := pushCmd.Run(); err != nil {
+		return fmt.Errorf("git push failed: %w", err)
+	}
+
+	fmt.Println()
+	fmt.Println("🎉 Successfully published sanitized conversations to remote!")
+	return nil
+}
+
+func pullRepo(baseDir string, extraArgs []string) error {
+	if _, err := os.Stat(filepath.Join(baseDir, ".git")); err != nil {
+		return fmt.Errorf("%s is not a git repository (no .git directory)", baseDir)
+	}
+	v := vault.New(baseDir, sanitizer.New(sanitizer.DefaultConfig()))
+	release, err := v.AcquireWriterLock()
+	if err != nil {
+		return err
+	}
+	defer release()
+
+	fmt.Printf("🔁 Pulling latest changes from GitHub into %s...\n", baseDir)
+	fmt.Println()
+
+	pullArgs := append([]string{"pull", "--ff-only"}, extraArgs...)
+	cmd := exec.Command("git", pullArgs...)
+	cmd.Dir = baseDir
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+
+	if err := cmd.Run(); err != nil {
+		return fmt.Errorf("git pull failed: %w", err)
+	}
+
+	fmt.Println()
+	fmt.Println("✅ Vault is up to date.")
+	return nil
 }
 
 func showStats(baseDir string) {

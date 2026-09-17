@@ -31,6 +31,18 @@ func TestSanitizeConversationSanitizesMetadata(t *testing.T) {
 	}
 }
 
+func TestAuditIncludesCustomKeywords(t *testing.T) {
+	cfg := DefaultConfig()
+	cfg.CustomKeywords = []string{"SecretClient"}
+	s := New(cfg)
+	if warnings := s.AuditText("A SecretClient value remains"); len(warnings) != 1 || !strings.Contains(warnings[0], "SecretClient") {
+		t.Fatalf("custom keyword was not audited: %v", warnings)
+	}
+	if warnings := s.AuditText(s.SanitizeText("A SecretClient value remains")); len(warnings) != 0 {
+		t.Fatalf("sanitized custom keyword still detected: %v", warnings)
+	}
+}
+
 func TestAuditTextDetectsPublicIPButNotLoopback(t *testing.T) {
 	s := New(DefaultConfig())
 	if len(s.AuditText("service at 10.20.30.40")) == 0 {

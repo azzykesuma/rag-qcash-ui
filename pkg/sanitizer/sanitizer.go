@@ -1,6 +1,8 @@
 package sanitizer
 
 import (
+	"crypto/sha256"
+	"encoding/json"
 	"fmt"
 	"net"
 	"regexp"
@@ -55,6 +57,18 @@ func New(cfg Config) *Sanitizer {
 	}
 	s.initRules()
 	return s
+}
+
+// Fingerprint invalidates incremental imports when settings or redaction rules change.
+func (s *Sanitizer) Fingerprint() string {
+	data, _ := json.Marshal(s.cfg)
+	for _, rules := range [][]Rule{s.secretRules, s.pathRules, s.keywordRules} {
+		for _, r := range rules {
+			data = append(data, []byte(r.Pattern.String()+"\x00"+r.Replacement)...)
+		}
+	}
+	data = append(data, []byte(s.emailRule.String()+s.ipRule.String())...)
+	return fmt.Sprintf("%x", sha256.Sum256(data))
 }
 
 func (s *Sanitizer) initRules() {
@@ -129,6 +143,16 @@ func (s *Sanitizer) initRules() {
 			Name:        "Context7 Key",
 			Pattern:     regexp.MustCompile(`\b(ctx7sk-[A-Za-z0-9_\-]{20,})\b`),
 			Replacement: "[CONTEXT7_KEY_REDACTED]",
+		},
+		{
+			Name:        "NPM / Nexus Access Token",
+			Pattern:     regexp.MustCompile(`(?i)\b(NpmToken\.[0-9a-fA-F\-]{20,}|npm_[A-Za-z0-9]{36,})\b`),
+			Replacement: "[NPM_TOKEN_REDACTED]",
+		},
+		{
+			Name:        "NPM Auth Token Assignment",
+			Pattern:     regexp.MustCompile(`(?i)(:_authToken\s*=\s*)([^\s]+)`),
+			Replacement: "${1}[NPM_TOKEN_REDACTED]",
 		},
 		{
 			Name:        "Generic Secret Assignment",
@@ -236,6 +260,7 @@ func (s *Sanitizer) SanitizeConversation(conv *models.Conversation) *models.Conv
 	cloned := *conv
 	cloned.Metadata = sanitizeStringMap(s, conv.Metadata)
 	cloned.Title = s.SanitizeText(conv.Title)
+	cloned.Project = s.SanitizeText(conv.Project)
 	cloned.Description = s.SanitizeText(conv.Description)
 
 	sanitizedMessages := make([]models.Message, len(conv.Messages))
@@ -283,14 +308,20 @@ func (s *Sanitizer) AuditText(text string) []string {
 		matches = append(matches, "Email Address")
 	}
 
-	if s.cfg.RedactIPs && s.ipRule.ReplaceAllStringFunc(text, func(match string) string {
-		parsed := net.ParseIP(match)
-		if parsed == nil || parsed.IsLoopback() || parsed.IsUnspecified() {
-			return match
+	if s.cfg.RedactIPs {
+		for _, match := range s.ipRule.FindAllString(text, -1) {
+			parsed := net.ParseIP(match)
+			if parsed != nil && !parsed.IsLoopback() && !parsed.IsUnspecified() {
+				matches = append(matches, "IP Address")
+				break
+			}
 		}
-		return "[REDACTED_IP]"
-	}) != text {
-		matches = append(matches, "IP Address")
+	}
+
+	for _, rule := range s.keywordRules {
+		if rule.Pattern.MatchString(text) {
+			matches = append(matches, rule.Name)
+		}
 	}
 
 	return matches

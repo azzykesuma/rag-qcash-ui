@@ -27,6 +27,7 @@ type Conversation struct {
 	ID            string            `json:"id"`
 	SourceTool    string            `json:"source_tool"` // "antigravity", "opencode", "aider", "cursor", "codex", etc.
 	Title         string            `json:"title"`
+	Project       string            `json:"project,omitempty"` // Sanitized project alias, never an absolute source path.
 	Description   string            `json:"description,omitempty"`
 	CreatedAt     time.Time         `json:"created_at"`
 	Languages     []string          `json:"languages,omitempty"`

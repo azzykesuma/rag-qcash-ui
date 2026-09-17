@@ -28,6 +28,9 @@ func (e *MarkdownExporter) Export(conv *models.Conversation, outPath string) err
 	b.WriteString(fmt.Sprintf("- **ID**: `%s`\n", conv.ID))
 	b.WriteString(fmt.Sprintf("- **Source Tool**: `%s`\n", conv.SourceTool))
 	b.WriteString(fmt.Sprintf("- **Date**: `%s`\n", conv.CreatedAt.Format("2006-01-02 15:04:05")))
+	if conv.Project != "" {
+		b.WriteString(fmt.Sprintf("- **Project**: `%s`\n", conv.Project))
+	}
 
 	if len(conv.Languages) > 0 {
 		b.WriteString(fmt.Sprintf("- **Languages**: %s\n", strings.Join(conv.Languages, ", ")))
@@ -67,5 +70,5 @@ func (e *MarkdownExporter) Export(conv *models.Conversation, outPath string) err
 		b.WriteString("---\n\n")
 	}
 
-	return os.WriteFile(outPath, []byte(b.String()), 0644)
+	return WriteIfChanged(outPath, []byte(b.String()))
 }

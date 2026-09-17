@@ -1,9 +1,11 @@
 package extractor
 
 import (
+	"crypto/sha256"
 	"database/sql"
 	"encoding/json"
 	"fmt"
+	"net/url"
 	"os"
 	"path/filepath"
 	"strings"
@@ -14,182 +16,226 @@ import (
 )
 
 type OpenCodeMessageData struct {
-	Role string `json:"role"` // "user", "assistant"
+	Role string `json:"role"`
 }
-
 type OpenCodePartData struct {
-	Type   string `json:"type"` // "text", "tool", "reasoning", "patch", "file", etc.
+	Type   string `json:"type"`
 	Text   string `json:"text,omitempty"`
 	Tool   string `json:"tool,omitempty"`
 	Input  any    `json:"input,omitempty"`
 	Output any    `json:"output,omitempty"`
 }
 
-// OpenCodeExtractor extracts conversations from OpenCode SQLite database
 type OpenCodeExtractor struct{}
 
-func NewOpenCodeExtractor() *OpenCodeExtractor {
-	return &OpenCodeExtractor{}
-}
-
-func (e *OpenCodeExtractor) Name() string {
-	return "opencode"
-}
-
+func NewOpenCodeExtractor() *OpenCodeExtractor { return &OpenCodeExtractor{} }
+func (e *OpenCodeExtractor) Name() string      { return "opencode" }
 func (e *OpenCodeExtractor) CanHandle(path string) bool {
-	base := strings.ToLower(filepath.Base(path))
-	return base == "opencode.db" || strings.Contains(strings.ToLower(path), "opencode")
+	return strings.EqualFold(filepath.Base(path), "opencode.db") || strings.Contains(strings.ToLower(path), "opencode")
 }
-
-func (e *OpenCodeExtractor) Extract(targetPath string) (*models.Conversation, error) {
-	convs, err := e.ExtractAll(targetPath)
+func (e *OpenCodeExtractor) Extract(path string) (*models.Conversation, error) {
+	convs, err := e.ExtractAll(path)
 	if err != nil {
 		return nil, err
 	}
 	if len(convs) == 0 {
-		return nil, fmt.Errorf("no conversations found in opencode database: %s", targetPath)
+		return nil, fmt.Errorf("no conversations found in opencode database: %s", path)
 	}
 	return convs[len(convs)-1], nil
 }
+func (e *OpenCodeExtractor) ExtractAll(path string) ([]*models.Conversation, error) {
+	return e.ExtractIncremental(path, func(_, _ string) bool { return true })
+}
 
-// ExtractAll extracts all conversations stored in the OpenCode SQLite database
-func (e *OpenCodeExtractor) ExtractAll(dbPath string) ([]*models.Conversation, error) {
-	if _, err := os.Stat(dbPath); err != nil {
-		return nil, fmt.Errorf("opencode db not found at %s: %w", dbPath, err)
+// ExtractIncremental checks session AND child revisions within a read snapshot.
+// Schemas without update timestamps safely fall back to extraction on every scan.
+// Selected sessions use one joined query each instead of one query per message.
+func (e *OpenCodeExtractor) ExtractIncremental(path string, selectSession func(id, revision string) bool) ([]*models.Conversation, error) {
+	if _, err := os.Stat(path); err != nil {
+		return nil, err
 	}
-
-	dsn := fmt.Sprintf("file:%s?mode=ro", filepath.ToSlash(dbPath))
-	db, err := sql.Open("sqlite", dsn)
+	abs, err := filepath.Abs(path)
 	if err != nil {
-		return nil, fmt.Errorf("failed to open sqlite database %s: %w", dbPath, err)
+		return nil, err
+	}
+	u := url.URL{Scheme: "file", Path: "/" + strings.TrimPrefix(filepath.ToSlash(abs), "/"), RawQuery: "mode=ro"}
+	db, err := sql.Open("sqlite", u.String())
+	if err != nil {
+		return nil, err
 	}
 	defer db.Close()
-
-	// 1. Fetch sessions
-	sessionRows, err := db.Query("SELECT id, COALESCE(title, ''), time_created FROM session ORDER BY time_created ASC")
+	tx, err := db.Begin()
 	if err != nil {
-		return nil, fmt.Errorf("failed to query sessions: %w", err)
+		return nil, err
 	}
-	defer sessionRows.Close()
-
-	type SessionRecord struct {
-		ID          string
-		Title       string
-		TimeCreated int64
-	}
-
-	var sessions []SessionRecord
-	for sessionRows.Next() {
-		var s SessionRecord
-		if err := sessionRows.Scan(&s.ID, &s.Title, &s.TimeCreated); err == nil {
-			sessions = append(sessions, s)
-		}
-	}
-
-	var results []*models.Conversation
-
-	// 2. For each session, fetch messages and parts
-	for _, sess := range sessions {
-		msgRows, err := db.Query("SELECT id, time_created, COALESCE(data, '{}') FROM message WHERE session_id = ? ORDER BY time_created ASC", sess.ID)
+	defer tx.Rollback()
+	cacheable := true
+	hasDirectory := false
+	for _, table := range []string{"session", "message", "part"} {
+		rows, err := tx.Query("PRAGMA table_info(" + table + ")")
 		if err != nil {
-			continue
+			return nil, err
 		}
-
-		type MsgRecord struct {
-			ID          string
-			TimeCreated int64
-			Data        string
-		}
-		var msgList []MsgRecord
-		for msgRows.Next() {
-			var m MsgRecord
-			if err := msgRows.Scan(&m.ID, &m.TimeCreated, &m.Data); err == nil {
-				msgList = append(msgList, m)
+		hasUpdated := false
+		for rows.Next() {
+			var cid, notNull, pk int
+			var name, kind string
+			var def any
+			if err := rows.Scan(&cid, &name, &kind, &notNull, &def, &pk); err != nil {
+				rows.Close()
+				return nil, err
+			}
+			if name == "time_updated" {
+				hasUpdated = true
+			}
+			if table == "session" && name == "directory" {
+				hasDirectory = true
 			}
 		}
-		msgRows.Close()
-
-		var conversationMessages []models.Message
-		var firstUserInput string
-
-		for _, m := range msgList {
-			var msgData OpenCodeMessageData
-			_ = json.Unmarshal([]byte(m.Data), &msgData)
-
-			role := strings.ToLower(msgData.Role)
-			if role == "" {
-				role = "assistant"
-			}
-
-			partRows, err := db.Query("SELECT COALESCE(data, '{}') FROM part WHERE message_id = ? ORDER BY time_created ASC", m.ID)
-			if err != nil {
-				continue
-			}
-
-			var textParts []string
-			var toolCalls []models.ToolCall
-
-			for partRows.Next() {
-				var dataStr string
-				if err := partRows.Scan(&dataStr); err == nil {
-					var part OpenCodePartData
-					if err := json.Unmarshal([]byte(dataStr), &part); err == nil {
-						if part.Type == "text" && strings.TrimSpace(part.Text) != "" {
-							textParts = append(textParts, strings.TrimSpace(part.Text))
-						} else if part.Type == "tool" || part.Tool != "" {
-							inputJSON, _ := json.Marshal(part.Input)
-							outputJSON, _ := json.Marshal(part.Output)
-							toolCalls = append(toolCalls, models.ToolCall{
-								Name:      part.Tool,
-								Summary:   fmt.Sprintf("Tool: %s", part.Tool),
-								Arguments: string(inputJSON),
-								Output:    string(outputJSON),
-							})
-						}
-					}
-				}
-			}
-			partRows.Close()
-
-			content := strings.TrimSpace(strings.Join(textParts, "\n\n"))
-			if role == "user" && firstUserInput == "" && content != "" {
-				firstUserInput = content
-			}
-
-			if content != "" || len(toolCalls) > 0 {
-				t := time.UnixMilli(m.TimeCreated)
-				conversationMessages = append(conversationMessages, models.Message{
-					Role:      role,
-					Content:   content,
-					Timestamp: &t,
-					ToolCalls: toolCalls,
-				})
-			}
+		err = rows.Err()
+		rows.Close()
+		if err != nil {
+			return nil, err
 		}
-
-		if len(conversationMessages) == 0 {
-			continue
-		}
-
-		title := sess.Title
-		if title == "" || strings.HasPrefix(title, "New session -") {
-			if firstUserInput != "" {
-				title = generateTitle(firstUserInput)
-			}
-		}
-		if title == "" {
-			title = fmt.Sprintf("OpenCode Session %s", sess.ID[:min(8, len(sess.ID))])
-		}
-
-		results = append(results, &models.Conversation{
-			ID:         sess.ID,
-			SourceTool: "opencode",
-			Title:      title,
-			CreatedAt:  time.UnixMilli(sess.TimeCreated),
-			Tags:       []string{"coding", "assistant", "opencode"},
-			Messages:   conversationMessages,
-		})
+		cacheable = cacheable && hasUpdated
 	}
-
-	return results, nil
+	updated := "0"
+	if cacheable {
+		updated = "COALESCE(time_updated, 0)"
+	}
+	directory := "''"
+	if hasDirectory {
+		directory = "COALESCE(directory, '')"
+	}
+	rows, err := tx.Query("SELECT id, COALESCE(title, ''), time_created, " + updated + ", " + directory + " FROM session ORDER BY time_created, id")
+	if err != nil {
+		return nil, fmt.Errorf("query sessions: %w", err)
+	}
+	type session struct {
+		id, title, directory string
+		created, updated     int64
+	}
+	var sessions []session
+	for rows.Next() {
+		var s session
+		if err := rows.Scan(&s.id, &s.title, &s.created, &s.updated, &s.directory); err != nil {
+			rows.Close()
+			return nil, err
+		}
+		sessions = append(sessions, s)
+	}
+	err = rows.Err()
+	rows.Close()
+	if err != nil {
+		return nil, err
+	}
+	revisions := make(map[string]string)
+	if cacheable {
+		// Counts detect deletion; sums detect edits even when the maximum timestamp
+		// belongs to another row. IDs detect replacement with preserved timestamps.
+		for _, query := range []string{
+			"SELECT session_id, COUNT(*), COALESCE(SUM(time_updated),0), COALESCE(MAX(time_created),0), COALESCE(MAX(id),'') FROM message GROUP BY session_id",
+			"SELECT m.session_id, COUNT(*), COALESCE(SUM(p.time_updated),0), COALESCE(MAX(p.time_created),0), COALESCE(MAX(p.id),'') FROM part p JOIN message m ON m.id=p.message_id GROUP BY m.session_id",
+		} {
+			rows, err := tx.Query(query)
+			if err != nil {
+				return nil, err
+			}
+			for rows.Next() {
+				var id, maxID string
+				var count, sum, created int64
+				if err := rows.Scan(&id, &count, &sum, &created, &maxID); err != nil {
+					rows.Close()
+					return nil, err
+				}
+				revisions[id] += fmt.Sprintf("|%d:%d:%d:%s", count, sum, created, maxID)
+			}
+			err = rows.Err()
+			rows.Close()
+			if err != nil {
+				return nil, err
+			}
+		}
+	}
+	var results []*models.Conversation
+	for _, s := range sessions {
+		revision := ""
+		if cacheable {
+			revision = fmt.Sprintf("%x", sha256.Sum256([]byte(fmt.Sprintf("%s:%d:%d:%s:%s", s.title, s.created, s.updated, s.directory, revisions[s.id]))))
+		}
+		if !selectSession(s.id, revision) {
+			continue
+		}
+		rows, err := tx.Query(`SELECT m.id, m.time_created, COALESCE(m.data, '{}'), COALESCE(p.data, '{}')
+			FROM message m LEFT JOIN part p ON p.message_id=m.id
+			WHERE m.session_id=? ORDER BY m.time_created, m.id, p.time_created, p.id`, s.id)
+		if err != nil {
+			return results, err
+		}
+		conv := &models.Conversation{ID: s.id, SourceTool: "opencode", Title: s.title, CreatedAt: time.UnixMilli(s.created), Tags: []string{"coding", "assistant", "opencode"}}
+		conv.Project = projectName(s.directory)
+		var currentID, firstUser string
+		var message models.Message
+		var textParts []string
+		flush := func() {
+			message.Content = strings.TrimSpace(strings.Join(textParts, "\n\n"))
+			if message.Role == "user" && firstUser == "" {
+				firstUser = message.Content
+			}
+			if message.Content != "" || len(message.ToolCalls) > 0 {
+				conv.Messages = append(conv.Messages, message)
+			}
+		}
+		for rows.Next() {
+			var id, messageData, partData string
+			var created int64
+			if err := rows.Scan(&id, &created, &messageData, &partData); err != nil {
+				rows.Close()
+				return results, err
+			}
+			if id != currentID {
+				if currentID != "" {
+					flush()
+				}
+				var data OpenCodeMessageData
+				if err := json.Unmarshal([]byte(messageData), &data); err != nil {
+					rows.Close()
+					return results, fmt.Errorf("invalid message %s: %w", id, err)
+				}
+				t := time.UnixMilli(created)
+				role := strings.ToLower(data.Role)
+				if role == "" {
+					role = "assistant"
+				}
+				message = models.Message{Role: role, Timestamp: &t}
+				textParts = nil
+				currentID = id
+			}
+			var part OpenCodePartData
+			if err := json.Unmarshal([]byte(partData), &part); err != nil {
+				rows.Close()
+				return results, fmt.Errorf("invalid part for message %s: %w", id, err)
+			}
+			if part.Type == "text" && strings.TrimSpace(part.Text) != "" {
+				textParts = append(textParts, strings.TrimSpace(part.Text))
+			} else if part.Type == "tool" || part.Tool != "" {
+				input, _ := json.Marshal(part.Input)
+				output, _ := json.Marshal(part.Output)
+				message.ToolCalls = append(message.ToolCalls, models.ToolCall{Name: part.Tool, Summary: "Tool: " + part.Tool, Arguments: string(input), Output: string(output)})
+			}
+		}
+		err = rows.Err()
+		rows.Close()
+		if err != nil {
+			return results, err
+		}
+		if currentID != "" {
+			flush()
+		}
+		if conv.Title == "" || strings.HasPrefix(conv.Title, "New session -") {
+			conv.Title = generateTitle(firstUser)
+		}
+		results = append(results, conv)
+	}
+	return results, tx.Commit()
 }
