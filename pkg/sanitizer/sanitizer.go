@@ -151,7 +151,7 @@ func (s *Sanitizer) initRules() {
 		},
 		{
 			Name:        "NPM Auth Token Assignment",
-			Pattern:     regexp.MustCompile(`(?i)(:_authToken\s*=\s*)([^\s]+)`),
+			Pattern:     regexp.MustCompile(`(?i)(:_authToken\s*=\s*)([^\s\[\]]+)`),
 			Replacement: "${1}[NPM_TOKEN_REDACTED]",
 		},
 		{

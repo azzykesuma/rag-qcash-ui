@@ -52,3 +52,16 @@ func TestAuditTextDetectsPublicIPButNotLoopback(t *testing.T) {
 		t.Fatalf("unexpected loopback finding: %v", warnings)
 	}
 }
+
+func TestAuditTextIgnoresRedactedNPMToken(t *testing.T) {
+	s := New(DefaultConfig())
+	raw := `//registry.npmjs.org/:_authToken=secret-token-12345`
+	sanitized := s.SanitizeText(raw)
+	if !strings.Contains(sanitized, "[NPM_TOKEN_REDACTED]") {
+		t.Fatalf("expected token to be redacted, got: %s", sanitized)
+	}
+	if warnings := s.AuditText(sanitized); len(warnings) != 0 {
+		t.Fatalf("sanitized npm token should not trigger audit warnings: %v", warnings)
+	}
+}
+
