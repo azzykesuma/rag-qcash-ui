@@ -1,0 +1,123 @@
+{
+  "id": "antigravity-0ea89c64898e44a4683807684ee9ec3fd386cde7fd0d27dbb907354f923db052",
+  "conversations": [
+    {
+      "from": "human",
+      "value": "please check this contract can you access it using mcp https://internal-service.example.com/spaces/NQ/pages/2008432471/System+Design+-+Auto+Collection+Registration.\n\n\nand please implement api to this mockoon"
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": "I have accessed the Confluence specification page via MCP (**System Design - Auto Collection Registration**, ID: `2008432471`) and implemented all API contract endpoints in [data.json](file://~/Development/qcash-mockoon/data.json).\n\n---\n\n### **Implemented Endpoints in Mockoon**\n\nAll endpoints are organized under the **Auto Collection Registration** folder:\n\n| # | Method | Endpoint | Description |\n|---|---|---|---|\n| 1 | `POST` | `/api/auto-collection-registration/data` | Get list of registration tasks/accounts (Active Tasks / Done) |\n| 2 | `POST` | `/api/auto-collection-registration/download` | Download summary report (`pdf`, `xlsx`, `csv`) |\n| 3 | `POST` | `/api/dashboard-auto-collection/detail` | Get detail for active tasks or registered accounts |\n| 4 | `POST` | `/api/dashboard-auto-collection/action` | Approval actions (`approve`, `reject`, `request for delete`) |\n| 5 | `POST` | `/api/dashboard-auto-collection/add` | Add/register accounts to Auto Collection |\n| 6 | `POST` | `/api/dashboard-auto-collection/inquiry` | Inquiry account verification before registration |\n\n---\n\n### **Summary of Updates**\n- **Inquiry endpoint added**: Added `/api/dashboard-auto-collection/inquiry` with proper inquiry response payload.\n- **Add endpoint updated**: Populated response format according to the specification.\n- **Detail endpoint enhanced**: Included all fields (`company_name`, `currency`, `account_status`, `created_at`, `updated_at`, etc.).\n- **Download endpoint fixed**: Replaced local file reference with inline CSV attachment mock."
+    },
+    {
+      "from": "human",
+      "value": "please focus on new api only"
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": "Here is the complete contract breakdown for the **Auto Collection Registration** APIs:\n\n---\n\n### **1. Inquiry Account**\n\u003e Used to validate and fetch account details before registration.\n\n* **Endpoint:** `POST /api/dashboard-auto-collection/inquiry`\n* **Request:**\n```json\n{\n  \"account_no\": \"1235456789\"\n}\n```\n* **Response (200 OK):**\n```json\n{\n  \"error\": false,\n  \"code\": 200,\n  \"message\": \"success\",\n  \"data\": {\n    \"account_no\": \"1235456789\",\n    \"name\": \"RIFQI AMANULLAH\",\n    \"currency\": \"IDR\",\n    \"account_status\": \"1\",\n    \"cif\": \"RPEV922\",\n    \"type\": \"SA\",\n    \"description\": \"Account Validated\"\n  }\n}\n```\n\n---\n\n### **2. Add / Register Accounts**\n\u003e Used to submit accounts for Auto Collection registration.\n\n* **Endpoint:** `POST /api/dashboard-auto-collection/add`\n* **Request:**\n```json\n{\n  \"datas\": [\n    {\n      \"company_id\": \"1234\",\n      \"company_code\": \"PELINDO\",\n      \"company_name\": \"PT Pelabuhan Indonesia\",\n      \"account_no\": \"1235456789\",\n      \"account_name\": \"MXXXXXXXXXXU HXXXI\",\n      \"type\": \"CA\",\n      \"currency\": \"IDR\",\n      \"cif\": \"321S\",\n      \"account_status\": 1,\n      \"description\": \"Account Validated\"\n    }\n  ]\n}\n```\n* **Response (200 OK):**\n```json\n{\n  \"error\": false,\n  \"code\": 200,\n  \"message\": \"Success\",\n  \"data\": [\n    {\n      \"account_no\": \"1235456789\",\n      \"error\": false,\n      \"message\": \"Success\",\n      \"errData\": \"\"\n    }\n  ]\n}\n```\n\n---\n\n### **3. Action (Approve / Reject / Request for Delete)**\n\u003e Signer and Maker workflow actions.\n\n* **Endpoint:** `POST /api/dashboard-auto-collection/action`\n* **Request:**\n```json\n{\n  \"action\": \"approve\",\n  \"reasons\": \"\",\n  \"comment\": \"\",\n  \"passcode\": \"123456\",\n  \"task_id\": [\"123\", \"124\"]\n}\n```\n* **Response (200 OK):**\n```json\n{\n  \"error\": false,\n  \"code\": 200,\n  \"message\": \"Success\",\n  \"data\": [\n    {\n      \"task_id\": \"123\",\n      \"error\": false,\n      \"message\": \"Success\",\n      \"errData\": \"\"\n    }\n  ]\n}\n```\n\n---\n\n### **4. Account Detail**\n\u003e Get full details of a task (Active Task) or registered account (Done tab).\n\n* **Endpoint:** `POST /api/dashboard-auto-collection/detail`\n* **Request:**\n```json\n{\n  \"task_id\": \"122\",\n  \"account_id\": \"101\"\n}\n```\n* **Response (200 OK):**\n```json\n{\n  \"error\": false,\n  \"code\": 0,\n  \"message\": \"Success\",\n  \"data\": {\n    \"task_id\": \"122\",\n    \"account_id\": \"101\",\n    \"account_no\": \"1234567891\",\n    \"account_name\": \"MXXXXXXXXXXU HXXXI\",\n    \"currency\": \"IDR\",\n    \"account_status\": \"1\",\n    \"company_id\": \"456\",\n    \"company_code\": \"PELINDO\",\n    \"company_name\": \"PT PELABUHAN\",\n    \"status\": \"approved\",\n    \"approved_by\": \"user\",\n    \"created_by\": \"user\",\n    \"created_at\": \"23-01-2025 13:53:16\",\n    \"updated_at\": \"23-01-2025 13:53:16\"\n  }\n}\n```\n\n---\n\n### **5. Get Registration List (Active Tasks \u0026 Done)**\n\u003e Fetch list of pending tasks or approved accounts.\n\n* **Endpoint:** `POST /api/auto-collection-registration/data`\n* **Request:**\n```json\n{\n  \"is_pending\": true,\n  \"limit\": 10,\n  \"page\": 1\n}\n```\n* **Response (200 OK):**\n```json\n{\n  \"error\": false,\n  \"code\": 0,\n  \"message\": \"Success\",\n  \"data\": [\n    {\n      \"task_id\": \"1001\",\n      \"account_id\": \"0\",\n      \"company_id\": \"108321\",\n      \"company_code\": \"PELINDO III\",\n      \"account_no\": \"036901000212994\",\n      \"account_name\": \"PT PELINDO MULTI TERMINAL\",\n      \"status\": \"pending\"\n    }\n  ]\n}\n```\n\n---\n\n### **6. Download Summary**\n* **Endpoint:** `POST /api/auto-collection-registration/download`\n* **Request:**\n```json\n{\n  \"is_pending\": true,\n  \"format\": \"csv\"\n}\n```\n* **Response (200 OK):** Returns CSV file stream (`attachment; filename=auto-collection-registration.csv`).\n\nAll endpoints are configured and ready in [data.json](file://~/Development/qcash-mockoon/data.json)."
+    }
+  ],
+  "source": "antigravity",
+  "tags": [
+    "coding",
+    "assistant",
+    "antigravity"
+  ]
+}
