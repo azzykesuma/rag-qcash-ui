@@ -1,6 +1,5 @@
 # /qship
 
-- **Author**: `azzy`
 - **ID**: `3cbe11c4-b161-4591-ae4c-d9fe1d3405f2`
 - **Source Tool**: `antigravity`
 - **Date**: `2026-08-28 20:32:26`

@@ -1,0 +1,55 @@
+{
+  "id": "opencode-ad60c38d4a3c2e590c63bf38cb8357847c68a22b255c8d170c16afd45d83d6ed",
+  "conversations": [
+    {
+      "from": "human",
+      "value": "Perform a very thorough whole-tree audit of D:\\work\\qcash-ui-pelindo focused ONLY on over-engineering, not correctness/security/performance. Inspect all current application source under src/, generated/type material only enough to classify it, and identify concrete opportunities tagged delete/stdlib/native/yagni/shrink. Verify callers/usages before calling anything dead or single-use. Return ranked findings with exact paths, concise rationale, replacement, and a defensible approximate line count removable per finding. Do not edit files. Ignore deleted files shown by git status and audit the current filesystem tree."
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": "## Audit scope\n\nInspected all 17 current files under `D:\\work\\qcash-ui-pelindo\\src` (735 physical lines), plus configuration and generated declarations only to establish usage. Searches covered the current whole tree; Git-deleted files were ignored.\n\n## Ranked findings\n\n1. **[delete][yagni] Remove 25 unused QUILA component wrappers**\n   - Path: `D:\\work\\qcash-ui-pelindo\\src\\components\\ui\\index.tsx:9-129`\n   - Only `QuiProvider` is imported anywhere. `Button` through `Modal`, including every compound subcomponent, have zero callers.\n   - Replacement: retain only the `QuiProvider` dynamic export; add wrappers when first consumed.\n   - **Approximately 121 lines removable.**\n\n2. **[native][delete][shrink] Replace the custom router facade with existing routers**\n   - Paths:\n     - `D:\\work\\qcash-ui-pelindo\\src\\hooks\\useRouter.tsx`\n     - `D:\\work\\qcash-ui-pelindo\\src\\pages\\_app.tsx:5,17`\n     - `D:\\work\\qcash-ui-pelindo\\src\\pages\\dashboard\\index.tsx:6,10-16,32,36`\n   - Verified callers: `useAppRouter` is used only by `_app`; `AppRouterProvider` only wraps the dashboard, but no dashboard descendant calls `useAppRouter`.\n   - Replacement: use `next/compat/router` directly in `_app`, falling back to the installed auth provider’s exported `noopRouter`. Remove the unused dashboard router context and prop.\n   - **Approximately 80–86 net lines removable.**\n\n3. **[delete][yagni] Remove the unused application provider stack**\n   - Paths:\n     - `D:\\work\\qcash-ui-pelindo\\src\\components\\providers\\app-provider.tsx`\n     - `D:\\work\\qcash-ui-pelindo\\src\\pages\\dashboard\\index.tsx:4,33,35`\n   - `QueryClientProvider`, its injectable client, and `GlobalStoreProvider` have no consumers under `src`; no query hooks or global-store hooks exist. `AppProviders` has exactly one caller, which never supplies `queryClient`.\n   - Replacement: render `DashboardPage` directly. Reintroduce the relevant provider when a consumer appears.\n   - **Approximately 34–36 lines removable.**\n\n4. **[shrink][yagni] Collapse defensive i18n resource replication**\n   - Paths:\n     - `D:\\work\\qcash-ui-pelindo\\src\\utils\\i18n.ts:55-79`\n     - `D:\\work\\qcash-ui-pelindo\\src\\hooks\\usePelindoTranslation.ts`\n     - `D:\\work\\qcash-ui-pelindo\\src\\components\\providers\\i18n-provider.tsx`\n   - The resources are already supplied when the private i18next instance initializes. They are then redundantly copied into that instance, the global singleton, and the context instance during module load, initialization, provider mount, and every translation-hook mount.\n   - Replacement: initialize the private instance once, provide it once, and make `usePelindoTranslation` a direct `useTranslation(\"pelindo\")` call.\n   - **Approximately 33–40 lines removable.**\n\n5. **[delete][yagni] Remove the currently empty generated global-style exposure**\n   - Path: `D:\\work\\qcash-ui-pelindo\\src\\styles\\global.exposes.ts`\n   - `CSS_TEXT` is empty, so the exposed module only inserts an empty `\u003cstyle\u003e`. Its generator is not wired into package scripts, and `src/styles/globals.bundle.css` does not exist.\n   - Replacement: remove this source module and its federation exposure until a host actually needs a generated CSS payload.\n   - **Approximately 34 source lines removable.**\n   - Caveat: external host imports cannot be verified from this repository, although the current payload remains empty even if imported.\n\n6. **[shrink] Use the auth provider’s declared authority type**\n   - Path: `D:\\work\\qcash-ui-pelindo\\src\\utils\\auth.ts`\n   - Both exported functions are called only with `useAuth().authorities`, declared by the installed package as `Map\u003cstring, string[]\u003e`. The local structural interface, runtime map-shape predicate, array validation, and `.has()` before `.get()` duplicate that contract.\n   - Replacement: accept `Map\u003cstring, string[]\u003e`; use `authorities.has(\"PELINDO\")` and `authorities.get(\"PELINDO\")?.includes(...)`.\n   - **Approximately 18–22 lines removable.**\n\n7. **[stdlib][shrink] Replace nine positional environment arguments and repeated flags**\n   - Paths:\n     - `D:\\work\\qcash-ui-pelindo\\src\\utils\\environment.ts`\n     - `D:\\work\\qcash-ui-pelindo\\src\\config.ts`\n   - `getBaseUrlByEnv` has exactly one caller. It receives nine same-typed positional values and repeatedly reads the same hostname into named booleans used once.\n   - Replacement: read `location.hostname` once and use an ordered array of `[predicate, environment variable]` entries with `Array.find`, or inline the ordered selection into `src/config.ts`.\n   - **Approximately 18–25 net lines removable.**\n\n8. **[delete][shrink] Remove redundant eager federation initialization**\n   - Paths:\n     - `D:\\work\\qcash-ui-pelindo\\src\\pages\\_app.tsx:1,7,19-21`\n     - `D:\\work\\qcash-ui-pelindo\\src\\utils\\federation.ts:70-72`\n   - `initializeQuiFederationRuntime` has one caller and only invokes the same resolver that every `loadQuiRemote` call already invokes.\n   - Replacement: let the first remote load initialize or retrieve the runtime.\n   - **Approximately 7–8 lines removable.**\n\n9. **[shrink] Remove unused theme declarations**\n   - Path: `D:\\work\\qcash-ui-pelindo\\src\\styles\\globals.css:4-5,8-10,13,16-17`\n   - Whole-tree class search found no use of the Geist font aliases or the `primary-light`, `primary-link`, `accent`, `warning`, `pending-bg`, and `gray-bg` colors.\n   - Replacement: keep only tokens referenced by current markup; add tokens alongside their first use.\n   - **8 lines removable.**\n\n10. **[delete][shrink] Remove the unused public language helper**\n    - Path: `D:\\work\\qcash-ui-pelindo\\src\\utils\\i18n.ts:38-40`\n    - `getSupportedLanguage` has zero callers. `SupportedLanguage` is used only internally despite being exported.\n    - Replacement: delete the function and stop exporting the internal type.\n    - **3 lines removable**, plus two unnecessary export keywords.\n    - This overlaps finding 4.\n\n11. **[shrink][yagni] Merge the single-use dashboard container**\n    - Paths:\n      - `D:\\work\\qcash-ui-pelindo\\src\\containers\\dashboard\\index.tsx`\n      - `D:\\work\\qcash-ui-pelindo\\src\\pages\\dashboard\\index.tsx`\n    - The container has exactly one caller and adds only a prop interface and component boundary; it has no independent state, reuse, or framework role.\n    - Replacement: place its markup in the dashboard page after the authorization gates.\n    - **Approximately 5–7 net lines removable.**\n\n12. **[shrink] Remove the unnecessary fragment around one child**\n    - Path: `D:\\work\\qcash-ui-pelindo\\src\\components\\providers\\app-provider.tsx:25-29`\n    - The fragment contains only `{children}`.\n    - Replacement: `{isQuiGlobalsReady ? children : null}`.\n    - **2 lines removable.**\n    - Superseded if finding 3 is taken.\n\n## Larger consolidation option\n\n**[delete][yagni] Remove all consumer-side QUILA machinery until a QUILA component is used.**\n\nAffected paths:\n\n- `D:\\work\\qcash-ui-pelindo\\src\\components\\ui\\index.tsx`\n- `D:\\work\\qcash-ui-pelindo\\src\\utils\\federation.ts`\n- `D:\\work\\qcash-ui-pelindo\\src\\hooks\\useQuiGlobalsReady.ts`\n- `D:\\work\\qcash-ui-pelindo\\src\\components\\providers\\app-provider.tsx`\n- corresponding wrappers in `_app.tsx` and `pages/dashboard/index.tsx`\n\nThe current dashboard renders only native elements. This would remove roughly **300–310 source lines**, but overlaps findings 1, 3, 5, and 8 and should not be added to their totals.\n\n## Generated/type classification\n\n`D:\\work\\qcash-ui-pelindo\\@mf-types\\qcash-global-component` is a large generated remote-declaration bundle, not application source. No current `src` file imports it. It should be regenerated or removed as a unit rather than manually simplified. The current source instead references `@mf-types/qui/apis`, which is not part of that bundle; no over-engineering finding was assigned to generated declarations themselves."
+    }
+  ],
+  "source": "opencode",
+  "tags": [
+    "coding",
+    "assistant",
+    "opencode"
+  ]
+}

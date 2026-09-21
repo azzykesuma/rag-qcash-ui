@@ -1,0 +1,538 @@
+# Review vault implementation (@general subagent)
+
+- **ID**: `opencode-3adbf2457712ae5406489853d6a8fab57449d2876fa4e42d545dcd2f12c24d51`
+- **Source Tool**: `opencode`
+- **Date**: `2026-09-16 15:57:38`
+- **Project**: `llm-context-vault`
+- **Tags**: `coding`, `assistant`, `opencode`
+
+---
+
+## Turn 1: User
+
+Perform a focused code review of the current uncommitted source changes in D:\code\llm-context-vault (exclude conversations/ user data). The requested implementation includes batched dataset writes, incremental/concurrent scans, deterministic existing exports, optimized OpenCode extraction, whole-conversation filename generation for future exports only, ranked SQLite FTS search with project/tool/date filtering, context budgets/citations, dashboard integration, docs/tests. Do not edit files. Identify concrete correctness, data-loss, concurrency, Windows portability, security/privacy, backward compatibility, and CLI behavior issues. Run targeted tests if useful. Return findings ordered by severity with exact file/line references and concise fixes; explicitly state if no findings.
+
+---
+
+## Turn 2: Assistant
+
+<details><summary>🔧 Tool Invocations (3)</summary>
+
+- **read**: Tool: read
+- **grep**: Tool: grep
+- **bash**: Tool: bash
+
+</details>
+
+I’ll scope the review to uncommitted non-`conversations/` changes, first loading the vault’s entry guidance and relevant prior decisions, then inspect the complete diff and run targeted tests around the highest-risk paths.
+
+---
+
+## Turn 3: Assistant
+
+<details><summary>🔧 Tool Invocations (4)</summary>
+
+- **bash**: Tool: bash
+- **glob**: Tool: glob
+- **bash**: Tool: bash
+- **bash**: Tool: bash
+
+</details>
+
+
+
+---
+
+## Turn 4: Assistant
+
+<details><summary>🔧 Tool Invocations (1)</summary>
+
+- **bash**: Tool: bash
+
+</details>
+
+
+
+---
+
+## Turn 5: Assistant
+
+<details><summary>🔧 Tool Invocations (6)</summary>
+
+- **read**: Tool: read
+- **read**: Tool: read
+- **read**: Tool: read
+- **read**: Tool: read
+- **read**: Tool: read
+- **read**: Tool: read
+
+</details>
+
+The implementation is split across new command, scan, search, naming, and exporter modules; the tests are currently untracked, so I’m including them in the review rather than relying only on `git diff`. I’ll prioritize write atomicity/state transitions, FTS query construction, extraction boundaries, and HTTP/CLI parameter handling.
+
+---
+
+## Turn 6: Assistant
+
+<details><summary>🔧 Tool Invocations (6)</summary>
+
+- **read**: Tool: read
+- **read**: Tool: read
+- **read**: Tool: read
+- **read**: Tool: read
+- **read**: Tool: read
+- **read**: Tool: read
+
+</details>
+
+
+
+---
+
+## Turn 7: Assistant
+
+<details><summary>🔧 Tool Invocations (7)</summary>
+
+- **read**: Tool: read
+- **read**: Tool: read
+- **read**: Tool: read
+- **read**: Tool: read
+- **read**: Tool: read
+- **read**: Tool: read
+- **read**: Tool: read
+
+</details>
+
+
+
+---
+
+## Turn 8: Assistant
+
+<details><summary>🔧 Tool Invocations (7)</summary>
+
+- **read**: Tool: read
+- **read**: Tool: read
+- **read**: Tool: read
+- **read**: Tool: read
+- **read**: Tool: read
+- **read**: Tool: read
+- **read**: Tool: read
+
+</details>
+
+
+
+---
+
+## Turn 9: Assistant
+
+<details><summary>🔧 Tool Invocations (5)</summary>
+
+- **bash**: Tool: bash
+- **bash**: Tool: bash
+- **bash**: Tool: bash
+- **bash**: Tool: bash
+- **bash**: Tool: bash
+
+</details>
+
+
+
+---
+
+## Turn 10: Assistant
+
+<details><summary>🔧 Tool Invocations (5)</summary>
+
+- **bash**: Tool: bash
+- **bash**: Tool: bash
+- **bash**: Tool: bash
+- **grep**: Tool: grep
+- **grep**: Tool: grep
+
+</details>
+
+The baseline tests pass, but the scan lifecycle has an uncovered reconciliation gap: successful reprocessing only adds or upserts the new content identity and never retires the prior export. I’m validating adjacent failure/retry and UI filter behavior now, since those determine whether this is merely stale metadata or a privacy-retention issue.
+
+---
+
+## Turn 11: Assistant
+
+<details><summary>🔧 Tool Invocations (4)</summary>
+
+- **bash**: Tool: bash
+- **bash**: Tool: bash
+- **bash**: Tool: bash
+- **bash**: Tool: bash
+
+</details>
+
+
+
+---
+
+## Turn 12: Assistant
+
+<details><summary>🔧 Tool Invocations (1)</summary>
+
+- **grep**: Tool: grep
+
+</details>
+
+
+
+---
+
+## Turn 13: Assistant
+
+<details><summary>🔧 Tool Invocations (1)</summary>
+
+- **read**: Tool: read
+
+</details>
+
+
+
+---
+
+## Turn 14: Assistant
+
+<details><summary>🔧 Tool Invocations (1)</summary>
+
+- **grep**: Tool: grep
+
+</details>
+
+
+
+---
+
+## Turn 15: Assistant
+
+<details><summary>🔧 Tool Invocations (1)</summary>
+
+- **read**: Tool: read
+
+</details>
+
+
+
+---
+
+## Turn 16: Assistant
+
+**Findings**
+
+1. **Critical: redaction-setting changes leave the previous unredacted export searchable and publishable.** Sanitization occurs before deriving the content ID (`pkg/vault/vault.go:236-239`), so adding `--redact-words` creates a new ID. The scan then replaces the state entry without deleting its prior paths (`pkg/vault/scan.go:277-305`), while JSONL supports only upserts (`pkg/exporter/jsonl.go:58-76`). The old Markdown, ShareGPT, and dataset record remain. Fix by treating each source entry as owning an export identity and atomically retiring its previous files/JSONL record after the replacement succeeds.
+
+2. **High: privacy audits neither cover custom keywords nor reliably fail the command.** `AuditText` checks built-in secrets, paths, email, and IP rules but omits `keywordRules` (`pkg/sanitizer/sanitizer.go:291-321`). Additionally, unified scan merely prints detected violations and still returns success (`cmd/vault/commands.go:118-139`). Add custom-keyword checks and return a non-zero error whenever any post-scan violation remains.
+
+3. **High: a source detected as concurrently modified has already been persisted and is still flushed.** Workers call `ProcessAndStore` before re-stamping the source (`pkg/vault/scan.go:247-255`). On mismatch, the result is marked failed, but its files have already been written and its pending dataset update is merged at scan end (`pkg/vault/scan.go:135-139`, `pkg/vault/vault.go:269-283`). A partial or mixed read can therefore enter the vault despite the failure. Extract first, verify the source revision, and only then persist; alternatively roll back the pending record and generated files.
+
+4. **High: `publish` is outside the new writer lock.** Scans/imports lock the vault (`pkg/vault/scan.go:90-95`), but `publishRepo` audits and stages without that lock (`cmd/vault/main.go:236-303`). A concurrent scan can add data after the audit or between individual `git add` reads, producing an unaudited or inconsistent commit. Hold the same per-vault lock from the publish audit through staging and commit; `pull` should also participate when it modifies exports.
+
+5. **Medium: a failed dataset flush irreversibly consumes the in-memory batch.** `Flush` clears `e.pending` before attempting the merge (`pkg/exporter/jsonl.go:70-76`), and `mergeJSONL` deletes entries from that map while reading the old dataset (`pkg/exporter/jsonl.go:112-120`). A transient rename, disk, or parsing error makes retrying `Flush` a no-op or loses part of the batch. Merge from a copy and clear pending only after successful replacement.
+
+6. **Medium: passage limiting happens before conversation deduplication.** SQL returns only the top 1,000 passages (`pkg/vault/search.go:91-104`), then deduplication selects one passage per file (`pkg/vault/search.go:149-159`). One very large, highly matching conversation can occupy the candidate window and hide other matching sessions, returning fewer distinct results than requested. Rank/select the best passage per file in SQL before applying the global limit, or fetch progressively until enough distinct files are found.
+
+7. **Medium: dashboard project/date filters do nothing unless a text query is present.** `render` filters only by tool and ranked matches (`pkg/webui/index.html:25`), while `search()` discards all filters when `q` is empty (`pkg/webui/index.html:28`). This contradicts the documented project/date browsing integration. Apply project and date filters locally to `sessions`, or add a metadata-only endpoint/filter path that does not require FTS terms.
+
+8. **Medium: compatibility scan wrappers suppress extraction/discovery errors.** `scanOne` returns only the top-level `ScanSources` error (`pkg/vault/scan.go:79-85`), but source errors are converted into report warnings and `FailedCount` (`pkg/vault/scan.go:186-212`). Consequently, direct callers of `ScanOpenCodeDB`, `ScanAGYBrain`, or `ScanCodexSessions` can receive `err == nil` for a missing or corrupt source. Return an aggregated error when the report has failures, preserving the established API contract.
+
+9. **Low: OpenCode revisions do not fully detect child-row replacement.** The revision records count, timestamp sum, maximum creation time, and only the maximum ID (`pkg/extractor/opencode.go:132-151`). Replacing a non-maximum message/part ID while preserving those aggregates is incorrectly classified as unchanged. Hash all ordered child IDs and update timestamps, or use a collision-resistant per-session digest.
+
+10. **Low, Windows portability: replacement is not crash-atomic on Windows.** Both export and dataset writes finish with `os.Rename` (`pkg/exporter/files.go:22-38`, `pkg/exporter/jsonl.go:85-161`). Go explicitly documents that `Rename` is non-atomic on non-Unix platforms, weakening the dataset-preservation guarantee on the primary supported Windows platform. Use a Windows-aware replace/recovery strategy or retain a recoverable backup until replacement completes.
+
+**Verification**
+
+`go test -count=1 ./...`, `go vet ./...`, and a Linux cross-build all passed. `go test -race` could not run because the environment has CGO disabled. No files were edited.
+
+---
+
+## Turn 17: User
+
+Re-review the current uncommitted source changes after fixes. Verify whether your prior findings 1-8 were addressed and identify any newly introduced correctness/data-loss/concurrency/security issues. Do not edit. Run targeted tests if useful. Return only remaining actionable findings with severity and exact file/line references, or explicitly say none.
+
+---
+
+## Turn 18: Assistant
+
+<details><summary>🔧 Tool Invocations (4)</summary>
+
+- **bash**: Tool: bash
+- **bash**: Tool: bash
+- **grep**: Tool: grep
+- **glob**: Tool: glob
+
+</details>
+
+I’ll re-check the full non-`conversations/` worktree, focusing first on the eight previously identified paths, then run the updated test suite and targeted race/build checks where supported.
+
+---
+
+## Turn 19: Assistant
+
+<details><summary>🔧 Tool Invocations (7)</summary>
+
+- **read**: Tool: read
+- **read**: Tool: read
+- **read**: Tool: read
+- **read**: Tool: read
+- **read**: Tool: read
+- **read**: Tool: read
+- **read**: Tool: read
+
+</details>
+
+
+
+---
+
+## Turn 20: Assistant
+
+<details><summary>🔧 Tool Invocations (7)</summary>
+
+- **read**: Tool: read
+- **read**: Tool: read
+- **read**: Tool: read
+- **read**: Tool: read
+- **read**: Tool: read
+- **read**: Tool: read
+- **read**: Tool: read
+
+</details>
+
+
+
+---
+
+## Turn 21: Assistant
+
+<details><summary>🔧 Tool Invocations (6)</summary>
+
+- **bash**: Tool: bash
+- **bash**: Tool: bash
+- **bash**: Tool: bash
+- **bash**: Tool: bash
+- **grep**: Tool: grep
+- **grep**: Tool: grep
+
+</details>
+
+The fixes cover the original write-after-source-change, audit, batch-retry, ranking-window, writer-lock, wrapper-error, and basic dashboard-filter cases. Two state-transition edge cases remain around partial/tool-specific invalidation and failed reprocessing, so I’m checking those against the updated tests and cache migration behavior.
+
+---
+
+## Turn 22: Assistant
+
+<details><summary>🔧 Tool Invocations (1)</summary>
+
+- **read**: Tool: read
+
+</details>
+
+
+
+---
+
+## Turn 23: Assistant
+
+1. **Critical:** Global cache invalidation is incorrectly checkpointed after a tool-specific scan. `forceProcess` is set for a sanitizer-version or dataset-stamp mismatch, but untouched entries remain and the new global version/dataset stamp is saved (`pkg/vault/scan.go:105-129`, `pkg/vault/scan.go:132-145`, `pkg/vault/scan.go:176-182`). A later unified scan trusts those untouched entries (`pkg/vault/scan.go:187-201`). This can permanently omit unscanned tools from a rebuilt dataset or skip applying new redaction settings. Track sanitizer/version validity per entry, or invalidate untouched entries rather than checkpointing them as current.
+
+2. **High:** Failed reprocessing deletes the previous valid state association (`pkg/vault/scan.go:310-316`, `pkg/vault/scan.go:342-351`). A subsequent successful retry sees no `previous` entry and therefore never retires the superseded export, leaving stale or unredacted files and JSONL records. Preserve `result.job.previous` on failure; delete only state for genuinely new failed sources.
+
+3. **High:** Crash leftovers can bypass auditing and be published. Temporary exports/datasets and Windows backup files are created inside `conversations/` (`pkg/exporter/files.go:23-27`, `pkg/exporter/files.go:42-64`, `pkg/exporter/jsonl.go:109-114`). Their extensions are excluded from `AuditAll` (`pkg/vault/vault.go:438-453`), but `publish` stages the entire directory (`cmd/vault/main.go:266-273`). A crash can therefore leave old sensitive data that is committed without audit. Keep temporary/backup files under `.vault/`, clean them before publishing, or audit and stage an explicit export whitelist.
+
+4. **Medium:** The scan-state schema added `ConversationID`, but `scanVersion` remains `"2"` (`pkg/vault/scan.go:20`, `pkg/vault/scan.go:35-44`). Existing version-2 caches deserialize with empty IDs and can pass unchanged checks, preventing retirement from working (`pkg/vault/scan.go:187-201`). Bump the cache version and migrate or invalidate legacy entries.
+
+5. **Medium:** Dashboard project filtering conflicts with local project aliases. `/api/sessions` exposes only the Markdown header project (`pkg/webui/webui.go:116-135`), while search applies `.vault/projects.json` aliases (`pkg/vault/search.go:217-223`, `pkg/vault/search.go:301-303`). The client then filters aliased search results against the unaliased session value and hides them (`pkg/webui/index.html:25`). Apply aliases in `/api/sessions` or use the search result’s project when filtering ranked matches.
+
+---
+
+## Turn 24: User
+
+Final focused review after the latest fixes. Check current uncommitted source changes only. Confirm prior findings are resolved and report any remaining concrete correctness, data-loss, concurrency, privacy/security, CLI, or Windows issues at medium severity or higher. Do not edit. Return exact references and concise fixes, or explicitly state none.
+
+---
+
+## Turn 25: Assistant
+
+<details><summary>🔧 Tool Invocations (4)</summary>
+
+- **bash**: Tool: bash
+- **grep**: Tool: grep
+- **bash**: Tool: bash
+- **glob**: Tool: glob
+
+</details>
+
+I’ll verify the latest implementations of cache invalidation, failed-job recovery, temporary-file handling, project aliases, and Windows replacement, then run the complete tests plus static and cross-platform build checks.
+
+---
+
+## Turn 26: Assistant
+
+<details><summary>🔧 Tool Invocations (7)</summary>
+
+- **read**: Tool: read
+- **read**: Tool: read
+- **read**: Tool: read
+- **read**: Tool: read
+- **read**: Tool: read
+- **read**: Tool: read
+- **read**: Tool: read
+
+</details>
+
+
+
+---
+
+## Turn 27: Assistant
+
+<details><summary>🔧 Tool Invocations (6)</summary>
+
+- **bash**: Tool: bash
+- **bash**: Tool: bash
+- **bash**: Tool: bash
+- **bash**: Tool: bash
+- **grep**: Tool: grep
+- **grep**: Tool: grep
+
+</details>
+
+
+
+---
+
+## Turn 28: Assistant
+
+<details><summary>🔧 Tool Invocations (4)</summary>
+
+- **read**: Tool: read
+- **read**: Tool: read
+- **read**: Tool: read
+- **bash**: Tool: bash
+
+</details>
+
+
+
+---
+
+## Turn 29: Assistant
+
+<details><summary>🔧 Tool Invocations (1)</summary>
+
+- **read**: Tool: read
+
+</details>
+
+
+
+---
+
+## Turn 30: Assistant
+
+<details><summary>🔧 Tool Invocations (4)</summary>
+
+- **read**: Tool: read
+- **grep**: Tool: grep
+- **grep**: Tool: grep
+- **grep**: Tool: grep
+
+</details>
+
+
+
+---
+
+## Turn 31: Assistant
+
+<details><summary>🔧 Tool Invocations (1)</summary>
+
+- **read**: Tool: read
+
+</details>
+
+
+
+---
+
+## Turn 32: Assistant
+
+1. **High:** Windows crash recovery can silently drop untouched JSONL records. `mergeJSONL` reads the destination before recovery (`pkg/exporter/jsonl.go:105-129`), while `replaceFile` restores a crash backup only after the replacement dataset has already been constructed (`pkg/exporter/files.go:47-65`). If a crash leaves `dataset.jsonl` only in `.vault-tmp`, the next incremental import builds from an apparently empty dataset and replaces the recovered backup with only pending records. Restore backups before opening the dataset, or use the Windows `ReplaceFile` API.
+
+2. **Medium:** Project extraction can expose the local username. `projectName` returns the final path component unchanged (`pkg/extractor/project.go:5-15`), including `alice` for `~` or `~`; Codex and OpenCode export it as project metadata (`pkg/extractor/codex.go:98`, `pkg/extractor/opencode.go:176`). Sanitizing the isolated value cannot recognize it as a user path. Reject paths equal to the user home directory or whose parent is `Users`/`home`, or require an explicit local alias.
+
+3. **Medium:** Identical conversations from different projects collapse into one nondeterministic export. `Project` is omitted from the stable-ID payload (`pkg/vault/vault.go:299-319`), while concurrent workers store matching IDs in scheduler-dependent order (`pkg/vault/scan.go:281-304`). The shared Markdown/dataset record is repeatedly overwritten (`pkg/vault/vault.go:265-294`), losing one project association and making project-filter results nondeterministic. Include sanitized project identity in the ID or deterministically retain a set of project aliases.
+
+4. **Medium:** Unified scan skips its privacy audit when no local sources are discovered. `runScan` returns immediately for an empty report set (`cmd/vault/commands.go:105-109`), before the audit block (`cmd/vault/commands.go:118-135`). A cloned vault can therefore contain violations while `vault scan` exits successfully without auditing. Print the no-source message but continue through indexing and auditing.
+
+---
+
+## Turn 33: User
+
+Verify the four findings from your last review are now resolved. Also report any remaining medium-or-higher correctness, data-loss, concurrency, privacy/security, CLI, or Windows portability issue in the current uncommitted source changes. Do not edit. Be concise with exact references, or explicitly state no remaining findings.
+
+---
+
+## Turn 34: Assistant
+
+<details><summary>🔧 Tool Invocations (4)</summary>
+
+- **grep**: Tool: grep
+- **bash**: Tool: bash
+- **bash**: Tool: bash
+- **glob**: Tool: glob
+
+</details>
+
+I’ll verify the four corrected paths directly, then run the full tests and static/cross-platform checks before reporting only medium-or-higher residual issues.
+
+---
+
+## Turn 35: Assistant
+
+<details><summary>🔧 Tool Invocations (8)</summary>
+
+- **read**: Tool: read
+- **read**: Tool: read
+- **read**: Tool: read
+- **read**: Tool: read
+- **read**: Tool: read
+- **read**: Tool: read
+- **read**: Tool: read
+- **read**: Tool: read
+
+</details>
+
+
+
+---
+
+## Turn 36: Assistant
+
+<details><summary>🔧 Tool Invocations (5)</summary>
+
+- **bash**: Tool: bash
+- **bash**: Tool: bash
+- **bash**: Tool: bash
+- **bash**: Tool: bash
+- **grep**: Tool: grep
+
+</details>
+
+
+
+---
+
+## Turn 37: Assistant
+
+1. **High:** Redaction changes still leave stale unredacted exports when scan state is absent or legacy. Existing dataset records are canonicalized without applying the current sanitizer (`pkg/vault/naming.go:91-110`), while new source IDs are derived after sanitization (`pkg/vault/vault.go:245-262`). Without a prior ownership entry, retirement is never scheduled (`pkg/vault/scan.go:353-357`). A first scan after upgrade or deleting `.vault/` with new `--redact-words` creates sanitized duplicates but leaves old content intact. Register an identity alias from each existing record after applying the current sanitizer, so it is overwritten in place.
+
+2. **Medium:** Home-directory protection remains pattern-based and misses valid homes such as `/root`, `/var/lib/service`, or `D:\Profiles\alice`. `projectName` rejects only paths whose parent is literally `home` or `users` (`pkg/extractor/project.go:5-21`), so custom Windows profiles and service accounts can still expose usernames as project metadata. Compare the normalized path with `os.UserHomeDir()` in addition to the structural checks.
+
+---
+

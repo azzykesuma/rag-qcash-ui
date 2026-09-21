@@ -1,6 +1,5 @@
 # http://qcash-ui-design-system-docs-micro-frontend.apps.ocp-new-dev....
 
-- **Author**: `azzy`
 - **ID**: `093c4c71-8f51-4486-98f6-f98135aa6893`
 - **Source Tool**: `antigravity`
 - **Date**: `2026-08-28 20:32:25`

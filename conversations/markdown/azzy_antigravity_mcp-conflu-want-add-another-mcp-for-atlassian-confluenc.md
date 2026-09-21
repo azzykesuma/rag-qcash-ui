@@ -1,6 +1,5 @@
 # mcp conflu
 
-- **Author**: `azzy`
 - **ID**: `e6803251-82c4-4eba-9035-537b893021b9`
 - **Source Tool**: `antigravity`
 - **Date**: `2026-08-28 20:32:28`

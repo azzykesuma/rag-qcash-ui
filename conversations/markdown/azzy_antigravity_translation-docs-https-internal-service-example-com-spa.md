@@ -1,6 +1,5 @@
 # translation - docs
 
-- **Author**: `azzy`
 - **ID**: `df7d7929-fe9e-4281-ba3e-2a5e4f471102`
 - **Source Tool**: `antigravity`
 - **Date**: `2026-08-28 20:32:27`

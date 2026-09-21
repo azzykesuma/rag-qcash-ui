@@ -1,6 +1,5 @@
 # /qstart with this NQLA-65256, branch name : add translation breadcr...
 
-- **Author**: `azzy`
 - **ID**: `ec6a6326-94ef-4e5a-8fd7-cb30117c9687`
 - **Source Tool**: `antigravity`
 - **Date**: `2026-08-28 20:32:28`

@@ -1,6 +1,5 @@
 # run yarn dev NEXT_PRIVATE_LOCAL_WEBPACK=true
 
-- **Author**: `azzy`
 - **ID**: `e40464ee-296f-434a-813f-1302474b4c3d`
 - **Source Tool**: `antigravity`
 - **Date**: `2026-08-28 20:32:28`

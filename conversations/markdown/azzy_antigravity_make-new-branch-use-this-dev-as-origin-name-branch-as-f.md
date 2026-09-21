@@ -1,6 +1,5 @@
 # make a new branch , use this dev as origin, name the branch as feat...
 
-- **Author**: `azzy`
 - **ID**: `9215350e-8830-40e4-b92e-4b764fa5d2a5`
 - **Source Tool**: `antigravity`
 - **Date**: `2026-08-28 20:32:27`

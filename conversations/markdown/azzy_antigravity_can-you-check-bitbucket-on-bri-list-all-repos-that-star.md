@@ -1,6 +1,5 @@
 # can you check my bitbucket on bri and list ALL repos that starts wi...
 
-- **Author**: `azzy`
 - **ID**: `58b9ae8c-a67b-4eb0-afb5-091776978aff`
 - **Source Tool**: `antigravity`
 - **Date**: `2026-08-28 20:32:26`

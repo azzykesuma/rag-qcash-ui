@@ -1,0 +1,27 @@
+{
+  "id": "opencode-adde4a438729aab85591b04d8fe8197236310549465b6f49e3ba6c0695190bc7",
+  "conversations": [
+    {
+      "from": "human",
+      "value": "can you explain to me the usage of scripts/apply-patches.js and the usage of it?"
+    },
+    {
+      "from": "gpt",
+      "value": "I’ll inspect the script and its package/config references, then summarize how to invoke it and what it changes."
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": "`scripts/apply-patches.js` applies a local fix directly to an installed dependency under `node_modules`.\n\n**Why It Exists**\n\n`@module-federation/typescript@3.1.3` checks `emitSkipped` after generating TypeScript declaration files:\n\n```js\nif (!emitSkipped) {\n  return this.tsDefinitionFilesObj;\n}\n```\n\nWith `emitDeclarationOnly`, TypeScript can report `emitSkipped: true` even when declaration generation succeeded. This causes a false failure.\n\nThe patch changes the logic to check whether the diagnostics contain actual TypeScript errors:\n\n```js\nconst hasErrors = diagnostics.some(\n  d =\u003e d.category === typescript_1.default.DiagnosticCategory.Error,\n);\n\nif (!hasErrors) {\n  return this.tsDefinitionFilesObj;\n}\n```\n\nThis modification is defined in `scripts/apply-patches.js:9-36`.\n\n**How To Use It**\n\nNormally, no manual action is needed. It runs automatically during dependency installation through the `prepare` script in `package.json:13`:\n\n```json\n\"prepare\": \"husky || true \u0026\u0026 node -e \\\"require('fs').existsSync('scripts/apply-patches.js')\u0026\u0026require('child_process').execSync('node scripts/apply-patches.js',{stdio:'inherit'})\\\"\"\n```\n\nTherefore, this should apply it:\n\n```bash\nyarn install\n```\n\nYou can also run it manually from the repository root:\n\n```bash\nnode scripts/apply-patches.js\n```\n\nExpected output when applied:\n\n```text\n[apply-patches] Applied: Fix @module-federation/typescript emitSkipped false-positive with emitDeclarationOnly\n```\n\nRunning it again is safe. The script detects the marker `DiagnosticCategory.Error` and reports:\n\n```text\n[apply-patches] Already applied: ...\n```\n\n**How It Works**\n\nFor every entry in the `patches` array, it:\n\n1. Resolves the target path relative to the project root.\n2. Skips the patch if the dependency file does not exist.\n3. Checks `appliedMarker` to avoid applying it twice.\n4. Searches for the exact original source block in `find`.\n5. Replaces it with the block in `replace`.\n6. Exits with code `1` if the dependency exists but the expected source cannot be found.\n\nThe last case usually means the dependency was upgraded and its implementation changed:\n\n```text\n[apply-patches] WARNING: Could not find target ... patch may be outdated\n```\n\nThe patch would then need to be reviewed and updated.\n\n**Important Notes**\n\n- It modifies `node_modules`, not the dependency source committed to this repository.\n- Reinstalling or deleting `node_modules` removes the modification, but `prepare` should reapply it.\n- Installation with lifecycle scripts disabled, such as `yarn install --ignore-scripts`, will not apply it.\n- When `NODE_ENV=production`, informational output is suppressed, but patching and failure handling still occur.\n- The currently installed file in this workspace is not patched, suggesting `prepare` has not run since this script was added, or installation scripts were skipped. Running `node scripts/apply-patches.js` would apply it."
+    }
+  ],
+  "source": "opencode",
+  "tags": [
+    "coding",
+    "assistant",
+    "opencode"
+  ]
+}
