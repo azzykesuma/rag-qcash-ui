@@ -1,0 +1,459 @@
+{
+  "id": "antigravity-d75d92f5a8f8030368a23940f60f4479201586ee0baaeb2200bd130fa69eb099",
+  "conversations": [
+    {
+      "from": "human",
+      "value": "please check what api hitted for get bi-fast alias"
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": "In the BI-FAST module, the API called depends on whether you are resolving a **BI-FAST Proxy/Alias (Email or Mobile Number)** or retrieving saved **Beneficiary / Sender Account Aliases**:\n\n---\n\n### 1. Resolving BI-FAST Proxy / Alias (Email or Mobile Number)\n\nWhen entering a BI-FAST proxy alias (Email or Mobile Number) to look up and validate beneficiary details:\n\n* **Endpoint:** `POST /bifast/validate/proxy`\n* **Service Method:** [`postValidateBeneficiaryAccountProxy`](file://~/Development/qcash-ui-fund-transfer/services/external-transfer.ts#L413-L427) in [`services/external-transfer.ts`](file://~/Development/qcash-ui-fund-transfer/services/external-transfer.ts)\n* **Form Handler:** Called by `checkValidateProxy` in [`components/form/bifast/index.tsx`](file://~/Development/qcash-ui-fund-transfer/components/form/bifast/index.tsx#L511-L544)\n* **Payload:**\n  ```json\n  {\n    \"accountType\": \"EmailAccountType\" | \"PhoneNumberAccountType\",\n    \"value\": \"\u003cemail_address_or_mobile_number\u003e\"\n  }\n  ```\n* **Response Data:**\n  ```json\n  {\n    \"data\": {\n      \"accountName\": \"...\",\n      \"accountNumber\": \"...\",\n      \"currency\": \"...\",\n      \"bankCode\": \"...\"\n    }\n  }\n  ```\n  *(The form maps `data.accountName` into `receiverAccountAlias` and `receiverAccountName`).*\n\n---\n\n### 2. Validating Beneficiary Account Number (Enquiry)\n\nWhen validating a BI-FAST beneficiary by account number:\n\n* **Endpoint:** `POST /beneficiary-account/validate/enquiry`\n* **Form Handler:** [`useValidateAccount`](file://~/Development/qcash-ui-fund-transfer/components/form/bifast/index.tsx#L296-L335) in [`components/form/bifast/index.tsx`](file://~/Development/qcash-ui-fund-transfer/components/form/bifast/index.tsx)\n* **Alias Handled:** Extracts `accountAlias` (or falls back to `creditorName`, `shortName`, `name`) into `receiverAccountAlias`.\n\n---\n\n### 3. Fetching Beneficiary / Sender Account List with Alias\n\n* **Beneficiary Account Search (Dropdown):**\n  * **Endpoint:** `GET /beneficiary-account/dataByRole`\n  * **Function:** [`getBeneficiaryAccountDataByRole`](file://~/Development/qcash-ui-fund-transfer/services/kliring.ts#L17-L29) via [`useInquryBeneficiaryAccounts`](file://~/Development/qcash-ui-fund-transfer/hooks/use-inqury-beneficiary-accounts.ts#L3-L43)\n  * **Query Parameter:** `query=AccountAlias,AccountName,AccountNumber:%!\u003csearch\u003e\u0026productID=227`\n\n* **Sender Account Search (Source of Funds):**\n  * **Endpoint:** `GET /account/dataByRole`\n  * **Function:** [`getAccountDataByRole`](file://~/Development/qcash-ui-fund-transfer/services/kliring.ts#L6-L15) via [`useGetAccount`](file://~/Development/qcash-ui-fund-transfer/hooks/use-get-account.ts#L5-L60)\n  * **Query Parameter:** `query=AccountAlias,AccountName,AccountNumber:%!\u003csearch\u003e\u0026productID=227`"
+    },
+    {
+      "from": "human",
+      "value": "where it should give the list beneficiary account because BE want to check the code why its just return 1 intead of many"
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": "The API that returns the list of beneficiary accounts for BI-FAST in the transfer form is:\n\n### **`GET /beneficiary-account/dataByRole`**\n\n---\n\n### 1. Where and How It Is Called in FE\n* **Component:** [`components/form/bifast/index.tsx:L292`](file://~/Development/qcash-ui-fund-transfer/components/form/bifast/index.tsx#L292)\n  ```ts\n  const getBeneficiaryAccounts = useInquryBeneficiaryAccounts(\n    productID, // \"227\"\n    \"MasterBankID:\u003c\u003e002,AccountCurrency:IDR\", \n    companyID\n  );\n  ```\n* **Hook:** [`hooks/use-inqury-beneficiary-accounts.ts:L12-L28`](file://~/Development/qcash-ui-fund-transfer/hooks/use-inqury-beneficiary-accounts.ts#L12-L28)\n* **Service Method:** [`getBeneficiaryAccountDataByRole`](file://~/Development/qcash-ui-fund-transfer/services/kliring.ts#L17-L29) in [`services/kliring.ts`](file://~/Development/qcash-ui-fund-transfer/services/kliring.ts)\n\n---\n\n### 2. Request Parameters Sent to BE\nWhen fetching the dropdown options, FE sends these query parameters:\n\n| Param | Value | Description |\n|---|---|---|\n| `productID` | `\"227\"` | BI-FAST Product ID |\n| `beneficiaryAccount.companyID` | `companyID` | Current active company ID |\n| `filter` | `\"MasterBankID:\u003c\u003e002,AccountCurrency:IDR\"` | Non-BRI banks (`\u003c\u003e002`) and currency IDR |\n| `limit` | `100` | Max count requested |\n| `query` | `AccountAlias,AccountName,AccountNumber:%!\u003csearch\u003e` | Search filter when typing in dropdown |\n\n---\n\n### 3. What BE Should Check Why It Only Returns 1\n1. **Filter conditions in BE query:**\n   * Is the filter `filter=MasterBankID:\u003c\u003e002,AccountCurrency:IDR` filtering out other banks or records?\n   * Is `beneficiaryAccount.companyID` matching only 1 record?\n   * Is the user's role permission / scope limiting the query to 1 account?\n2. **BE Pagination / Limit:** Check whether the SQL/repository query in BE has an unintended `LIMIT 1` or `findOne`.\n3. **Frontend Deduplication Check:**\n   In [`hooks/use-inqury-beneficiary-accounts.ts:L29-L33`](file://~/Development/qcash-ui-fund-transfer/hooks/use-inqury-beneficiary-accounts.ts#L29-L33), FE has a deduplication filter:\n   ```ts\n   const accounts = res.data.filter(\n     (val, i, arr) =\u003e\n       arr.findIndex(\n         (acc) =\u003e acc.accountNumber === val.accountNumber \u0026\u0026 acc.accountName === val.accountName\n       ) === i\n   );\n   ```\n   If BE is actually returning multiple records in `res.data`, but they share the same `accountNumber` and `accountName`, FE will reduce them to 1. (You can check the raw Network Response in DevTools to confirm whether BE is returning `[ ... ]` with 1 item or multiple items).\n\n---\n\n### 4. Alternative: Beneficiary Favorite Modal\nIf the user is opening the **\"Favorite Beneficiary\"** popup table instead of the dropdown:\n* **Endpoint:** `GET /beneficiary-account/favorite`\n* **Service Method:** [`getBeneficiaryFavoriteData`](file://~/Development/qcash-ui-fund-transfer/services/beneficiary-account.ts#L4-L33)\n* **Params Sent:** `productId=227`, `page=1`, `limit=10`, `sort=account_name`, `dir=ASC`"
+    },
+    {
+      "from": "human",
+      "value": "is fe had thridparty only filter ?"
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": "**No, FE does NOT have or send any \"third-party\" filter.**\n\nHere is the exact breakdown of what FE sends and does:\n\n---\n\n### 1. Exactly What FE Sends to BE\nWhen requesting the list of beneficiary accounts for BI-FAST via `GET /beneficiary-account/dataByRole` ([`hooks/use-inqury-beneficiary-accounts.ts`](file://~/Development/qcash-ui-fund-transfer/hooks/use-inqury-beneficiary-accounts.ts#L12-L28)), FE only sends:\n\n```json\n{\n  \"productID\": \"227\",\n  \"beneficiaryAccount.companyID\": \"\u003ccompanyID\u003e\",\n  \"filter\": \"MasterBankID:\u003c\u003e002,AccountCurrency:IDR\",\n  \"limit\": 100,\n  \"query\": \"AccountAlias,AccountName,AccountNumber:%!\u003csearch\u003e\"\n}\n```\n\n* **No `thirdparty` / `thirdParty` / `isThirdParty` parameter or flag** exists or is sent anywhere in FE.\n\n---\n\n### 2. The Only Filter Passed: `MasterBankID:\u003c\u003e002,AccountCurrency:IDR`\n* `MasterBankID:\u003c\u003e002`: Filters out BRI accounts (bank code `002`), requesting only **other/external banks** since BI-FAST is an External Fund Transfer (EFT).\n* `AccountCurrency:IDR`: Only IDR accounts.\n\nIf BE has logic relating to \"third party\" accounts, that logic or condition is handled **internally on the BE side** (e.g. database query, role check, or table schema).\n\n---\n\n### 3. Frontend In-Memory Deduplication\nThe only filtering FE does in JavaScript after receiving the response is removing duplicates by account number and name:\n```ts\nconst accounts = res.data.filter(\n  (val, i, arr) =\u003e\n    arr.findIndex(\n      (acc) =\u003e acc.accountNumber === val.accountNumber \u0026\u0026 acc.accountName === val.accountName\n    ) === i\n);\n```\n*(If BE returned multiple entries with the exact same `accountNumber` and `accountName`, FE collapses them into one).*"
+    },
+    {
+      "from": "human",
+      "value": "please check jpeg on download which component that render the selected value and explain to me in indonesia in simple and example way"
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": "Terkait penanganan file gambar seperti **JPEG / JPG pada proses view \u0026 download**, berikut penjelasan alur, komponen yang me-render nilai terpilih (*selected value*), beserta contoh sederhananya dalam bahasa Indonesia:\n\n---\n\n### 1. Di mana JPEG ditangani saat Download / View?\n\nPenanganan file JPEG/JPG berada di **[`services/internal-fund-transfer.ts`](file://~/Development/qcash-ui-fund-transfer/services/internal-fund-transfer.ts#L278-L364)** dalam fungsi `getDataFileUnderlying`:\n\n```ts\n// 1. Mapping Content-Type ke ekstensi .jpg\nconst getExtFromType = (ct: string) =\u003e {\n  switch (ct) {\n    case \"image/jpeg\":\n      return \".jpg\";\n    case \"image/png\":\n      return \".png\";\n    // ...\n  }\n};\n\n// 2. Jika aksinya preview: buka langsung di tab baru\n//    Jika aksinya attachment: otomatis unduh file via library download()\nif (action === \"attachment\") {\n  download(response.data, newName, contentType);\n} else if (contentType === \"image/jpeg\" || contentType === \"image/png\") {\n  const url = URL.createObjectURL(response.data);\n  window.open(url, \"_blank\");\n}\n```\n\n---\n\n### 2. Komponen Mana yang Me-render Nilai Terpilih (*Selected Value*)?\n\nTerdapat **2 komponen utama** tergantung di halaman mana file tersebut berada:\n\n#### A. Pada Halaman Detail Transaksi (Saat Mau Download / Lihat File)\n* **File:** [`containers/internal-fund-transfer/view-ift/detail.tsx:L627-L641`](file://~/Development/qcash-ui-fund-transfer/containers/internal-fund-transfer/view-ift/detail.tsx#L627-L641)\n* **Komponen yang me-render:** Elemen teks/tombol nama file di bawah label *\"Additional Document\"*:\n  ```tsx\n  {detail?.data?.underlying?.name \u0026\u0026 (\n    \u003cbutton\n      onClick={() =\u003e handleViewDocument(detail?.data?.underlying?.name, \"inline\")}\n      className=\"ft-font-semibold ft-text-[#006CC7]\"\n    \u003e\n      {filenameUnderlying}  {/* \u003c-- Nilai nama file JPEG terpilih yang di-render */}\n    \u003c/button\u003e\n  )}\n  ```\n  **Fungsi:** Menampilkan nama file dokumen tambahan yang tersimpan (misal: `invoice_lampiran.jpg`). Saat diklik, fungsi `handleViewDocument` akan memanggil API download/preview.\n\n---\n\n#### B. Pada Form Input / Upload (Saat Memilih File Baru)\n* **File:** [`components/files-new/files-new.tsx:L127-L186`](file://~/Development/qcash-ui-fund-transfer/components/files-new/files-new.tsx#L127-L186)\n* **Sub-komponen yang me-render:** `AcceptedFiles`\n  ```tsx\n  \u003cdiv className=\"ft-flex-col ft-text-xs\"\u003e\n    {/* Me-render nama file yang dipilih */}\n    \u003cp className=\"ft-font-semibold\"\u003e{formatFileName(file?.name)}\u003c/p\u003e\n    {/* Me-render ukuran file */}\n    {file?.size ? \u003cp\u003e({bytesToMB(file.size)}MB)\u003c/p\u003e : \"\"}\n  \u003c/div\u003e\n  ```\n  **Fungsi:** Begitu pengguna memilih file `.jpeg`, komponen `AcceptedFiles` ini yang langsung menampilkan teks nama file dan ukuran ukurannya (misal: `surat_pernyataan.jpeg (1.20MB)`), lengkap dengan tombol *\"Change File\"* dan *\"Delete\"*.\n\n---\n\n#### C. Pada Modal Preview Download Receipt (`ModalViewDownload`)\nJika yang dimaksud adalah modal preview kuitansi/bukti transaksi:\n* **File:** [`components/modal-view-download/index.tsx`](file://~/Development/qcash-ui-fund-transfer/components/modal-view-download/index.tsx)\n* **Komponen yang me-render tampilan file:** Tag `\u003ciframe src={iframeSrc} /\u003e` (baris 223–231).\n* **Komponen yang me-render nilai zoom terpilih:** Komponen `\u003cSelect value={scale} options={zoomLevels} /\u003e` (baris 243–256) di bagian footer modal.\n\n---\n\n### Contoh Sederhana Alur Kerjanya\n\n1. **User Memilih File JPEG di Form:**\n   * User memilih file bernama `nota-pembelian.jpeg`.\n   * Komponen **`AcceptedFiles`** di [`files-new.tsx`](file://~/Development/qcash-ui-fund-transfer/components/files-new/files-new.tsx) menangkap file tersebut dan me-render:\n     \u003e 📄 **nota-pembelian.jpeg** *(0.85 MB)* `[Change File]` `[Hapus]`\n\n2. **User Menyimpan \u0026 Membuka Detail Transaksi:**\n   * Pada halaman detail di [`view-ift/detail.tsx`](file://~/Development/qcash-ui-fund-transfer/containers/internal-fund-transfer/view-ift/detail.tsx), komponen me-render link biru:\n     \u003e Additional Document: **`nota-pembelian.jpg`**\n\n3. **User Mengklik Link Tersebut:**\n   * Service `getDataFileUnderlying` memanggil API backend `/file-listener/file-download`.\n   * Backend mengembalikan data blob dengan header `image/jpeg`.\n   * Service mendeteksi `image/jpeg` -\u003e mengubah nama file dengan ekstensi `.jpg` -\u003e otomatis membuka gambar di tab browser baru atau mengunduhnya ke laptop."
+    },
+    {
+      "from": "human",
+      "value": "be-checkking.jpeg this the file name on download path"
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": "Berdasarkan file name **`be-checkking.jpeg`**, ini adalah file **Dokumen Tambahan (*Underlying Document*)** yang diunggah pada transaksi dan dapat dilihat/diunduh pada halaman Detail.\n\nBerikut adalah penjelasan lengkap mengenai **komponen yang me-render nilainya**, **alur download path**, dan **contoh konkretnya**:\n\n---\n\n### 1. Komponen yang Me-render Nilai `be-checkking.jpeg`\n\nAda **2 komponen utama** yang terlibat dalam me-render dan mengunduh file ini:\n\n#### A. Komponen di Halaman Detail (Link/Button Pemicu)\n* **File:** [`containers/view-eft/detail.tsx:L1358-L1372`](file://~/Development/qcash-ui-fund-transfer/containers/view-eft/detail.tsx#L1358-L1372) (atau di [`view-ift/detail.tsx:L627-L641`](file://~/Development/qcash-ui-fund-transfer/containers/internal-fund-transfer/view-ift/detail.tsx#L627-L641) untuk IFT)\n* **Komponen yang me-render:** Elemen `\u003cbutton\u003e` pada baris *\"Additional Document\"*:\n  ```tsx\n  {detail?.data?.underlying?.name \u0026\u0026 (\n    \u003cbutton\n      onClick={() =\u003e handlePreviewUnderlying(detail?.data?.underlying?.name)}\n      className=\"ft-font-semibold ft-text-[#006CC7]\"\n    \u003e\n      {filenameUnderlying}  {/* \u003c-- Me-render teks \"be-checkking.jpeg\" */}\n    \u003c/button\u003e\n  )}\n  ```\n  * Nilai yang di-render diambil dari: `detail.data.underlying.name` (`\"be-checkking.jpeg\"`).\n\n---\n\n#### B. Komponen Modal Preview \u0026 Download (`ModalViewDownload`)\n* **File:** [`components/modal-view-download/index.tsx`](file://~/Development/qcash-ui-fund-transfer/components/modal-view-download/index.tsx)\n* Ketika tombol di atas diklik, terbuka modal [`ModalViewDownload`](file://~/Development/qcash-ui-fund-transfer/components/modal-view-download/index.tsx):\n  1. **Me-render Gambar di Layar:**\n     ```tsx\n     \u003ciframe\n       ref={iframeRef}\n       src={iframeSrc} // blob:http://... (URL hasil convert blob data gambar)\n       width=\"100%\"\n       height=\"100%\"\n     /\u003e\n     ```\n  2. **Tombol Download:**\n     ```tsx\n     \u003cButton onClick={handleDownloadReceipt}\u003e\n       \u003cBRIDownloadLine /\u003e Download\n     \u003c/Button\u003e\n     ```\n     Saat tombol ini diklik, fungsi memanggil `downloadFileUnderlying(\"be-checkking.jpeg\")`.\n\n---\n\n### 2. API \u0026 Download Path yang Dijalankan\n\nFile tidak diunduh lewat URL file langsung, melainkan lewat **API Backend**:\n\n1. **Endpoint:** `POST file-listener/file-download`\n2. **Payload Request:**\n   ```json\n   {\n     \"objectName\": \"be-checkking.jpeg\",\n     \"contentDisposition\": \"attachment\"\n   }\n   ```\n3. **Fungsi Download di FE:** [`services/swift.ts:L389-L404`](file://~/Development/qcash-ui-fund-transfer/services/swift.ts#L389-L404)\n   ```ts\n   const downloadFileUnderlying = (body: any, processId?: string) =\u003e {\n     return customAxios\n       .post(`file-listener/file-download`, {\n         objectName: `${body}`, // \"be-checkking.jpeg\"\n         contentDisposition: \"attachment\",\n       }, { responseType: \"blob\", headers })\n       .then((response) =\u003e {\n         const content = response.headers[\"content-type\"]; // image/jpeg\n         // Mengunduh file ke browser pengguna dengan nama aslinya\n         download(response.data, `${body}`, content);\n       });\n   };\n   ```\n\n---\n\n### 3. Rangkuman Alur Sederhana (Contoh Nyata)\n\n```\n[1. Halaman Detail]\nUser melihat label:\nAdditional Document: be-checkking.jpeg  \u003c-- Di-render oleh \u003cbutton\u003e{filenameUnderlying}\u003c/button\u003e\n       │\n       │ (User klik teks tersebut)\n       ▼\n[2. ModalViewDownload Muncul]\n- Mengambil Blob gambar via POST file-listener/file-download (\"contentDisposition\": \"inline\")\n- Di-render di dalam: \u003ciframe src=\"blob:http://...\" /\u003e\n       │\n       │ (User klik tombol \"Download\" di kanan atas modal)\n       ▼\n[3. Proses Download]\n- Memanggil downloadFileUnderlying(\"be-checkking.jpeg\")\n- POST file-listener/file-download (\"contentDisposition\": \"attachment\")\n- Library downloadjs otomatis menyimpan file ke folder Downloads: \"be-checkking.jpeg\"\n```"
+    },
+    {
+      "from": "human",
+      "value": "no the download the selected below use beneficiary favorite with label name Registered Beneficiary Account Number"
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": "Komponen yang me-render nilai terpilih pada **dropdown** tepat di bawah tombol *\"Use Beneficiary Favorite\"* dengan label *\"Registered Beneficiary Account Number\"* adalah komponen **`\u003cSelect\u003e`** (Async Select).\n\nBerikut penjelasan detailnya secara sederhana dan mudah dipahami:\n\n---\n\n### 1. Komponen \u0026 Lokasi Kodenya\n\n* **File:** [`components/form/bifast/index.tsx`](file://~/Development/qcash-ui-fund-transfer/components/form/bifast/index.tsx#L791-L850)\n* **Komponen:** `\u003cSelect type=\"async\" ... /\u003e` dari federated component `@/components/global` (dibungkus oleh `Controller` dari `react-hook-form`).\n\nPotongan kode yang me-render nilai terpilihnya:\n\n```tsx\n\u003cSelect\n  type=\"async\"\n  id=\"Beneficiary\"\n  label={\n    watch(\"regBeneficiary\")\n      ? conditionTranlate(t(\"form.registeredBeneficiaryAccountNumber\"), t(\"Registered Beneficiary Account Number\"))\n      : conditionTranlate(t(\"form.beneficiaryAccountNumber\"), t(\"Beneficiary Account Number\"))\n  }\n  \n  // BAGIAN YANG ME-RENDER NILAI TERPILIH DI DALAM DROPDOWN:\n  value={\n    receiver.receiverAccountNumber\n      ? {\n          value: receiver.receiverAccountNumber,\n          label: [\n            receiver.receiverAccountName,\n            receiver.receiverAccountNumber,\n            receiver.receiverAccountAlias,\n          ]\n            .filter(Boolean)\n            .join(\" - \"),\n        }\n      : null\n  }\n\n  placeholder=\"Select Beneficiary Account Number\"\n  query={debounceBeneficiary}\n  onChange={(selected: any) =\u003e { ... }}\n/\u003e\n```\n\n---\n\n### 2. Bagaimana Komponen Me-render Nilai Terpilih?\n\nKomponen `\u003cSelect\u003e` menerima prop **`value`** dalam bentuk objek `{ value, label }`:\n\n1. **Format Nilai Teks yang Ditampilkan (`label`):**\n   ```ts\n   [receiver.receiverAccountName, receiver.receiverAccountNumber, receiver.receiverAccountAlias]\n     .filter(Boolean)\n     .join(\" - \")\n   ```\n   Ketiga data ini digabung dengan tanda pemisah `\" - \"`.\n\n2. **Contoh Tampilan Nyata di UI:**\n   Jika data rekening penerima yang dipilih adalah:\n   * `receiverAccountName` = **PT MAJU JAYA**\n   * `receiverAccountNumber` = **0123988776**\n   * `receiverAccountAlias` = **MAJU BIFAST**\n\n   Maka teks yang muncul di kotak dropdown adalah:\n   \u003e 📌 **`PT MAJU JAYA - 0123988776 - MAJU BIFAST`**\n\n---\n\n### 3. Dari Mana Data Nilai Terpilih Tersebut Berasal?\n\nAda **2 cara** nilai tersebut terisi ke dalam dropdown:\n\n1. **Dari Modal \"Use Beneficiary Favorite\":**\n   * Ketika user klik tombol *\"Use Beneficiary Favorite\"*, modal daftar favorit muncul.\n   * User memilih salah satu rekening dari tabel modal.\n   * Data dikirim ke form melalui `useEffect` (baris 575–586) yang otomatis mengisi:\n     * `setValue(\"receiver.receiverAccountNumber\", modalData.beneficiary.accountNumber)`\n     * `setValue(\"receiver.receiverAccountName\", modalData.beneficiary.accountName)`\n     * `setValue(\"receiver.receiverAccountAlias\", modalData.beneficiary.accountAlias)`\n   * Dropdown `\u003cSelect\u003e` otomatis re-render dan menampilkan rekening terpilih tersebut.\n\n2. **Dari Pencarian Langsung di Dropdown (Ketik di Kotak):**\n   * User mengetik di dropdown -\u003e memicu `query={debounceBeneficiary}`.\n   * Memanggil API: **`GET /beneficiary-account/dataByRole`**.\n   * Ketika salah satu opsi dipilih, event `onChange(selected)` menyimpan detail rekening ke dalam state form `receiver`."
+    },
+    {
+      "from": "human",
+      "value": "apakah dari fe ada penjagaan ?"
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": "**Ya, dari sisi Frontend (FE) ada banyak lapis penjagaan (*validation / guards*)** untuk dropdown *\"Registered Beneficiary Account Number\"* tersebut:\n\n---\n\n### 1. Penjagaan Kondisi Dropdown (*Disabled Condition*)\n* **Kode:** `disabled={sender?.senderAccountNumber === \"\" || errorAccountSender.error ? true : false}` ([Baris 812](file://~/Development/qcash-ui-fund-transfer/components/form/bifast/index.tsx#L812))\n* **Penjagaan:** Pengguna **tidak bisa mengklik atau memilih** rekening penerima sebelum memilih Rekening Pengirim (*Source Account*) yang valid. Jika rekening pengirim kosong atau error, dropdown ini otomatis terkunci (*disabled*).\n\n---\n\n### 2. Penjagaan Rekening Pengirim vs Penerima (*Cannot Transfer to Self*)\n* **Kode:** `isOptionDisabled={(option: any) =\u003e option.value === sender.senderAccountNumber}` ([Baris 828](file://~/Development/qcash-ui-fund-transfer/components/form/bifast/index.tsx#L828))\n* **Penjagaan:** Jika di dalam daftar penerima terdapat nomor rekening yang sama dengan rekening pengirim yang sedang aktif, opsi tersebut **otomatis di-disable (abu-abu / tidak bisa diklik)** agar pengguna tidak mentransfer ke rekening pengirim yang sama.\n\n---\n\n### 3. Penjagaan Filter Rekening yang Tampil\nKetika FE meminta daftar rekening ke Backend lewat `useInquryBeneficiaryAccounts`:\n* **Bukan Bank BRI (`MasterBankID:\u003c\u003e002`):** Karena ini BI-FAST (antar-bank), rekening BRI disaring/tidak ditampilkan.\n* **Mata Uang Wajib IDR (`AccountCurrency:IDR`):** BI-FAST hanya mendukung transaksi IDR.\n* **Sesuai Company Pengguna (`beneficiaryAccount.companyID`):** Hanya menampilkan rekening terdaftar untuk perusahaan yang sedang aktif.\n* **Deduplikasi di FE:** Jika ada data ganda dengan `accountNumber` dan `accountName` yang sama, FE menyaringnya agar hanya tampil 1 kali di dropdown.\n\n---\n\n### 4. Penjagaan Validasi Wajib Isi (*Required Rule*)\n* **Kode:** `rules={{ required: \"Beneficiary Account is Required\" }}` ([Baris 796](file://~/Development/qcash-ui-fund-transfer/components/form/bifast/index.tsx#L796))\n* **Penjagaan:** Jika form disubmit saat dropdown ini kosong, form akan memblokir submit dan menampilkan pesan error warna merah di bawah dropdown:\n  \u003e *\"Beneficiary Account is Required\"*\n\n---\n\n### 5. Penjagaan Tombol *\"Use Beneficiary Favorite\"*\n* **Kode:** `{watch(\"sender.senderAccountNumber\") \u0026\u0026 ...}` dan `disabled={errorAccountSender.error}` ([Baris 755 \u0026 760](file://~/Development/qcash-ui-fund-transfer/components/form/bifast/index.tsx#L755-L760))\n* **Penjagaan:** Tombol *\"Use Beneficiary Favorite\"* tidak akan muncul dan tidak bisa diklik jika rekening pengirim belum dipilih atau sedang error.\n\n---\n\n### 6. Penjagaan Bank Suspend \u0026 Cut-Off Waktu Transaksi\nSaat user menekan tombol submit form:\n* **Bank Suspend Check (`selectedReceiverBank.isBifastSuspend`):** Jika bank penerima yang dipilih sedang mengalami gangguan/suspend di sistem BI-FAST, FE langsung menghentikan transaksi dan memunculkan pop-up error:\n  \u003e *\"The selected bank cannot be used at this time. Please complete your transaction via Online Transfer, RTGS, or Kliring.\"*\n* **Cut-off \u0026 Holiday Check:** FE mengecek jam operasional dan hari libur sistem BI-FAST sebelum transaksi diproses ke backend."
+    }
+  ],
+  "source": "antigravity",
+  "tags": [
+    "coding",
+    "assistant",
+    "antigravity"
+  ]
+}

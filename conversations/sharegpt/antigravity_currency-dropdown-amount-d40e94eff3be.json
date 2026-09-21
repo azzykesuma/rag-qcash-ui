@@ -1,0 +1,43 @@
+{
+  "id": "antigravity-f01730ea5e0be789a30e5b9fc84acffd79246489bb4863312d95d40e94eff3be",
+  "conversations": [
+    {
+      "from": "human",
+      "value": "Rewrite `~/Development/qcash-ui-issuance-lc/components/ui/qui-currency-amount.tsx` to use `MoneyInput` from `@/components/global` instead of `NumberField` and `QuiLabel` from QUI.\n\nThe global `MoneyInput` component (from `qcash-global-component/money-input`) wraps number inputs with currency selection. Check its type definition at `~/Development/qcash-ui-issuance-lc/@mf-types/qcash-global-component/_types/components/form/money-input/money-input.d.ts`.\n\nThe current `QuiCurrencyAmount` component provides:\n- Amount input with locale-aware number formatting\n- Currency dropdown (prefix autocomplete)\n- Props: `label`, `amount`, `currency`, `currencyOptions`, `variant`, `name`, `currencyName`, `placeholder`, `disabled`, `readOnly`, `amountReadOnly`, `required`, `minValue`, `maxValue`, `step`, `maximumIntegerDigits`, `maximumFractionDigits`, `locale`, `onAmountChange`, `onCurrencyChange`, `isInvalid`\n\nIf `MoneyInput` from global provides similar functionality, use it. If not, implement a plain HTML + React approach:\n\n1. Check the MoneyInput type definition file first\n2. If MoneyInput API is compatible, use it\n3. If not, implement a plain approach:\n   - Use `Select` from `@/components/global` for currency dropdown\n   - Use `Input` from `@/components/global` for amount input\n   - Handle number formatting manually\n\nThe key is: keep the same external API (`QuiCurrencyAmountProps`) so callers don't break.\n\nAlso preserve these exported utilities:\n- `resolveNumberFieldLocale(language?: string): QuiCurrencyAmountLocale`\n- `export type QuiCurrencyAmountOption`\n- `export type QuiCurrencyAmountLocale`\n\nRead the full current file first, read the MoneyInput type definition, then rewrite the component.\n\nWrite the updated file to `~/Development/qcash-ui-issuance-lc/components/ui/qui-currency-amount.tsx`."
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": "I have rewritten `~/Development/qcash-ui-issuance-lc/components/ui/qui-currency-amount.tsx` according to your instructions.\n\nSince the global `MoneyInput` API does not natively support a fully customizable currency dropdown (like `currencyOptions`), I used the fallback plain approach:\n- Replaced `NumberField` and `QuiLabel` from QUI with `Input` and `Select` from `@/components/global`.\n- Integrated `Select` for the currency dropdown with `Input` for the amount input into a layout side-by-side.\n- Manually handled parsing and formatting number inputs using the specified locale, including clamping maximum integer and fraction digits, checking valid inputs per locale separators, and formatting upon blur. \n- Maintained all exported types (`QuiCurrencyAmountOption`, `QuiCurrencyAmountLocale`) and functions (`resolveNumberFieldLocale`), and completely preserved the previous `QuiCurrencyAmountProps` interface so all callers continue to work seamlessly."
+    }
+  ],
+  "source": "antigravity",
+  "tags": [
+    "coding",
+    "assistant",
+    "antigravity"
+  ]
+}
