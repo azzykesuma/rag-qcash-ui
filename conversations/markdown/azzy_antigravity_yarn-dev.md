@@ -1,6 +1,5 @@
 # yarn dev
 
-- **Author**: `azzy`
 - **ID**: `9e07dfe4-46fd-4ae8-9ca9-702e0f855c7a`
 - **Source Tool**: `antigravity`
 - **Date**: `2026-08-28 20:32:27`

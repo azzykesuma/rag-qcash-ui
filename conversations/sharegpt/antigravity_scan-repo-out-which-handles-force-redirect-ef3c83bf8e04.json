@@ -1,0 +1,151 @@
+{
+  "id": "antigravity-c36d29e661b5eabd4e7b6e300f1e94df9ed9deec3e482326f8f3ef3c83bf8e04",
+  "conversations": [
+    {
+      "from": "human",
+      "value": "scan this repo, and find out which file that handles force redirection to v2"
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": "I am checking the commit history to see which files were modified for the v2 redirect."
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": "I am inspecting commit `86e2adda1b` to see what files were modified for redirecting to v2."
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": "I am checking the diff for commit `86e2adda1b`."
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": "I am checking the git log for the redirect map setup."
+    },
+    {
+      "from": "gpt",
+      "value": "I will wait for the git log search to complete."
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": "Waiting for the search to complete..."
+    },
+    {
+      "from": "gpt",
+      "value": "The primary file that handles the global force redirection logic to **v2** is:\n\n### 1. Primary Redirection Handler\n* **[`libs/qcash-ui/src/lib/layouts/index.tsx`](file:///D:/work/addons-web-client/libs/qcash-ui/src/lib/layouts/index.tsx#L13-L44)**\n  * Inside the `Layouts` component's `useEffect`, it checks if the app is running in production (`process.env.NODE_ENV !== \"development\"`).\n  * It matches the current `window.location.href` against the migration route patterns.\n  * If matched, it prevents rendering and triggers a force redirect via:\n    ```typescript\n    window.location.replace(`/v2/${finalPath}`);\n    ```\n\n### 2. Redirection Route Configuration / Map\n* **[`libs/qcash-ui/src/lib/layouts/consts.ts`](file:///D:/work/addons-web-client/libs/qcash-ui/src/lib/layouts/consts.ts#L1-L90)**\n  * Defines `ListPage`, the **Routing Redirect Map — v2 Migration Rules** array.\n  * Supports prefix matching (entries ending with `*`) and exact route matching.\n\n---\n\n### Other Specific Page-Level Force Redirections to v2\nThere are also page-level or post-login redirections to v2:\n\n* **Digi Guarantee BG Mapping Pages** (force redirects directly on mount):\n  * [`apps/web-client/pages/digi-guarantee/bg-mapping/index.tsx`](file:///D:/work/addons-web-client/apps/web-client/pages/digi-guarantee/bg-mapping/index.tsx#L31-L34)\n  * [`apps/web-client/pages/digi-guarantee/bg-mapping/new.tsx`](file:///D:/work/addons-web-client/apps/web-client/pages/digi-guarantee/bg-mapping/new.tsx#L32-L35)\n  * [`apps/web-client/pages/digi-guarantee/bg-mapping/[id].tsx`](file:///D:/work/addons-web-client/apps/web-client/pages/digi-guarantee/bg-mapping/[id].tsx#L44-L47)\n  * [`apps/web-client/pages/digi-guarantee/bg-mapping/edit/[id].tsx`](file:///D:/work/addons-web-client/apps/web-client/pages/digi-guarantee/bg-mapping/edit/[id].tsx#L36-L39)\n* **Login \u0026 Landing Page Flow**:\n  * [`libs/main-page/src/lib/container/main-page.tsx`](file:///D:/work/addons-web-client/libs/main-page/src/lib/container/main-page.tsx#L209-L230) (redirects to `/v2` or via announcement modal)\n  * [`apps/web-client/pages/main-page/index.tsx`](file:///D:/work/addons-web-client/apps/web-client/pages/main-page/index.tsx#L17-L25) (redirects authenticated users via `router.replace(\"/v2/homepage\")`)"
+    }
+  ],
+  "source": "antigravity",
+  "tags": [
+    "coding",
+    "assistant",
+    "antigravity"
+  ]
+}

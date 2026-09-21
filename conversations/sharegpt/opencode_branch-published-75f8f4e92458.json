@@ -1,0 +1,91 @@
+{
+  "id": "opencode-27e2faea742307e99c8db33435baee4913fb2c6f7463d856e50f75f8f4e92458",
+  "conversations": [
+    {
+      "from": "human",
+      "value": "Start a new task branch using these arguments: ``\n\n1. Verify the current directory is a Git repository with an `origin/dev` ref.\n2. Parse the branch type (`feat`, `fix`, `hotfix`, or `chore`), Jira ticket, and optional description. Ask one concise question for anything missing; do not guess.\n3. Run `git status --short --branch`. If the worktree has changes or Git is mid-operation, stop without modifying anything and explain the blocker.\n4. Fetch the ticket through Jira. If no description was supplied, derive a short slug from its summary. If Jira is unavailable, continue only when the user supplied a description.\n5. Fetch `origin dev`, then create `\u003ctype\u003e/\u003cticket-lower\u003e-\u003cdescription-slug\u003e` directly from `origin/dev`. Use a lowercase ASCII kebab-case slug.\n6. If that branch already exists locally or on `origin`, stop and report it rather than deleting, resetting, or reusing it.\n7. Verify the new branch and report its name and base commit.\n\nNever stash, discard, commit, push, or alter local `dev` as part of this command."
+    },
+    {
+      "from": "gpt",
+      "value": "What branch type (`feat`, `fix`, `hotfix`, or `chore`) and Jira ticket should I use? You may also include an optional description."
+    },
+    {
+      "from": "human",
+      "value": "okay , cherry-pick this sha 3924c02afdaf02490502c7b03499cc6a40d823f9"
+    },
+    {
+      "from": "gpt",
+      "value": "I’ll inspect the repository state and load the cherry-pick workflow before applying `3924c02afdaf02490502c7b03499cc6a40d823f9`."
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": "The worktree is clean on `add-dac-prerelease`, and the commit is available locally. I’m applying it now."
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": "Cherry-picked successfully onto `add-dac-prerelease`.\n\n- Source: `3924c02afdaf02490502c7b03499cc6a40d823f9`\n- New commit: `2ba8cad5`\n- Worktree: clean\n- Conflicts: none"
+    },
+    {
+      "from": "human",
+      "value": "okay, push, publish branch, and make pr to prerelease, then wa"
+    },
+    {
+      "from": "gpt",
+      "value": "I’ll validate the branch and PR diff, push it to `origin`, create a Bitbucket PR targeting `prerelease`, then prepare the WhatsApp notification."
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": "The PR contains only the cherry-picked dashboard auto-collection change, and `git diff --check` passes. The remote branch does not exist, so I’m publishing it with upstream tracking."
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": "The branch is published. Bitbucket requires repository IDs to evaluate mandatory reviewers in this instance, so I’m resolving that metadata before creating the PR."
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": "PR `#2283` is open against `prerelease`. I’m generating the requested WhatsApp message with the final PR URL and checking the published branch state."
+    },
+    {
+      "from": "gpt",
+      "value": "Branch `add-dac-prerelease` was pushed and is tracking `origin/add-dac-prerelease`.\n\nPR: [#2283 feat: add dashboard auto collection](https://internal-service.example.com/projects/NEWFE/repos/qcash-ui/pull-requests/2283)\n\n[Send WhatsApp notification](https://api.whatsapp.com/send?text=%40Cikal%20SL%2C%20izin%20menginformasikan%20bahwa%20saya%20sudah%20membuat%20PR%20untuk%20repositori%20%2Aqcash-ui%2A.%0A%0APerubahan%20ini%20menambahkan%20registrasi%20fitur%20dan%20halaman%20Dashboard%20Auto%20Collection%20ke%20branch%20prerelease.%0A%0APR%3A%20https%3A%2F%internal-service.example.com%2Fprojects%2FNEWFE%2Frepos%2Fqcash-ui%2Fpull-requests%2F2283%0A%0AMohon%20bantuannya%20untuk%20review%20ya%20Mba.%20Terima%20kasih%21%20%F0%9F%99%8F)\n\n```text\n@Cikal SL, izin menginformasikan bahwa saya sudah membuat PR untuk repositori *qcash-ui*.\n\nPerubahan ini menambahkan registrasi fitur dan halaman Dashboard Auto Collection ke branch prerelease.\n\nPR: https://internal-service.example.com/projects/NEWFE/repos/qcash-ui/pull-requests/2283\n\nMohon bantuannya untuk review ya Mba. Terima kasih! 🙏\n```"
+    }
+  ],
+  "source": "opencode",
+  "tags": [
+    "coding",
+    "assistant",
+    "opencode"
+  ]
+}

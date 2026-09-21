@@ -1,0 +1,127 @@
+{
+  "id": "opencode-0b0e666fa472bfb590783df0edbb7b443dfc526255e5e044f1f86a8d5b68d6e4",
+  "conversations": [
+    {
+      "from": "human",
+      "value": "Read-only cross-repo investigation. Under D:\\work, identify 2-4 MFE repos recently migrated from @ordentco/addons-auth-provider to @bri/addons-auth-provider 0.10.6-mfe and removal of guard calls. Compare their package.json, lock resolution, next.config.js federation singleton declaration, pages/_app provider wrapper, exposed page code, @module-federation runtime versions, and route behavior against D:\\work\\qcash-ui-plafon-pegadaian. Find concrete Plafon-only differences that could make shared auth guard execute repeatedly or make qcash HostAuthGate unmount/remount. Include exact repo/file:line and git commit references. Do not edit."
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": "## Scope and migration references\n\nInvestigated three clean comparison MFEs under `D:\\work`:\n\n| Repo | Migration / guard-removal commits | Current HEAD |\n|---|---|---|\n| `qcash-ui-account-statement` | `8d2ad191` — provider migration, singleton update, `_app` router injection, guard removal; `ed174c7c` — 0.10.6-mfe | `224e6aae` |\n| `qcash-ui-approval-signature` | `88c58dec` — migration and guard removal; `2a93dd9d` — 0.10.6-mfe | `317b7ea5` |\n| `qcash-ui-auto-collection-registration` | `9c078c64` — explicit Ordent→BRI migration and on-mount guard removal; `747d722d` — singleton/current imports; `758de19a` — 0.10.6-mfe | `9cfd0bcb` |\n\nPlafon’s migration was split much earlier:\n\n- `488a6943` — Ordent→BRI, singleton, `_app` router, and `createQcashAxios`.\n- `9647ab2a` — upgrade to `^0.10.6-mfe`.\n- `68828c4a` — current-branch guard removal.\n- `815c2c8c` — current HEAD merge.\n- `d421fc1d` is a duplicate guard-removal patch on another ref, not the current branch’s ancestor.\n\nNo files were edited.\n\n## Baseline comparison\n\n### Auth package and lock resolution\n\nAll four MFEs currently declare `^0.10.6-mfe`:\n\n- `D:\\work\\qcash-ui-plafon-pegadaian\\package.json:22`\n- `D:\\work\\qcash-ui-account-statement\\package.json:23`\n- `D:\\work\\qcash-ui-approval-signature\\package.json:18`\n- `D:\\work\\qcash-ui-auto-collection-registration\\package.json:24`\n\nAll resolve the identical artifact:\n\n`addons-auth-provider-0.10.6-mfe.tgz#8c378430f3a1214fcb33160d9dc64706a2c9b0fe`\n\n- Plafon: `D:\\work\\qcash-ui-plafon-pegadaian\\yarn.lock:162-170`\n- Account Statement: `D:\\work\\qcash-ui-account-statement\\yarn.lock:497-504`\n- Approval Signature: `D:\\work\\qcash-ui-approval-signature\\yarn.lock:108-115`\n- Auto Collection Registration: `D:\\work\\qcash-ui-auto-collection-registration\\yarn.lock:138-146`\n- Host: `D:\\work\\qcash-ui\\yarn.lock:98-106`\n\nThere is no lock-level Plafon-only auth version or SHA divergence.\n\n### Federation singleton\n\nEvery compared MFE and the Host declares BRI auth as a singleton with version checks disabled:\n\n- Plafon: `D:\\work\\qcash-ui-plafon-pegadaian\\next.config.js:20-24`\n- Account Statement: `D:\\work\\qcash-ui-account-statement\\next.config.js:18-22`\n- Approval Signature: `D:\\work\\qcash-ui-approval-signature\\next.config.js:18-22`\n- Auto Collection: `D:\\work\\qcash-ui-auto-collection-registration\\next.config.ts:73-80`\n- Host: `D:\\work\\qcash-ui\\next.config.js:15-16`\n\nThus the checked-in configuration does not indicate a Plafon-only second root auth context.\n\nOne non-auth difference: Plafon still enables `FederatedTypesPlugin` in production at `next.config.js:50-51`; Account Statement and Approval Signature limit it to non-production at their respective `next.config.js:50-52` and `:52-54`. This can affect build/deployment behavior, but it does not directly explain runtime guard execution.\n\n### `_app` provider wrapper\n\nPlafon, Account Statement, and Approval Signature use effectively identical wrappers:\n\n- `AuthProvider(apiUrl, router)`\n- `GlobalStoreProvider`\n- page-level `getLayout`\n\nReferences:\n\n- Plafon: `D:\\work\\qcash-ui-plafon-pegadaian\\pages\\_app.tsx:24-52`\n- Account Statement: `D:\\work\\qcash-ui-account-statement\\pages\\_app.tsx:24-52`\n- Approval Signature: `D:\\work\\qcash-ui-approval-signature\\pages\\_app.tsx:24-52`\n\nAuto Collection similarly wraps in `AuthProvider` but omits `GlobalStoreProvider`:\n\n- `D:\\work\\qcash-ui-auto-collection-registration\\src\\pages\\_app.tsx:15-29`\n\nThese remote `_app` files are used for standalone execution; the Host loads the exposed page modules directly. In Host mode, the effective auth provider is:\n\n- `D:\\work\\qcash-ui\\components\\providers\\BRIProviders.tsx:14-21`\n- enclosing `HostAuthGate` at `D:\\work\\qcash-ui\\pages\\_app.tsx:177-206`\n\n### Active guard calls\n\nA current-tree search found no `guard()` calls in Plafon or any of the three comparison MFEs.\n\nExamples of removal:\n\n- Plafon: `68828c4a`\n- Account Statement: `8d2ad191`, removing guards from `pages/index.tsx` and `pages/view/[id].tsx`\n- Approval Signature: `88c58dec`, removing guards from index/create/edit/view pages\n- Auto Collection: `9c078c64`\n\n### Module Federation runtime\n\n| Repo | Build plugin/runtime |\n|---|---|\n| Plafon | nextjs-mf 8.2.5; direct runtime resolves 0.1.21 |\n| Account Statement | nextjs-mf 8.2.5; direct runtime 0.1.12 |\n| Approval Signature | nextjs-mf 8.2.5; direct runtime 0.1.21 |\n| Auto Collection | enhanced/Rspack; runtimes 0.21.6, 0.22.0 and 2.8.1 |\n| Host | nextjs-mf 8.2.6; direct runtime 0.18.1 |\n\nExact Plafon resolution:\n\n- `D:\\work\\qcash-ui-plafon-pegadaian\\yarn.lock:379-400`\n- `D:\\work\\qcash-ui-plafon-pegadaian\\yarn.lock:414-426`\n\nHost:\n\n- `D:\\work\\qcash-ui\\yarn.lock:350-373`\n- `D:\\work\\qcash-ui\\yarn.lock:384-414`\n\nThe Host/remote runtime-generation mismatch is real, but it is not Plafon-only: Approval Signature has the same 0.1.21 direct runtime and works through the same Host 0.18.1 runtime.\n\n## Concrete Plafon-only risk differences\n\n### 1. Full-document reload actions can genuinely remount `HostAuthGate`\n\nPlafon’s create/edit/view error paths offer `router.reload()`:\n\n- `D:\\work\\qcash-ui-plafon-pegadaian\\pages\\plafon-pegadaian\\create\\index.tsx:56-65`\n- `D:\\work\\qcash-ui-plafon-pegadaian\\pages\\plafon-pegadaian\\edit\\[id]\\index.tsx:39-48`\n- `D:\\work\\qcash-ui-plafon-pegadaian\\pages\\plafon-pegadaian\\view\\[id]\\index.tsx:40-49`\n\nNone of the selected comparison MFEs uses `router.reload()` in exposed route code.\n\nA reload destroys the entire document, including:\n\n- Host `BriProviders`\n- `HostAuthGate`\n- its React refs and local state\n\nThe window-level guard record also disappears, so the new page executes the Host guard again. This is the clearest route behavior capable of an actual HostAuthGate unmount/remount. It is user-triggered rather than automatic, unless another component programmatically invokes the error action.\n\nThe reload behavior predates migration and is attributed to `ef7e25a6`.\n\n### 2. Plafon retains a bespoke relogin/401 feedback path\n\nPlafon alone has this combination:\n\n1. It subscribes separately to the shared auth token:\n\n   `D:\\work\\qcash-ui-plafon-pegadaian\\containers\\index.tsx:42-47`\n\n2. Every post-mount token change triggers another activity-log request:\n\n   `D:\\work\\qcash-ui-plafon-pegadaian\\containers\\index.tsx:69-84`\n\n3. That activity request opts into `fallbackOnUnauthorized`:\n\n   `D:\\work\\qcash-ui-plafon-pegadaian\\services\\plafon-pegadaian.ts:247-273`\n\nIn auth-provider 0.10.6, a fallback 401 still dispatches `showDialog`; it only returns fallback data immediately:\n\n- `D:\\work\\qcash-ui\\node_modules\\@bri\\addons-auth-provider\\dist\\src\\global-custom-axios\\interceptors\\auth-interceptors.js:207-222`\n\nThe Host listens for that event and exposes children while relogin is pending:\n\n- `D:\\work\\qcash-ui\\components\\providers\\HostAuthGate.tsx:152-161`\n- `D:\\work\\qcash-ui\\components\\providers\\HostAuthGate.tsx:272-274`\n\nWhen relogin rotates the access token, `HostAuthGate` observes `briAuth.token`, detects that the global validation record belongs to the previous token, and calls `guard()` for the new token:\n\n- validated-token short circuit: `HostAuthGate.tsx:200-217`\n- actual guard invocation: `HostAuthGate.tsx:223-248`\n- dependencies include `briAuth.token`: `HostAuthGate.tsx:249`\n\nTherefore the plausible loop is:\n\n`Plafon request 401 → showDialog/relogin → token changes → Host guard executes for new token → Plafon token effect reloads activity logs → another 401 → repeat`\n\nThe selected comparison pages do not have this paired “token change → immediate fallback-on-401 request” mechanism.\n\nOrigins:\n\n- `488a6943` introduced `createQcashAxios` and `fallbackOnUnauthorized`.\n- `4e084525` introduced the token-change reload effect.\n- These bespoke July migration accommodations were not removed by August’s centralized-guard patch.\n\nThis is the strongest explanation for repeated guard executions without HostAuthGate itself remounting.\n\n### 3. Create-page request is not gated by authority readiness\n\nPlafon create fetches account data whenever only `token \u0026\u0026 companyID` are truthy:\n\n- `D:\\work\\qcash-ui-plafon-pegadaian\\pages\\plafon-pegadaian\\create\\index.tsx:44-48`\n\nRendering is gated later by `isAuthoritiesReady` at lines `52-84`.\n\nNormally the Host gate prevents the remote from mounting before authorities are ready. During `sessionDialogPending`, however, HostAuthGate deliberately keeps children mounted. A token/company transition can consequently launch this request while centralized validation is changing state. A 401 then re-enters the shared dialog flow.\n\nApproval Signature’s create route performs no pre-readiness API request:\n\n- `D:\\work\\qcash-ui-approval-signature\\pages\\approval-signature\\create\\index.tsx:21-41`\n\nAuto Collection similarly blocks on auth state before rendering its container:\n\n- `D:\\work\\qcash-ui-auto-collection-registration\\src\\pages\\registration\\create\\index.tsx:15-32`\n\n### 4. Residual stale-user migration code remains, but is currently inert\n\nPlafon still reads and derives old cross-user cache state:\n\n- `D:\\work\\qcash-ui-plafon-pegadaian\\pages\\plafon-pegadaian\\index.tsx:28-31`\n\n`isStaleCache` is unused. Commit `b93d3391` originally paired these values with:\n\n- `window.location.reload()`\n- `session-user-data` removal\n- an additional dependency-driven `guard()`\n- a second mount-only `guard()`\n\nCommit `68828c4a` removed both guard effects and the reload effect but left the variables. They cannot currently cause a reload or guard call, though they document that Plafon had a unique auth-persistence workaround not present in the bulk-migrated peers.\n\n## Route-remount conclusion\n\nNormal Plafon client-side navigation does not appear capable of remounting `HostAuthGate`:\n\n- Host Plafon routes use module-level `next/dynamic` components and `router.push`, just like Account Statement and Approval Signature:\n  - `D:\\work\\qcash-ui\\pages\\plafon-pegadaian\\index.tsx:9-26`\n  - `D:\\work\\qcash-ui\\pages\\plafon-pegadaian\\create\\index.tsx:9-26`\n  - comparison: `D:\\work\\qcash-ui\\pages\\account-statement\\index.tsx:9-26`\n\n- `HostAuthGate` is outside `getLayout` and the routed component:\n  - `D:\\work\\qcash-ui\\pages\\_app.tsx:177-206`\n\n- A route change reruns the Host gate effect because `currentPath` changes, but the same-token validated record short-circuits before `runGuard()`:\n  - `D:\\work\\qcash-ui\\components\\providers\\HostAuthGate.tsx:200-205`\n\nThus:\n\n1. **Actual HostAuthGate remount:** primarily Plafon’s hard `router.reload()` paths.\n2. **Repeated guard without remount:** most plausibly token rotation driven by the Plafon-specific fallback-401/relogin/token-refetch cycle.\n3. **Not supported by evidence:** duplicate 0.10.6 lock artifacts, missing auth singleton declaration, a different `_app` wrapper, or ordinary client-side route transitions."
+    }
+  ],
+  "source": "opencode",
+  "tags": [
+    "coding",
+    "assistant",
+    "opencode"
+  ]
+}

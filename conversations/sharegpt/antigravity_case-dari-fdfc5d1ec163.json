@@ -1,0 +1,135 @@
+{
+  "id": "antigravity-264f735e86bd9ffcbd4a01872521aa2f7b32013311c0d624c1b5fdfc5d1ec163",
+  "conversations": [
+    {
+      "from": "human",
+      "value": "test case for qa creation\nhttps://docs.google.com/spreadsheets/d/1s4456K8zRx_NwFj5dBiWlUHXzosH1HrHxitC45yBSUw/edit?gid=1502635692#gid=1502635692\ni have these repos, check the repos that only fall under my name (Azzy)\nnow i want to explain the scope the changes\n1. i am removing ALL guard call on these repos\n2. migrating  from ordent to bri\n\nnow i want to make a test case for my qa\ncan you \n1. generate a .md for each test cases for each repos that falls under my name according to the scope\n\nsince this is for qa, maybe we can make a less technical test case"
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": "Telah dibuat seluruh dokumen rencana pengujian (Test Case) berformat Markdown (`.md`) untuk **58 repositori** yang berada di bawah nama **Azzy** sesuai data pada Google Spreadsheet.\n\nSemua file telah disimpan di dalam direktori proyek:\n📁 [**`D:\\work\\qcash-ui\\docs\\qa-test-cases\\`**](file:///D:/work/qcash-ui/docs/qa-test-cases/)\n\n---\n\n### 1. Rangkuman Ruang Lingkup Perubahan (Context for QA)\n\nUntuk memudahkan tim QA memahami esensi perubahan tanpa terbebani istilah teknis pemrograman:\n1. **Penghapusan Panggilan Otentikasi di Tiap Modul (*Removal of all `guard()` calls*)**:\n   - **Sebelumnya**: Tiap modul (*remote MFE*) memanggil verifikasi sesi login (`guard()`) sendiri-sendiri saat dibuka, yang sering menyebabkan *flickering*, loading berulang, layar putih (*blank page*), atau sesi terputus saat berpindah-pindah menu.\n   - **Sekarang**: Pengecekan sesi dipusatkan sepenuhnya di pintu gerbang portal utama ([`qcash-ui`](file:///D:/work/qcash-ui/docs/qa-test-cases/qcash-ui.md) via `HostAuthGate`). Tiap modul fitur tinggal menggunakan sesi login yang sudah diverifikasi oleh portal utama tanpa memvalidasi ulang.\n2. **Migrasi Penyedia Otentikasi (Ordent ke BRI Provider)**:\n   - Seluruh modul beralih dari pustaka otentikasi lama (`@ordentco/addons-auth-provider`) ke pustaka resmi BRI (`@bri/addons-auth-provider`).\n\n---\n\n### 2. Struktur Standar Test Case Tiap Modul (QA-Friendly)\n\nSetiap file `.md` dirancang dengan pendekatan *user journey* dan *business flow*:\n- **TC-01: Akses Awal Modul \u0026 Pemuatan Halaman (*Zero White Screen*)**: Memastikan halaman modul langsung terbuka mulus tanpa layar putih, kedipan berulang (*flicker*), atau *spinner* tak berujung.\n- **TC-02: Verifikasi Hak Akses \u0026 Tombol Sesuai Wewenang (*RBAC*)**: Memastikan tombol tindakan (Tambah, Edit, Hapus, Kirim/Approve, Download) hanya muncul atau aktif sesuai wewenang role (*Maker*, *Approver*, *Viewer*, *Admin*).\n- **TC-03: Pengoperasian Alur Bisnis Utama (*Core Workflow*)**: Menguji fungsi pencarian, filter tanggal, pengisian form, dan pembukaan modal konfirmasi.\n- **TC-04: Navigasi Bolak-balik Antar Modul (*Cross-MFE Switching*)**: Berpindah dari Dashboard $\\rightarrow$ Modul $\\rightarrow$ Modul Lain $\\rightarrow$ Kembali ke Modul tanpa terjadi pemutusan sesi (*logout* mendadak).\n- **TC-05: Uji Ketahanan Muat Ulang Browser (*Page Refresh / F5*)**: Merefresh browser di dalam halaman modul; memastikan sesi tidak hilang dan halaman memuat ulang dengan normal.\n- **TC-06: Penanganan Masa Sesi Habis (*Session Expiry \u0026 Re-login*)**: Saat waktu sesi habis, dialog resmi *Session Expired* muncul dengan rapi dan mengarahkan login ulang secara aman.\n- **TC-07: Pemeriksaan Kerapian Jaringan DevTools (Opsional / Sanity Check)**: Memastikan tidak ada banjir panggilan berulang ke `/auth/me` atau `/menu/me` di tab Network.\n\n---\n\n### 3. Katalog Dokumen Test Case yang Dihasilkan\n\nDokumen indeks master lengkap tersedia di:  \n📄 [**`D:\\work\\qcash-ui\\docs\\qa-test-cases\\README.md`**](file:///D:/work/qcash-ui/docs/qa-test-cases/README.md)\n\n#### A. Repositori Fondasi \u0026 Host (Platform Core)\n| Nama Repositori | Peran \u0026 Ruang Lingkup | Tautan File Test Case |\n|:---|:---|:---:|\n| `qcash-ui` | **Host Shell Container** (Pusat otentikasi utama `HostAuthGate`) | [qcash-ui.md](file:///D:/work/qcash-ui/docs/qa-test-cases/qcash-ui.md) |\n| `qcash-ui-header-footer` | **Navigasi Shell** (Menu navigasi, profil pengguna, logout) | [qcash-ui-header-footer.md](file:///D:/work/qcash-ui/docs/qa-test-cases/qcash-ui-header-footer.md) |\n| `qcash-ui-global-component` | **Shared UI Components** (Modal peringatan, form controls) | [qcash-ui-global-component.md](file:///D:/work/qcash-ui/docs/qa-test-cases/qcash-ui-global-component.md) |\n| `qcash-ui-dashboard` | **Beranda Utama** (Widget saldo, to-do list transaksi) | [qcash-ui-dashboard.md](file:///D:/work/qcash-ui/docs/qa-test-cases/qcash-ui-dashboard.md) |\n| `qcash-ui-base` | **Shared Layout Base MFE** (Layout wrapper \u0026 base UI) | [qcash-ui-base.md](file:///D:/work/qcash-ui/docs/qa-test-cases/qcash-ui-base.md) |\n\n#### B. Modul Transaksi \u0026 Pembayaran Utama\n| Nama Repositori | Keterangan Fitur | Tautan File Test Case |\n|:---|:---|:---:|\n| `qcash-ui-fund-transfer` | Transfer Dana Domestik (BI-Fast, Online, RTGS, Kliring, Mass) | [qcash-ui-fund-transfer.md](file:///D:/work/qcash-ui/docs/qa-test-cases/qcash-ui-fund-transfer.md) |\n| `qcash-ui-bill-payment` | Pembayaran Tagihan Biller (PLN, Telkom, Pajak, PDAM, dll.) | [qcash-ui-bill-payment.md](file:///D:/work/qcash-ui/docs/qa-test-cases/qcash-ui-bill-payment.md) |\n| `qcash-ui-beneficiary-account-management` | Manajemen Rekening Tujuan Transfer | [qcash-ui-beneficiary-account-management.md](file:///D:/work/qcash-ui/docs/qa-test-cases/qcash-ui-beneficiary-account-management.md) |\n| `qcash-ui-account-statement` | Rekening Koran \u0026 Mutasi Transaksi | [qcash-ui-account-statement.md](file:///D:/work/qcash-ui/docs/qa-test-cases/qcash-ui-account-statement.md) |\n| `qcash-ui-account-summary` | Ringkasan Saldo Rekening Terkonsolidasi | [qcash-ui-account-summary.md](file:///D:/work/qcash-ui/docs/qa-test-cases/qcash-ui-account-summary.md) |\n| `qcash-ui-account-management` | Pengaturan \u0026 Akses Rekening Perusahaan | [qcash-ui-account-management.md](file:///D:/work/qcash-ui/docs/qa-test-cases/qcash-ui-account-management.md) |\n| `qcash-ui-create-briva` | Pembuatan \u0026 Administrasi Akun BRIVA | [qcash-ui-create-briva.md](file:///D:/work/qcash-ui/docs/qa-test-cases/qcash-ui-create-briva.md) |\n| `qcash-ui-ewallet-topup` | Top Up Dompet Digital (GoPay, OVO, DANA, ShopeePay) | [qcash-ui-ewallet-topup.md](file:///D:/work/qcash-ui/docs/qa-test-cases/qcash-ui-ewallet-topup.md) |\n\n#### C. Modul Monitoring, Supply Chain, Trade \u0026 Administrasi\n| Nama Repositori | Keterangan Fitur \u0026 Catatan Khusus | Tautan File Test Case |\n|:---|:---|:---:|\n| `qcash-ui-bank-monitoring-transaction` | *Catatan Khusus QA: Uji intensif perpindahan antar fitur \u0026 tab filter* | [qcash-ui-bank-monitoring-transaction.md](file:///D:/work/qcash-ui/docs/qa-test-cases/qcash-ui-bank-monitoring-transaction.md) |\n| `qcash-ui-approval-signature` | Pengaturan Matriks Persetujuan \u0026 Tanda Tangan | [qcash-ui-approval-signature.md](file:///D:/work/qcash-ui/docs/qa-test-cases/qcash-ui-approval-signature.md) |\n| `qcash-ui-forex` | Transaksi Valas \u0026 Kontrak Kurs | [qcash-ui-forex.md](file:///D:/work/qcash-ui/docs/qa-test-cases/qcash-ui-forex.md) |\n| `qcash-ui-global-external-transfer` | Transfer Valas Internasional (SWIFT / Remittance) | [qcash-ui-global-external-transfer.md](file:///D:/work/qcash-ui/docs/qa-test-cases/qcash-ui-global-external-transfer.md) |\n| `qcash-ui-global-internal-transfer` | Transfer Internal Cabang Luar Negeri | [qcash-ui-global-internal-transfer.md](file:///D:/work/qcash-ui/docs/qa-test-cases/qcash-ui-global-internal-transfer.md) |\n| `qcash-ui-global-account-statement` | Rekening Koran Rekening Global Valas | [qcash-ui-global-account-statement.md](file:///D:/work/qcash-ui/docs/qa-test-cases/qcash-ui-global-account-statement.md) |\n| `qcash-ui-global-account-summary` | Ringkasan Saldo Valas Global | [qcash-ui-global-account-summary.md](file:///D:/work/qcash-ui/docs/qa-test-cases/qcash-ui-global-account-summary.md) |\n| `qcash-ui-df-pupuk-indonesia` | Distributor Financing Pupuk Indonesia | [qcash-ui-df-pupuk-indonesia.md](file:///D:/work/qcash-ui/docs/qa-test-cases/qcash-ui-df-pupuk-indonesia.md) |\n| `qcash-ui-do-pertamina` | Delivery Order Pertamina BBM/LPG | [qcash-ui-do-pertamina.md](file:///D:/work/qcash-ui/docs/qa-test-cases/qcash-ui-do-pertamina.md) |\n| `qcash-ui-do-pupuk-indonesia` | Delivery Order Pupuk Indonesia | [qcash-ui-do-pupuk-indonesia.md](file:///D:/work/qcash-ui/docs/qa-test-cases/qcash-ui-do-pupuk-indonesia.md) |\n| `qcash-ui-do-semen-indonesia` | Delivery Order Semen Indonesia (SIG) | [qcash-ui-do-semen-indonesia.md](file:///D:/work/qcash-ui/docs/qa-test-cases/qcash-ui-do-semen-indonesia.md) |\n| `qcash-ui-digi-guarantee` | Bank Garansi Digital | [qcash-ui-digi-guarantee.md](file:///D:/work/qcash-ui/docs/qa-test-cases/qcash-ui-digi-guarantee.md) |\n| `qcash-ui-advise-lc` | Advis Dokumen Letter of Credit | [qcash-ui-advise-lc.md](file:///D:/work/qcash-ui/docs/qa-test-cases/qcash-ui-advise-lc.md) |\n| `qcash-ui-amend-cancel-lc` | Perubahan \u0026 Pembatalan LC | [qcash-ui-amend-cancel-lc.md](file:///D:/work/qcash-ui/docs/qa-test-cases/qcash-ui-amend-cancel-lc.md) |\n| `qcash-ui-employee-data` | Data Karyawan \u0026 Master Payroll | [qcash-ui-employee-data.md](file:///D:/work/qcash-ui/docs/qa-test-cases/qcash-ui-employee-data.md) |\n| `qcash-ui-company-management` | Manajemen Profil \u0026 Cabang Perusahaan | [qcash-ui-company-management.md](file:///D:/work/qcash-ui/docs/qa-test-cases/qcash-ui-company-management.md) |\n| `qcash-ui-group-management` | Manajemen Grup Korporasi | [qcash-ui-group-management.md](file:///D:/work/qcash-ui/docs/qa-test-cases/qcash-ui-group-management.md) |\n| `qcash-ui-company-code-mapping` | Pemetaan Prefix \u0026 Kode Instansi | [qcash-ui-company-code-mapping.md](file:///D:/work/qcash-ui/docs/qa-test-cases/qcash-ui-company-code-mapping.md) |\n| `qcash-ui-auto-collection-registration` | Pendaftaran Mandat Auto Debet | [qcash-ui-auto-collection-registration.md](file:///D:/work/qcash-ui/docs/qa-test-cases/qcash-ui-auto-collection-registration.md) |\n| `qcash-ui-dashboard-auto-collection` | Dashboard \u0026 Analisis Auto Collection | [qcash-ui-dashboard-auto-collection.md](file:///D:/work/qcash-ui/docs/qa-test-cases/qcash-ui-dashboard-auto-collection.md) |\n| `qcash-ui-dashboard-dhe` | Monitoring Devisa Hasil Ekspor | [qcash-ui-dashboard-dhe.md](file:///D:/work/qcash-ui/docs/qa-test-cases/qcash-ui-dashboard-dhe.md) |\n| `qcash-ui-dashboard-merchant` | Dashboard \u0026 Rekapitulasi Merchant EDC/QRIS | [qcash-ui-dashboard-merchant.md](file:///D:/work/qcash-ui/docs/qa-test-cases/qcash-ui-dashboard-merchant.md) |\n| `qcash-ui-credit-card` | Informasi Kartu Kredit Korporat | [qcash-ui-credit-card.md](file:///D:/work/qcash-ui/docs/qa-test-cases/qcash-ui-credit-card.md) |\n| `qcash-ui-cashcard` | Manajemen Kartu Cashcard | [qcash-ui-cashcard.md](file:///D:/work/qcash-ui/docs/qa-test-cases/qcash-ui-cashcard.md) |\n| `qcash-ui-deposito` | Pembukaan \u0026 Pengelolaan Deposito | [qcash-ui-deposito.md](file:///D:/work/qcash-ui/docs/qa-test-cases/qcash-ui-deposito.md) |\n| `qcash-ui-bond-price` | Harga Kuotasi Obligasi Pasar | [qcash-ui-bond-price.md](file:///D:/work/qcash-ui/docs/qa-test-cases/qcash-ui-bond-price.md) |\n| `qcash-ui-announcement-management` | Pengumuman \u0026 Informasi Portal | [qcash-ui-announcement-management.md](file:///D:/work/qcash-ui/docs/qa-test-cases/qcash-ui-announcement-management.md) |\n| `qcash-ui-complaint` | Pengaduan Nasabah Korporat | [qcash-ui-complaint.md](file:///D:/work/qcash-ui/docs/qa-test-cases/qcash-ui-complaint.md) |\n| `qcash-ui-content-management-system` | Manajemen Banner \u0026 Konten CMS | [qcash-ui-content-management-system.md](file:///D:/work/qcash-ui/docs/qa-test-cases/qcash-ui-content-management-system.md) |\n| `qcash-ui-cut-off-management` | Manajemen Waktu Cut-Off Transaksi | [qcash-ui-cut-off-management.md](file:///D:/work/qcash-ui/docs/qa-test-cases/qcash-ui-cut-off-management.md) |\n| `qcash-ui-helpdesk-portal` | Portal Tiket Helpdesk | [qcash-ui-helpdesk-portal.md](file:///D:/work/qcash-ui/docs/qa-test-cases/qcash-ui-helpdesk-portal.md) |\n| `qcash-ui-holiday-management` | Kalender Operasional Hari Libur | [qcash-ui-holiday-management.md](file:///D:/work/qcash-ui/docs/qa-test-cases/qcash-ui-holiday-management.md) |\n| `qcash-ui-account-receivable` | Piutang Usaha \u0026 Pelunasan Invoice | [qcash-ui-account-receivable.md](file:///D:/work/qcash-ui/docs/qa-test-cases/qcash-ui-account-receivable.md) |\n| `qcash-ui-account-registration` | Pendaftaran Rekening Baru | [qcash-ui-account-registration.md](file:///D:/work/qcash-ui/docs/qa-test-cases/qcash-ui-account-registration.md) |\n| `qcash-ui-account-validation` | Validasi Nama \u0026 Rekening Penerima | [qcash-ui-account-validation.md](file:///D:/work/qcash-ui/docs/qa-test-cases/qcash-ui-account-validation.md) |\n\n#### D. Modul Non-Aktif / Statis / Legacy (Status N/A)\nDokumen test case untuk repositori ini telah ditandai secara jelas berstatus **Statis / Non-Aktif** sehingga tim QA tidak perlu membuang waktu melakukan pengetesan terpisah:\n- `qcash-ui-bgn.md` (Aplikasi BGN mandiri statis)\n- `qcash-ui-bifast.md` (Legacy, sudah digabung ke Fund Transfer)\n- `qcash-ui-bricams-coming-soon.md` (Halaman landing statis)\n- `qcash-ui-bricams-redirect.md` (Pengalihan URL)\n- `qcash-ui-creation.md` (Template stub internal)\n- `qcash-ui-deposito-online.md` (Repo kosong)\n- `qcash-ui-ecosystem.md` (Etalase portal statis)\n- `qcash-ui-external-fund-transfer.md` (Legacy stub)\n- `qcash-ui-history-external-fund-transfer.md` (Legacy stub)\n- `qcash-ui-ift.md` (Legacy stub)\n\nDokumen-dokumen ini siap dibagikan langsung kepada tim QA sebagai panduan pengujian rilis prestage maupun pilot."
+    },
+    {
+      "from": "human",
+      "value": "can you merge them into one, and make a .xls file?"
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": "Kedua kebutuhan Anda telah selesai dibuat dan diverifikasi:\n\n1. **Merged Markdown (`.md`)**: Seluruh test case dari ke-58 repositori telah digabungkan menjadi satu dokumen terpadu lengkap dengan Daftar Isi navigasi langsung (anchor links).\n2. **File Spreadsheet Excel (`.xls`)**: Dokumen spreadsheet dengan format XML Spreadsheet 2003 yang didukung secara native oleh Microsoft Excel, lengkap dengan styling warna korporat BRI, pemisahan kolom langkah uji, hasil yang diharapkan, checklist pass/fail, dan auto-wrap text.\n\n---\n\n### Lokasi File yang Dihasilkan\n\n| Format | Nama File \u0026 Lokasi | Ukuran | Keterangan |\n|:---|:---|:---:|:---|\n| **Excel (`.xls`)** | [**`D:\\work\\qcash-ui\\docs\\qa-test-cases\\QA_TEST_CASES_ALL_REPOS.xls`**](file:///D:/work/qcash-ui/docs/qa-test-cases/QA_TEST_CASES_ALL_REPOS.xls) | ~509 KB | Siap dibuka langsung di Microsoft Excel dengan 2 lembar kerja (*sheets*). |\n| **Merged Markdown (`.md`)** | [**`D:\\work\\qcash-ui\\docs\\qa-test-cases\\QA_TEST_CASES_ALL_REPOS.md`**](file:///D:/work/qcash-ui/docs/qa-test-cases/QA_TEST_CASES_ALL_REPOS.md) | ~435 KB | 1 file Markdown utuh mencakup seluruh 58 modul, 7 skenario per modul aktif, dan daftar isi. |\n| **Indeks Katalog** | [**`D:\\work\\qcash-ui\\docs\\qa-test-cases\\README.md`**](file:///D:/work/qcash-ui/docs/qa-test-cases/README.md) | ~16 KB | Katalog ringkas penjelas ruang lingkup bagi QA. |\n\n---\n\n### Struktur File Excel (`.xls`)\n\nFile Excel ini dirancang khusus agar tim QA dapat langsung melakukan eksekusi uji dan menandai status `PASS` / `FAIL` dengan rapi:\n\n#### 1. Lembar Kerja 1: `Ringkasan Modul` (Summary)\nDaftar inventaris seluruh 58 repositori yang mencakup:\n- **No \u0026 Nama Repositori** (format kode monospaced)\n- **Nama Fitur / Modul Bisnis** (misal: *Transfer Dana Domestik*, *Monitoring Transaksi Bank*)\n- **Kategori Fitur** (*Platform Core*, *Transfer \u0026 Payments*, *Trade Finance*, dll.)\n- **Status Modul** (Label hijau untuk `Aktif (Perlu Uji)`, label abu-abu untuk `Statis / Non-Aktif`)\n- **Target Wewenang Role** (*Maker*, *Approver*, *Releaser*, *Admin*)\n- **PIC Developer** (`Azzy`)\n- **Tautan PR Dev** (Link Bitbucket dev untuk PR yang tersedia)\n- **Catatan Khusus QA** (Contoh: Catatan pengetesan perpindahan tab filter pada *Bank Monitoring Transaction*)\n- **Kolom Hasil Akhir QA** (`UNTESTED` / `PASS` / `FAIL`)\n\n#### 2. Lembar Kerja 2: `Detail Skenario Uji` (Detailed Test Cases - 352 Baris Skenario)\nSetiap repositori aktif dipecah menjadi **7 skenario pengujian fungsional non-teknis**:\n1. **TC-01: Akses Awal Modul \u0026 Pemuatan Halaman**: Memastikan tidak ada *white screen*, tidak ada kedipan (*flicker*), dan tidak ada *infinite spinner*.\n2. **TC-02: Verifikasi Hak Akses \u0026 Tombol Sesuai Role (RBAC)**: Memastikan tombol aksi (Tambah, Filter, Download, Edit, Approve) hanya tampil sesuai wewenang akun yang login.\n3. **TC-03: Pengoperasian Fitur Utama \u0026 Interaksi Data**: Menjalankan alur bisnis spesifik modul terkait (input form, filter tabel, buka detail modal).\n4. **TC-04: Navigasi Bolak-balik Antar Modul**: Berpindah modul ke Dashboard $\\rightarrow$ Modul Lain $\\rightarrow$ Kembali ke Modul tanpa terjadi pemutusan sesi.\n5. **TC-05: Uji Ketahanan Muat Ulang Browser (Refresh / F5)**: Refresh halaman di dalam modul; memastikan sesi tidak ter-reset atau terlempar ke layar login.\n6. **TC-06: Penanganan Sesi Habis (Session Expiry \u0026 Re-login)**: Memastikan pop-up resmi *Session Expired* muncul dengan benar saat sesi kadaluarsa.\n7. **TC-07: Pemeriksaan Kerapian Jaringan DevTools (Sanity Check)**: Memastikan tidak ada lonjakan panggilan berulang ke `/auth/me` atau `/menu/me` di tab Network.\n\n---\n\n### Cara Penggunaan oleh Tim QA\n\n1. **Menggunakan Excel**:\n   - Buka file [**`QA_TEST_CASES_ALL_REPOS.xls`**](file:///D:/work/qcash-ui/docs/qa-test-cases/QA_TEST_CASES_ALL_REPOS.xls) menggunakan Microsoft Excel / LibreOffice / Google Sheets.\n   - Tim QA dapat memfilter baris per nama modul atau kategori pada tab **`Detail Skenario Uji`**.\n   - Isi kolom **Status Uji** dengan `PASS` / `FAIL` dan tambahkan catatan bug/temuan di kolom **Catatan / Temuan QA**.\n2. **Menggunakan Markdown Terpadu**:\n   - Buka file [**`QA_TEST_CASES_ALL_REPOS.md`**](file:///D:/work/qcash-ui/docs/qa-test-cases/QA_TEST_CASES_ALL_REPOS.md) di VS Code, GitHub/Bitbucket preview, atau markdown viewer pilihan.\n   - Gunakan link pada bagian Daftar Isi di awal dokumen untuk melompat langsung ke repositori yang sedang diuji."
+    }
+  ],
+  "source": "antigravity",
+  "tags": [
+    "coding",
+    "assistant",
+    "antigravity"
+  ]
+}
