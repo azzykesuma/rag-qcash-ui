@@ -171,7 +171,7 @@ func (e *AGYExtractor) Extract(targetPath string) (*models.Conversation, error) 
 	}
 
 	if len(messages) == 0 {
-		return nil, fmt.Errorf("no user/assistant messages extracted from %s", resolvedFile)
+		return &models.Conversation{ID: convID, SourceTool: "antigravity"}, nil
 	}
 
 	for l := range langMap {

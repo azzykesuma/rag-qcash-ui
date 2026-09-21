@@ -70,6 +70,9 @@ func (v *Vault) loadExportNames() error {
 			}
 		}
 	}
+	if v.rebuildingDataset {
+		return nil
+	}
 	// Older AGY exports hashed language names in random map order. Match their
 	// canonical content back to the published ID rather than renaming/reimporting
 	// them. Also recover exact timestamps (Markdown only retains whole seconds).

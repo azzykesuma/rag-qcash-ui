@@ -1,6 +1,8 @@
 package vault
 
 import (
+	"bufio"
+	"bytes"
 	"crypto/sha256"
 	"encoding/json"
 	"errors"
@@ -52,6 +54,7 @@ type scanState struct {
 	Version          string               `json:"version"`
 	Dataset          fileStamp            `json:"dataset"`
 	DatasetHash      string               `json:"dataset_hash,omitempty"`
+	DatasetValidated bool                 `json:"dataset_validated,omitempty"`
 	DailyCompletions map[string]string    `json:"daily_completions,omitempty"`
 	Run              uint64               `json:"run,omitempty"`
 	Cursors          map[string]string    `json:"cursors,omitempty"`
@@ -78,6 +81,25 @@ func fileHash(path string) (string, error) {
 		return "", err
 	}
 	return fmt.Sprintf("%x", h.Sum(nil)), nil
+}
+
+func validateDataset(path string) error {
+	f, err := os.Open(path)
+	if err != nil {
+		return err
+	}
+	defer f.Close()
+	scanner := bufio.NewScanner(f)
+	scanner.Buffer(make([]byte, 64*1024), 64*1024*1024)
+	line := 0
+	for scanner.Scan() {
+		line++
+		data := bytes.TrimSpace(scanner.Bytes())
+		if len(data) > 0 && !json.Valid(data) {
+			return fmt.Errorf("invalid dataset JSONL at line %d", line)
+		}
+	}
+	return scanner.Err()
 }
 
 func dailyScanKey(version string, sources []ScanSource, options ScanOptions) (string, error) {
@@ -240,12 +262,18 @@ func (v *Vault) ScanSources(sources []ScanSource) ([]ToolScanReport, error) {
 	currentDataset, datasetErr := stamp(dataset)
 	invalidated := state.Version != version || state.Entries == nil
 	rebuildDataset := false
+	datasetExpected := false
+	for _, entry := range state.Entries {
+		datasetExpected = datasetExpected || entry.ConversationID != ""
+	}
 	if !invalidated && len(state.Entries) > 0 {
 		switch {
 		case os.IsNotExist(datasetErr):
-			v.progress("Dataset is missing; rebuilding from source sessions.")
-			invalidated = true
-			rebuildDataset = true
+			if datasetExpected {
+				v.progress("Dataset is missing; rebuilding from source sessions.")
+				invalidated = true
+				rebuildDataset = true
+			}
 		case datasetErr != nil:
 			return nil, datasetErr
 		case state.Dataset != currentDataset && state.DatasetHash != "":
@@ -254,14 +282,38 @@ func (v *Vault) ScanSources(sources []ScanSource) ([]ToolScanReport, error) {
 				return nil, err
 			}
 			if currentHash != state.DatasetHash {
-				v.progress("Dataset content changed outside the scanner; rebuilding from source sessions.")
-				invalidated = true
-				rebuildDataset = true
+				if err := validateDataset(dataset); err != nil {
+					v.progress("Dataset content is invalid; rebuilding from source sessions.")
+					invalidated = true
+					rebuildDataset = true
+				} else {
+					v.progress("Dataset changed outside the scanner but is valid; preserving source checkpoints.")
+					state.Dataset = currentDataset
+					state.DatasetHash = currentHash
+					state.DatasetValidated = true
+				}
 			} else {
 				// File timestamps can change after Git operations or file restoration.
 				// Matching content must not force every source through extraction again.
 				state.Dataset = currentDataset
 			}
+		case state.DatasetHash == "" || !state.DatasetValidated:
+			if err := validateDataset(dataset); err != nil {
+				v.progress("Dataset content is invalid; rebuilding from source sessions.")
+				invalidated = true
+				rebuildDataset = true
+			} else {
+				state.DatasetValidated = true
+			}
+		}
+	}
+	if !invalidated && !rebuildDataset && datasetErr == nil && !state.DatasetValidated {
+		if err := validateDataset(dataset); err != nil {
+			v.progress("Dataset content is invalid; rebuilding from source sessions.")
+			invalidated = true
+			rebuildDataset = true
+		} else {
+			state.DatasetValidated = true
 		}
 	}
 	if state.Entries == nil {
@@ -285,6 +337,7 @@ func (v *Vault) ScanSources(sources []ScanSource) ([]ToolScanReport, error) {
 	state.Version = version
 	v.exportNames = nil
 	v.retireEntries = nil
+	v.rebuildingDataset = rebuildDataset
 	if rebuildDataset {
 		if !v.ScanOptions.AuthoritativeSources {
 			return nil, fmt.Errorf("dataset recovery requires a unified scan; run `vault scan`")
@@ -380,6 +433,7 @@ func (v *Vault) ScanSources(sources []ScanSource) ([]ToolScanReport, error) {
 			}
 		}
 		state.Dataset = updatedDataset
+		state.DatasetValidated = true
 	} else if !os.IsNotExist(updatedErr) {
 		return reports, updatedErr
 	}

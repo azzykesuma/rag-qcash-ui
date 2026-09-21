@@ -135,6 +135,26 @@ func TestIncrementalScanRecoveryAndInvalidation(t *testing.T) {
 	}
 }
 
+func TestEmptyAGYTranscriptIsSkippedAndCheckpointed(t *testing.T) {
+	base, source := t.TempDir(), t.TempDir()
+	path := filepath.Join(source, "empty", ".system_generated", "logs", "transcript.jsonl")
+	if err := os.MkdirAll(filepath.Dir(path), 0755); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(path, nil, 0600); err != nil {
+		t.Fatal(err)
+	}
+	inputs := []ScanSource{{Tool: "antigravity", Path: source}}
+	first, err := New(base, sanitizer.New(sanitizer.DefaultConfig())).ScanSources(inputs)
+	if err != nil || first[0].SkippedCount != 1 || first[0].FailedCount != 0 {
+		t.Fatalf("empty transcript was not skipped: %+v %v", first, err)
+	}
+	second, err := New(base, sanitizer.New(sanitizer.DefaultConfig())).ScanSources(inputs)
+	if err != nil || second[0].UnchangedCount != 1 || second[0].FailedCount != 0 {
+		t.Fatalf("empty transcript was not checkpointed: %+v %v", second, err)
+	}
+}
+
 func assertExportCount(t *testing.T, base string, want int) {
 	t.Helper()
 	for _, dir := range []string{"markdown", "sharegpt"} {
@@ -295,8 +315,8 @@ func TestCacheCorruptionAndDatasetChanges(t *testing.T) {
 	if err := os.WriteFile(dataset, append(data, '\n'), 0600); err != nil {
 		t.Fatal(err)
 	}
-	if r := scan(); r.ImportedCount != 1 {
-		t.Fatalf("dataset content change didn't invalidate cache: %+v", r)
+	if r := scan(); r.UnchangedCount != 1 || r.ImportedCount != 0 {
+		t.Fatalf("valid dataset content change invalidated source cache: %+v", r)
 	}
 }
 
@@ -519,7 +539,7 @@ func TestFailedItemDoesNotStarveLaterBatches(t *testing.T) {
 	}
 }
 
-func TestDatasetRebuildRemovesUnknownRecords(t *testing.T) {
+func TestInvalidDatasetRequiresUnifiedRebuild(t *testing.T) {
 	base, source := t.TempDir(), t.TempDir()
 	writeAGY(t, source, "one", "Refresh tokens renew the session before expiration.")
 	inputs := []ScanSource{{Tool: "antigravity", Path: source}}
@@ -532,7 +552,7 @@ func TestDatasetRebuildRemovesUnknownRecords(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	_, writeErr := f.WriteString(`{"id":"injected-record","messages":[{"role":"user","content":"secret"}]}` + "\n")
+	_, writeErr := f.WriteString("<<<<<<< HEAD\n")
 	closeErr := f.Close()
 	if writeErr != nil || closeErr != nil {
 		t.Fatalf("append injected record: %v %v", writeErr, closeErr)
@@ -569,8 +589,8 @@ func TestDatasetRebuildRemovesUnknownRecords(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if strings.Contains(string(data), "injected-record") || countJSONL(t, dataset) != 1 {
-		t.Fatalf("external dataset record survived rebuild: %s", data)
+	if strings.Contains(string(data), "<<<<<<<") || countJSONL(t, dataset) != 1 {
+		t.Fatalf("invalid dataset survived rebuild: %s", data)
 	}
 }
 

@@ -71,6 +71,7 @@ type Vault struct {
 	exportNames       map[string]existingExport
 	identityAliases   map[string]string
 	retireEntries     []scanEntry
+	rebuildingDataset bool
 	ScanOptions       ScanOptions
 }
 
