@@ -99,6 +99,26 @@ func TestBatchDeletesSupersededConversation(t *testing.T) {
 	}
 }
 
+func TestRebuildReplacesAllExistingRecords(t *testing.T) {
+	path := filepath.Join(t.TempDir(), "dataset.jsonl")
+	original := "{\"id\":\"duplicate\"}\n{\"id\":\"duplicate\"}\n{\"messages\":[]}\n"
+	if err := os.WriteFile(path, []byte(original), 0600); err != nil {
+		t.Fatal(err)
+	}
+	e := NewJSONLExporter()
+	e.BeginRebuild()
+	if err := e.UpsertJSONL(&models.Conversation{ID: "authoritative", Title: "rebuilt"}, path); err != nil {
+		t.Fatal(err)
+	}
+	if err := e.Flush(path); err != nil {
+		t.Fatal(err)
+	}
+	conversations, err := readJSONL(path)
+	if err != nil || len(conversations) != 1 || conversations[0].ID != "authoritative" {
+		t.Fatalf("rebuild retained existing records: %+v %v", conversations, err)
+	}
+}
+
 func TestDatasetRecoversWindowsStyleBackupBeforeMerge(t *testing.T) {
 	path := filepath.Join(t.TempDir(), "dataset.jsonl")
 	e := NewJSONLExporter()

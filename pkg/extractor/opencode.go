@@ -51,6 +51,12 @@ func (e *OpenCodeExtractor) ExtractAll(path string) ([]*models.Conversation, err
 // Schemas without update timestamps safely fall back to extraction on every scan.
 // Selected sessions use one joined query each instead of one query per message.
 func (e *OpenCodeExtractor) ExtractIncremental(path string, selectSession func(id, revision string) bool) ([]*models.Conversation, error) {
+	return e.ExtractIncrementalFrom(path, "", selectSession)
+}
+
+// ExtractIncrementalFrom rotates session discovery to the item after cursor.
+// This lets bounded callers make progress when early sessions repeatedly fail.
+func (e *OpenCodeExtractor) ExtractIncrementalFrom(path, cursor string, selectSession func(id, revision string) bool) ([]*models.Conversation, error) {
 	if _, err := os.Stat(path); err != nil {
 		return nil, err
 	}
@@ -128,6 +134,14 @@ func (e *OpenCodeExtractor) ExtractIncremental(path string, selectSession func(i
 	rows.Close()
 	if err != nil {
 		return nil, err
+	}
+	if cursor != "" {
+		for i, s := range sessions {
+			if s.id == cursor {
+				sessions = append(append([]session(nil), sessions[i+1:]...), sessions[:i+1]...)
+				break
+			}
+		}
 	}
 	revisions := make(map[string]string)
 	if cacheable {

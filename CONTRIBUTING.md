@@ -47,6 +47,9 @@ Run the unified scan command inside the repository root:
 # Standard scan across all local assistants
 ./vault scan
 
+# Continue running until the Deferred column reaches zero, or drain everything at once
+./vault scan --limit 0
+
 # Scan with custom proprietary keywords or project names scrubbed:
 ./vault scan --redact-words "MyCompany,ClientAlpha,InternalService"
 ```

@@ -1,6 +1,7 @@
 package main
 
 import (
+	"errors"
 	"flag"
 	"fmt"
 	"os"
@@ -43,16 +44,51 @@ func parseInterspersed(fs *flag.FlagSet, args []string) error {
 	return fs.Parse(append(append(options, "--"), positional...))
 }
 
+func resolveScanLimits(full bool, limit, perTool int, limitSet, perToolSet bool) (int, int, error) {
+	if limitSet && perToolSet {
+		return 0, 0, fmt.Errorf("use either --limit or --limit-per-tool, not both")
+	}
+	effectiveLimit, effectivePerTool := limit, 0
+	if perToolSet && perTool > 0 {
+		effectiveLimit, effectivePerTool = 0, perTool
+	}
+	if full {
+		if limitSet && limit > 0 || perToolSet && perTool > 0 {
+			return 0, 0, fmt.Errorf("--full cannot be combined with a bounded scan limit")
+		}
+		return 0, 0, nil
+	}
+	return effectiveLimit, effectivePerTool, nil
+}
+
 func runScan(baseDir, command string, args []string) error {
 	flags := flag.NewFlagSet(command, flag.ContinueOnError)
 	words := flags.String("redact-words", "", "Comma-separated custom redaction words")
 	full := flags.Bool("full", false, "Reprocess every source, bypassing scan cache")
 	workers := flags.Int("workers", 0, "Parallel session workers (0 = automatic, up to 4)")
+	limit := flags.Int("limit", 10, "Maximum changed sessions across this scan (0 = unlimited)")
+	limitPerTool := flags.Int("limit-per-tool", 0, "Maximum changed sessions per assistant (0 = use --limit)")
+	daily := flags.Bool("daily", false, "Run at most one completed scan per local calendar day")
 	if err := parseInterspersed(flags, args); err != nil {
 		return err
 	}
 	if *workers < 0 || *workers > 64 {
 		return fmt.Errorf("workers must be between 0 and 64")
+	}
+	if *limit < 0 || *limitPerTool < 0 {
+		return fmt.Errorf("scan limits cannot be negative")
+	}
+	var limitSet, perToolSet bool
+	flags.Visit(func(f *flag.Flag) {
+		limitSet = limitSet || f.Name == "limit"
+		perToolSet = perToolSet || f.Name == "limit-per-tool"
+	})
+	effectiveLimit, effectivePerTool, err := resolveScanLimits(*full, *limit, *limitPerTool, limitSet, perToolSet)
+	if err != nil {
+		return err
+	}
+	if *daily && effectiveLimit <= 0 && effectivePerTool <= 0 {
+		return fmt.Errorf("--daily requires a bounded --limit or --limit-per-tool")
 	}
 	unified := command == "scan" || command == "scan-all"
 	if flags.NArg() > 1 || unified && flags.NArg() != 0 {
@@ -65,10 +101,13 @@ func runScan(baseDir, command string, args []string) error {
 		}
 	}
 	v := vault.New(baseDir, sanitizer.New(cfg))
-	v.ScanOptions = vault.ScanOptions{Full: *full, Workers: *workers, Progress: func(message string) { fmt.Fprintln(os.Stderr, message) }}
+	v.ScanOptions = vault.ScanOptions{
+		Full: *full, Workers: *workers, MaxItems: effectiveLimit, MaxItemsPerTool: effectivePerTool, Daily: *daily,
+		Progress: func(message string) { fmt.Fprintln(os.Stderr, message) },
+	}
 	started := time.Now()
 	var reports []vault.ToolScanReport
-	var err error
+	err = nil
 	if unified {
 		reports, err = v.ScanAll()
 	} else {
@@ -91,12 +130,16 @@ func runScan(baseDir, command string, args []string) error {
 		reports, err = v.ScanSources([]vault.ScanSource{source})
 	}
 	if err != nil {
+		if errors.Is(err, vault.ErrDailyScanSkipped) {
+			fmt.Println("Daily scan already completed today; no sources, index, or exports were processed.")
+			return nil
+		}
 		return err
 	}
-	fmt.Printf("\n%-14s %7s %7s %10s %7s %7s %10s\n", "Assistant", "New", "Changed", "Unchanged", "Trivial", "Failed", "Time")
+	fmt.Printf("\n%-14s %7s %7s %10s %8s %7s %7s %10s\n", "Assistant", "New", "Changed", "Unchanged", "Deferred", "Trivial", "Failed", "Time")
 	failures := 0
 	for _, r := range reports {
-		fmt.Printf("%-14s %7d %7d %10d %7d %7d %10s\n", r.ToolName, r.NewCount, r.ChangedCount, r.UnchangedCount, r.SkippedCount, r.FailedCount, r.Duration.Round(time.Millisecond))
+		fmt.Printf("%-14s %7d %7d %10d %8d %7d %7d %10s\n", r.ToolName, r.NewCount, r.ChangedCount, r.UnchangedCount, r.DeferredCount, r.SkippedCount, r.FailedCount, r.Duration.Round(time.Millisecond))
 		failures += r.FailedCount
 		for _, warning := range r.Warnings {
 			fmt.Fprintf(os.Stderr, "[%s] %s\n", r.ToolName, warning)
@@ -114,7 +157,10 @@ func runScan(baseDir, command string, args []string) error {
 		}
 		fmt.Printf("Search index: %s\n", time.Since(indexStarted).Round(time.Millisecond))
 	}
-	if unified {
+	bounded := effectiveLimit > 0 || effectivePerTool > 0
+	if unified && bounded {
+		fmt.Println("Full privacy audit deferred for this bounded scan; run `vault audit` before publishing.")
+	} else if unified {
 		if _, err := os.Stat(filepath.Join(baseDir, "conversations")); err == nil {
 			auditStarted := time.Now()
 			fmt.Fprintln(os.Stderr, "Running full privacy audit...")

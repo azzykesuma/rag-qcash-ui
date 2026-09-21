@@ -43,6 +43,9 @@ OPTIONS:
 SCAN OPTIONS:
   --full                 Reprocess every source instead of using the incremental cache
   --workers <n>          Parallel session workers (0 = automatic, up to 4)
+  --limit <n>            Changed sessions per scan (default 10, 0 = unlimited)
+  --limit-per-tool <n>   Changed sessions per assistant instead of one global limit
+  --daily                Run at most one completed scan per local calendar day
 
 SEARCH / CONTEXT OPTIONS:
   --project <alias>      Filter by exact project alias
@@ -250,17 +253,34 @@ func publishRepo(baseDir string, extraArgs []string) error {
 	if err != nil {
 		return fmt.Errorf("audit failed: %w", err)
 	}
+	strict := false
+	for _, arg := range extraArgs {
+		if arg == "--strict" {
+			strict = true
+			break
+		}
+	}
 	if len(violations) > 0 {
-		fmt.Printf("❌ Publish ABORTED! Found %d file(s) with potential secrets/paths:\n", len(violations))
+		if strict {
+			fmt.Printf("❌ Publish ABORTED (--strict enabled)! Found %d file(s) with potential secrets/paths:\n", len(violations))
+			for file, warnings := range violations {
+				fmt.Printf("  - %s:\n", file)
+				for _, w := range warnings {
+					fmt.Printf("      * %s\n", w)
+				}
+			}
+			return fmt.Errorf("cannot publish while security warnings exist")
+		}
+		fmt.Printf("⚠️ Warning: Found %d file(s) with potential sensitive content during audit:\n", len(violations))
 		for file, warnings := range violations {
 			fmt.Printf("  - %s:\n", file)
 			for _, w := range warnings {
 				fmt.Printf("      * %s\n", w)
 			}
 		}
-		return fmt.Errorf("cannot publish while security warnings exist")
+	} else {
+		fmt.Println("✅ Privacy Audit PASSED: 0 secrets or sensitive paths detected.")
 	}
-	fmt.Println("✅ Privacy Audit PASSED: 0 secrets or sensitive paths detected.")
 	fmt.Println()
 
 	// 2. Stage conversations directory

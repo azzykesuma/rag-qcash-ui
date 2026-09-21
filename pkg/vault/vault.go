@@ -8,6 +8,7 @@ import (
 	"os"
 	"path/filepath"
 	"regexp"
+	"runtime"
 	"sort"
 	"strings"
 	"sync"
@@ -48,6 +49,7 @@ type ToolScanReport struct {
 	UnchangedCount  int
 	NewCount        int
 	ChangedCount    int
+	DeferredCount   int
 	FailedCount     int
 	Duration        time.Duration
 }
@@ -250,6 +252,9 @@ func (v *Vault) StoreConversation(rawConv *models.Conversation) (*models.Convers
 	if serialized, err := json.Marshal(cleanConv); err == nil {
 		auditWarnings = v.Sanitizer.AuditText(string(serialized))
 	}
+	if len(auditWarnings) > 0 {
+		return nil, auditWarnings, fmt.Errorf("sanitized conversation still contains %d privacy warning(s)", len(auditWarnings))
+	}
 
 	// Extraction and sanitization can run concurrently; output naming and writes
 	// have one owner so workers cannot race on the dataset or filename registry.
@@ -408,6 +413,7 @@ func (v *Vault) ScanAll() ([]ToolScanReport, error) {
 		}
 	}
 
+	v.ScanOptions.AuthoritativeSources = true
 	return v.ScanSources(sources)
 }
 
@@ -441,6 +447,7 @@ func (v *Vault) AuditAll() (map[string][]string, error) {
 	violations := make(map[string][]string)
 	convDir := filepath.Join(v.BaseDir, "conversations")
 
+	var files []string
 	err := filepath.Walk(convDir, func(path string, info os.FileInfo, err error) error {
 		if err != nil {
 			return err
@@ -452,18 +459,57 @@ func (v *Vault) AuditAll() (map[string][]string, error) {
 		if extension != ".md" && extension != ".json" && extension != ".jsonl" {
 			return nil
 		}
-
-		contentBytes, err := os.ReadFile(path)
-		if err != nil {
-			return fmt.Errorf("failed to read %s: %w", path, err)
-		}
-
-		warnings := v.Sanitizer.AuditText(string(contentBytes))
-		if len(warnings) > 0 {
-			violations[path] = warnings
-		}
+		files = append(files, path)
 		return nil
 	})
+	if err != nil {
+		return nil, err
+	}
 
-	return violations, err
+	numWorkers := runtime.NumCPU()
+	if numWorkers < 1 {
+		numWorkers = 1
+	} else if numWorkers > 8 {
+		numWorkers = 8
+	}
+
+	type result struct {
+		path     string
+		warnings []string
+	}
+
+	fileChan := make(chan string, len(files))
+	for _, f := range files {
+		fileChan <- f
+	}
+	close(fileChan)
+
+	var wg sync.WaitGroup
+	resChan := make(chan result, len(files))
+
+	for i := 0; i < numWorkers; i++ {
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			for path := range fileChan {
+				contentBytes, err := os.ReadFile(path)
+				if err != nil {
+					continue
+				}
+				warnings := v.Sanitizer.AuditText(string(contentBytes))
+				if len(warnings) > 0 {
+					resChan <- result{path: path, warnings: warnings}
+				}
+			}
+		}()
+	}
+
+	wg.Wait()
+	close(resChan)
+
+	for r := range resChan {
+		violations[r.path] = r.warnings
+	}
+
+	return violations, nil
 }

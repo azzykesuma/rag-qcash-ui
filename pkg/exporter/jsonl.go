@@ -16,6 +16,7 @@ import (
 type JSONLExporter struct {
 	pending        map[string]*models.Conversation
 	pendingDeletes map[string]bool
+	rebuild        bool
 }
 
 func NewJSONLExporter() *JSONLExporter {
@@ -60,15 +61,23 @@ func (e *JSONLExporter) ExportShareGPT(conv *models.Conversation, outPath string
 func (e *JSONLExporter) UpsertJSONL(conv *models.Conversation, jsonlPath string) error {
 	if e.pending != nil {
 		e.pending[conv.ID] = conv
+		delete(e.pendingDeletes, conv.ID)
 		return nil
 	}
-	return mergeJSONL(map[string]*models.Conversation{conv.ID: conv}, nil, jsonlPath)
+	return mergeJSONL(map[string]*models.Conversation{conv.ID: conv}, nil, jsonlPath, false)
 }
 
 // BeginBatch defers dataset updates until Flush. Calls must be serialized by the owner.
 func (e *JSONLExporter) BeginBatch() {
 	e.pending = make(map[string]*models.Conversation)
 	e.pendingDeletes = make(map[string]bool)
+	e.rebuild = false
+}
+
+// BeginRebuild replaces the dataset from authoritative source records on Flush.
+func (e *JSONLExporter) BeginRebuild() {
+	e.BeginBatch()
+	e.rebuild = true
 }
 
 // DeleteJSONL retires a superseded content ID in the current batch.
@@ -81,7 +90,7 @@ func (e *JSONLExporter) DeleteJSONL(id string) {
 }
 
 func (e *JSONLExporter) Flush(path string) error {
-	if len(e.pending) == 0 && len(e.pendingDeletes) == 0 {
+	if !e.rebuild && len(e.pending) == 0 && len(e.pendingDeletes) == 0 {
 		return nil
 	}
 	updates := make(map[string]*models.Conversation, len(e.pending))
@@ -92,17 +101,18 @@ func (e *JSONLExporter) Flush(path string) error {
 	for id := range e.pendingDeletes {
 		deletes[id] = true
 	}
-	if err := mergeJSONL(updates, deletes, path); err != nil {
+	if err := mergeJSONL(updates, deletes, path, e.rebuild); err != nil {
 		return err
 	}
 	e.pending = nil
 	e.pendingDeletes = nil
+	e.rebuild = false
 	return nil
 }
 
 // mergeJSONL streams the existing dataset once, retaining untouched records byte
 // for byte. A failed read/write leaves the previous dataset intact.
-func mergeJSONL(updates map[string]*models.Conversation, deletes map[string]bool, jsonlPath string) error {
+func mergeJSONL(updates map[string]*models.Conversation, deletes map[string]bool, jsonlPath string, rebuild bool) error {
 	if err := os.MkdirAll(filepath.Dir(jsonlPath), 0755); err != nil {
 		return fmt.Errorf("failed to create directory: %w", err)
 	}
@@ -121,10 +131,13 @@ func mergeJSONL(updates map[string]*models.Conversation, deletes map[string]bool
 	defer file.Close()
 	defer os.Remove(file.Name())
 	w := bufio.NewWriter(file)
-	changed := false
-	input, err := os.Open(jsonlPath)
-	if err != nil && !os.IsNotExist(err) {
-		return err
+	changed := rebuild
+	var input *os.File
+	if !rebuild {
+		input, err = os.Open(jsonlPath)
+		if err != nil && !os.IsNotExist(err) {
+			return err
+		}
 	}
 	if input != nil {
 		scanner := bufio.NewScanner(input)

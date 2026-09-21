@@ -115,25 +115,33 @@ Auto-detects and harvests sessions from **Antigravity (AGY)**, **OpenCode**, **O
 vault scan
 ```
 
-Scans are incremental. Unchanged sessions are skipped, changed sessions are processed concurrently, and `dataset.jsonl` is merged once at the end instead of being rewritten for every conversation. Progress and timings are printed while the scan runs. Use a full scan after manual source recovery or for troubleshooting:
+Scans are incremental and bounded by default. Unchanged sessions are skipped and at most 10 new or changed sessions are processed across all assistants per invocation. Deferred sessions remain pending in the scan state, so run the command again to process the next batch. Changed sessions are processed concurrently, and `dataset.jsonl` is merged once at the end instead of being rewritten for every conversation.
+
+Choose a different batching policy when needed:
 
 ```bash
-vault scan --full
+vault scan --limit 10             # 10 changed sessions total (the default)
+vault scan --limit-per-tool 10    # Up to 10 for each assistant
+vault scan --daily                # One completed 10-session batch per local day
+vault scan --limit 0              # Process the entire pending backlog
+vault scan --full                 # Reprocess every source without a batch limit
 vault scan --workers 8
 ```
+
+`--limit` and `--limit-per-tool` cannot be combined. A bounded scan audits every conversation before storing it but defers the repository-wide privacy audit so it does not re-read the entire vault after each small batch. Run `vault audit` before committing or publishing; `vault publish` also performs the full audit.
 
 The local scan state and search index live under `.vault/` and are excluded from Git. They can be deleted safely; the next scan or search rebuilds them from source sessions and sanitized exports. A per-vault writer lock prevents concurrent scans from corrupting output.
 
 Output:
 ```text
-Assistant          New Changed  Unchanged Trivial Failed       Time
-antigravity          2       1        115       4      0      1.2s
-opencode             1       0        121       3      0     540ms
-codex                0       0         14       0      0      12ms
+Assistant          New Changed  Unchanged Deferred Trivial Failed       Time
+antigravity          2       1        115        7       0      0      1.2s
+opencode             1       0        121        0       0      0     540ms
+codex                0       0         14        0       0      0      12ms
 Import phase: 1.8s
 Search index: 24ms
 
-Privacy audit passed.
+Full privacy audit deferred for this bounded scan; run `vault audit` before publishing.
 ```
 
 ### 2. Custom Redaction Keywords

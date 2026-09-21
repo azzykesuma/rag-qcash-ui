@@ -2,6 +2,7 @@ package vault
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -28,6 +29,19 @@ func (changingExtractor) Extract(path string) (*models.Conversation, error) {
 	}}, nil
 }
 
+type selectiveFailExtractor struct {
+	delegate *extractor.AGYExtractor
+}
+
+func (selectiveFailExtractor) Name() string          { return "antigravity" }
+func (selectiveFailExtractor) CanHandle(string) bool { return true }
+func (e selectiveFailExtractor) Extract(path string) (*models.Conversation, error) {
+	if strings.Contains(path, "00-fail") {
+		return nil, fmt.Errorf("intentional extraction failure")
+	}
+	return e.delegate.Extract(path)
+}
+
 func writeAGY(t testing.TB, root, id, answer string) string {
 	t.Helper()
 	path := filepath.Join(root, id, ".system_generated", "logs", "transcript.jsonl")
@@ -49,7 +63,11 @@ func TestIncrementalScanRecoveryAndInvalidation(t *testing.T) {
 	base, source := t.TempDir(), t.TempDir()
 	writeAGY(t, source, "one", "Session expiration uses a refresh token and an explicit timeout. SecretClient")
 	sources := []ScanSource{{Tool: "antigravity", Path: source}}
-	newVault := func() *Vault { return New(base, sanitizer.New(sanitizer.DefaultConfig())) }
+	newVault := func() *Vault {
+		v := New(base, sanitizer.New(sanitizer.DefaultConfig()))
+		v.ScanOptions.AuthoritativeSources = true
+		return v
+	}
 	scan := func(v *Vault) ToolScanReport {
 		t.Helper()
 		reports, err := v.ScanSources(sources)
@@ -166,6 +184,26 @@ func TestScanWriterLock(t *testing.T) {
 	}
 }
 
+func TestScanStaleWriterLockRecovery(t *testing.T) {
+	base := t.TempDir()
+	vaultDir := filepath.Join(base, ".vault")
+	if err := os.MkdirAll(vaultDir, 0700); err != nil {
+		t.Fatal(err)
+	}
+	// Write a lock file with an invalid/dead PID (e.g. 99999999)
+	lockPath := filepath.Join(vaultDir, "write.lock")
+	if err := os.WriteFile(lockPath, []byte("pid=99999999\n"), 0600); err != nil {
+		t.Fatal(err)
+	}
+
+	v := New(base, sanitizer.New(sanitizer.DefaultConfig()))
+	release, err := v.lockWriter()
+	if err != nil {
+		t.Fatalf("expected stale lock to be automatically recovered, got error: %v", err)
+	}
+	defer release()
+}
+
 func TestChangedSourceIsNotPersisted(t *testing.T) {
 	base := t.TempDir()
 	source := filepath.Join(t.TempDir(), "history.md")
@@ -227,7 +265,9 @@ func TestCacheCorruptionAndDatasetChanges(t *testing.T) {
 	sources := []ScanSource{{Tool: "antigravity", Path: source}}
 	scan := func() ToolScanReport {
 		t.Helper()
-		r, err := New(base, sanitizer.New(sanitizer.DefaultConfig())).ScanSources(sources)
+		v := New(base, sanitizer.New(sanitizer.DefaultConfig()))
+		v.ScanOptions.AuthoritativeSources = true
+		r, err := v.ScanSources(sources)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -245,8 +285,292 @@ func TestCacheCorruptionAndDatasetChanges(t *testing.T) {
 	if err := os.Chtimes(dataset, time.Unix(123456789, 0), time.Unix(123456789, 0)); err != nil {
 		t.Fatal(err)
 	}
+	if r := scan(); r.UnchangedCount != 1 || r.ImportedCount != 0 {
+		t.Fatalf("timestamp-only dataset change invalidated source cache: %+v", r)
+	}
+	data, err := os.ReadFile(dataset)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(dataset, append(data, '\n'), 0600); err != nil {
+		t.Fatal(err)
+	}
 	if r := scan(); r.ImportedCount != 1 {
-		t.Fatalf("external dataset modification didn't invalidate cache: %+v", r)
+		t.Fatalf("dataset content change didn't invalidate cache: %+v", r)
+	}
+}
+
+func TestLegacyCacheAdoptsDatasetHashWithoutRescanning(t *testing.T) {
+	base, source := t.TempDir(), t.TempDir()
+	writeAGY(t, source, "one", "Session expiration requires a refresh token timeout.")
+	sources := []ScanSource{{Tool: "antigravity", Path: source}}
+	newVault := func() *Vault { return New(base, sanitizer.New(sanitizer.DefaultConfig())) }
+	if _, err := newVault().ScanSources(sources); err != nil {
+		t.Fatal(err)
+	}
+
+	cache := filepath.Join(base, ".vault", "scan-state.json")
+	data, err := os.ReadFile(cache)
+	if err != nil {
+		t.Fatal(err)
+	}
+	var state scanState
+	if err := json.Unmarshal(data, &state); err != nil {
+		t.Fatal(err)
+	}
+	state.DatasetHash = ""
+	data, _ = json.Marshal(state)
+	if err := os.WriteFile(cache, data, 0600); err != nil {
+		t.Fatal(err)
+	}
+	dataset := filepath.Join(base, "conversations", "dataset.jsonl")
+	if err := os.Chtimes(dataset, time.Unix(123456789, 0), time.Unix(123456789, 0)); err != nil {
+		t.Fatal(err)
+	}
+
+	reports, err := newVault().ScanSources(sources)
+	if err != nil || reports[0].UnchangedCount != 1 || reports[0].ImportedCount != 0 {
+		t.Fatalf("legacy cache forced a full rescan: %+v %v", reports, err)
+	}
+	data, err = os.ReadFile(cache)
+	if err != nil {
+		t.Fatal(err)
+	}
+	var migrated scanState
+	if err := json.Unmarshal(data, &migrated); err != nil || migrated.DatasetHash == "" {
+		t.Fatalf("dataset hash was not persisted: %v", err)
+	}
+}
+
+func TestGlobalScanLimitContinuesOnNextRun(t *testing.T) {
+	base, first, second := t.TempDir(), t.TempDir(), t.TempDir()
+	for i := 0; i < 6; i++ {
+		writeAGY(t, first, fmt.Sprintf("first-%02d", i), fmt.Sprintf("Refresh token policy for first session %d.", i))
+		writeAGY(t, second, fmt.Sprintf("second-%02d", i), fmt.Sprintf("Refresh token policy for second session %d.", i))
+	}
+	sources := []ScanSource{{Tool: "antigravity", Path: first}, {Tool: "antigravity", Path: second}}
+	scan := func() []ToolScanReport {
+		t.Helper()
+		v := New(base, sanitizer.New(sanitizer.DefaultConfig()))
+		v.ScanOptions.MaxItems = 10
+		reports, err := v.ScanSources(sources)
+		if err != nil {
+			t.Fatal(err)
+		}
+		return reports
+	}
+
+	firstRun := scan()
+	if firstRun[0].ImportedCount+firstRun[1].ImportedCount != 10 || firstRun[1].DeferredCount != 2 {
+		t.Fatalf("first bounded scan: %+v", firstRun)
+	}
+	secondRun := scan()
+	if secondRun[0].ImportedCount+secondRun[1].ImportedCount != 2 || secondRun[0].UnchangedCount+secondRun[1].UnchangedCount != 10 || secondRun[0].DeferredCount+secondRun[1].DeferredCount != 0 {
+		t.Fatalf("continued bounded scan: %+v", secondRun)
+	}
+	assertExportCount(t, base, 12)
+}
+
+func TestGlobalLimitRotatesAcrossSources(t *testing.T) {
+	base, large, small := t.TempDir(), t.TempDir(), t.TempDir()
+	for i := 0; i < 20; i++ {
+		writeAGY(t, large, fmt.Sprintf("large-%02d", i), fmt.Sprintf("Refresh token policy for large session %d.", i))
+	}
+	for i := 0; i < 2; i++ {
+		writeAGY(t, small, fmt.Sprintf("small-%02d", i), fmt.Sprintf("Refresh token policy for small session %d.", i))
+	}
+	sources := []ScanSource{{Tool: "antigravity", Path: large}, {Tool: "antigravity", Path: small}}
+	scan := func() []ToolScanReport {
+		t.Helper()
+		v := New(base, sanitizer.New(sanitizer.DefaultConfig()))
+		v.ScanOptions.MaxItems = 10
+		reports, err := v.ScanSources(sources)
+		if err != nil {
+			t.Fatal(err)
+		}
+		return reports
+	}
+	if reports := scan(); reports[0].ImportedCount != 10 || reports[1].ImportedCount != 0 {
+		t.Fatalf("first source batch: %+v", reports)
+	}
+	reports := scan()
+	wantFirst, _ := filepath.Abs(small)
+	if reports[0].Location != filepath.Clean(wantFirst) || reports[0].ImportedCount != 2 {
+		t.Fatalf("later source did not rotate to the front: %+v", reports)
+	}
+}
+
+func TestPerToolScanLimit(t *testing.T) {
+	base, agyRoot := t.TempDir(), t.TempDir()
+	for i := 0; i < 6; i++ {
+		writeAGY(t, agyRoot, fmt.Sprintf("agy-%02d", i), fmt.Sprintf("Refresh token policy for session %d.", i))
+	}
+	aiderPath := filepath.Join(t.TempDir(), ".aider.chat.history.md")
+	aider := "#### USER\nExplain a resilient session expiration policy.\n#### ASSISTANT\nRotate refresh tokens before expiration.\n"
+	if err := os.WriteFile(aiderPath, []byte(aider), 0600); err != nil {
+		t.Fatal(err)
+	}
+	v := New(base, sanitizer.New(sanitizer.DefaultConfig()))
+	v.ScanOptions.MaxItemsPerTool = 4
+	reports, err := v.ScanSources([]ScanSource{{Tool: "antigravity", Path: agyRoot}, {Tool: "aider", Path: aiderPath}})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if reports[0].ImportedCount != 4 || reports[0].DeferredCount != 2 || reports[1].ImportedCount != 1 {
+		t.Fatalf("per-tool limits were not independent: %+v", reports)
+	}
+}
+
+func TestDailyScanCanContinueWithoutDailyMode(t *testing.T) {
+	base, source := t.TempDir(), t.TempDir()
+	writeAGY(t, source, "one", "Refresh tokens renew the first session before expiration.")
+	writeAGY(t, source, "two", "Refresh tokens renew the second session before expiration.")
+	sources := []ScanSource{{Tool: "antigravity", Path: source}}
+	first := New(base, sanitizer.New(sanitizer.DefaultConfig()))
+	first.ScanOptions.MaxItems = 1
+	first.ScanOptions.Daily = true
+	if reports, err := first.ScanSources(sources); err != nil || reports[0].ImportedCount != 1 || reports[0].DeferredCount != 1 {
+		t.Fatalf("first daily scan: %+v %v", reports, err)
+	}
+	second := New(base, sanitizer.New(sanitizer.DefaultConfig()))
+	second.ScanOptions = first.ScanOptions
+	if _, err := second.ScanSources(sources); !errors.Is(err, ErrDailyScanSkipped) {
+		t.Fatalf("second daily scan was not suppressed: %v", err)
+	}
+	third := New(base, sanitizer.New(sanitizer.DefaultConfig()))
+	third.ScanOptions.MaxItems = 1
+	if reports, err := third.ScanSources(sources); err != nil || reports[0].ImportedCount != 1 || reports[0].DeferredCount != 0 {
+		t.Fatalf("manual continuation after daily scan: %+v %v", reports, err)
+	}
+}
+
+func TestDailyScanIsScopedToSourcesAndSanitizer(t *testing.T) {
+	base, firstSource, secondSource := t.TempDir(), t.TempDir(), t.TempDir()
+	writeAGY(t, firstSource, "one", "Refresh tokens renew the first scoped session.")
+	writeAGY(t, secondSource, "two", "Refresh tokens renew the second scoped session. SecretClient")
+	first := New(base, sanitizer.New(sanitizer.DefaultConfig()))
+	first.ScanOptions.Daily = true
+	first.ScanOptions.MaxItems = 10
+	if _, err := first.ScanSources([]ScanSource{{Tool: "antigravity", Path: firstSource}}); err != nil {
+		t.Fatal(err)
+	}
+	second := New(base, sanitizer.New(sanitizer.DefaultConfig()))
+	second.ScanOptions.Daily = true
+	second.ScanOptions.MaxItems = 10
+	if _, err := second.ScanSources([]ScanSource{{Tool: "antigravity", Path: secondSource}}); err != nil {
+		t.Fatalf("different source was suppressed: %v", err)
+	}
+	cfg := sanitizer.DefaultConfig()
+	cfg.CustomKeywords = []string{"SecretClient"}
+	redacted := New(base, sanitizer.New(cfg))
+	redacted.ScanOptions.Daily = true
+	redacted.ScanOptions.MaxItems = 10
+	if _, err := redacted.ScanSources([]ScanSource{{Tool: "antigravity", Path: secondSource}}); err != nil {
+		t.Fatalf("different sanitizer configuration was suppressed: %v", err)
+	}
+}
+
+func TestFailedDailyScanCanRetrySameDay(t *testing.T) {
+	base := t.TempDir()
+	source := filepath.Join(t.TempDir(), ".aider.chat.history.md")
+	if err := os.WriteFile(source, []byte("initial"), 0600); err != nil {
+		t.Fatal(err)
+	}
+	inputs := []ScanSource{{Tool: "aider", Path: source}}
+	v := New(base, sanitizer.New(sanitizer.DefaultConfig()))
+	v.ScanOptions.Daily = true
+	v.ScanOptions.MaxItems = 1
+	v.extractors = []extractor.Extractor{changingExtractor{}}
+	if reports, err := v.ScanSources(inputs); err != nil || reports[0].FailedCount != 1 {
+		t.Fatalf("expected failed daily scan: %+v %v", reports, err)
+	}
+
+	retry := New(base, sanitizer.New(sanitizer.DefaultConfig()))
+	retry.ScanOptions.Daily = true
+	retry.ScanOptions.MaxItems = 1
+	if _, err := retry.ScanSources(inputs); errors.Is(err, ErrDailyScanSkipped) {
+		t.Fatal("failed daily scan incorrectly suppressed its retry")
+	}
+}
+
+func TestFailedItemDoesNotStarveLaterBatches(t *testing.T) {
+	base, source := t.TempDir(), t.TempDir()
+	writeAGY(t, source, "00-fail", "This session always fails extraction.")
+	for i := 1; i <= 11; i++ {
+		writeAGY(t, source, fmt.Sprintf("%02d-session", i), fmt.Sprintf("Refresh token policy for session %d.", i))
+	}
+	inputs := []ScanSource{{Tool: "antigravity", Path: source}}
+	scan := func() ToolScanReport {
+		t.Helper()
+		v := New(base, sanitizer.New(sanitizer.DefaultConfig()))
+		v.ScanOptions.MaxItems = 10
+		v.extractors = []extractor.Extractor{selectiveFailExtractor{delegate: extractor.NewAGYExtractor()}}
+		reports, err := v.ScanSources(inputs)
+		if err != nil {
+			t.Fatal(err)
+		}
+		return reports[0]
+	}
+	if first := scan(); first.FailedCount != 1 || first.ImportedCount != 9 || first.DeferredCount != 2 {
+		t.Fatalf("first scan: %+v", first)
+	}
+	if second := scan(); second.ImportedCount != 2 || second.DeferredCount != 1 {
+		t.Fatalf("failed leading item starved later sessions: %+v", second)
+	}
+}
+
+func TestDatasetRebuildRemovesUnknownRecords(t *testing.T) {
+	base, source := t.TempDir(), t.TempDir()
+	writeAGY(t, source, "one", "Refresh tokens renew the session before expiration.")
+	inputs := []ScanSource{{Tool: "antigravity", Path: source}}
+	newVault := func() *Vault { return New(base, sanitizer.New(sanitizer.DefaultConfig())) }
+	if _, err := newVault().ScanSources(inputs); err != nil {
+		t.Fatal(err)
+	}
+	dataset := filepath.Join(base, "conversations", "dataset.jsonl")
+	f, err := os.OpenFile(dataset, os.O_APPEND|os.O_WRONLY, 0600)
+	if err != nil {
+		t.Fatal(err)
+	}
+	_, writeErr := f.WriteString(`{"id":"injected-record","messages":[{"role":"user","content":"secret"}]}` + "\n")
+	closeErr := f.Close()
+	if writeErr != nil || closeErr != nil {
+		t.Fatalf("append injected record: %v %v", writeErr, closeErr)
+	}
+	toolSpecific := newVault()
+	toolSpecific.ScanOptions.MaxItems = 1
+	if _, err := toolSpecific.ScanSources(inputs); err == nil || !strings.Contains(err.Error(), "unified scan") {
+		t.Fatalf("tool-specific scan was allowed to replace the shared dataset: %v", err)
+	}
+	cache := filepath.Join(base, ".vault", "scan-state.json")
+	cacheData, err := os.ReadFile(cache)
+	if err != nil {
+		t.Fatal(err)
+	}
+	var state scanState
+	if err := json.Unmarshal(cacheData, &state); err != nil {
+		t.Fatal(err)
+	}
+	for key, entry := range state.Entries {
+		entry.RetryAfterRun = state.Run + 100
+		state.Entries[key] = entry
+	}
+	cacheData, _ = json.Marshal(state)
+	if err := os.WriteFile(cache, cacheData, 0600); err != nil {
+		t.Fatal(err)
+	}
+	v := newVault()
+	v.ScanOptions.MaxItems = 1
+	v.ScanOptions.AuthoritativeSources = true
+	if _, err := v.ScanSources(inputs); err != nil {
+		t.Fatal(err)
+	}
+	data, err := os.ReadFile(dataset)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if strings.Contains(string(data), "injected-record") || countJSONL(t, dataset) != 1 {
+		t.Fatalf("external dataset record survived rebuild: %s", data)
 	}
 }
 
