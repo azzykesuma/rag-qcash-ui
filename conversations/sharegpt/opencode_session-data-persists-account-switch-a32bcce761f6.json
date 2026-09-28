@@ -1,0 +1,67 @@
+{
+  "id": "opencode-b04cc7982e801feb6557e5eb0f8215487a4b9d7b5b2be78ce21aa32bcce761f6",
+  "conversations": [
+    {
+      "from": "human",
+      "value": "i have an issue with the session management on this repo. basically, when i logged in as ba, and logged out , then login again as cu,the header footer information is still listed as ba, along with their menu. can you investigate this issue?"
+    },
+    {
+      "from": "gpt",
+      "value": "I’ll trace login, logout, persisted session state, and header/footer/menu data flow, then identify where the prior BA identity survives the CU login. I’ll keep this investigation read-only and return a concrete fix and verification plan."
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": "The current branch already contains comments/workarounds aimed at this exact stale-user scenario, so this is not just a generic storage leak. The key risk is that the host and federated header/footer can hold separate auth-provider instances, while the provider’s five-minute validation cache is not scoped to the active token."
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": "The current header/footer repository confirms the failing path: its logout goes to `/main-page` without `?logout=true`, while this host only hard-resets singleton state for the query-param flow and only clears cross-user caches on `/landing-page`. The remote does clear menu storage, but it does not notify `HostAuthGate`, and the provider itself leaves several identity/global-store fields alive."
+    },
+    {
+      "from": "gpt",
+      "value": "A second, more direct inconsistency is present in the header/footer’s current indexed source: its layout, profile dropdown, and menu hook still import `@ordentco/addons-auth-provider`, while this host mounts only the BRI provider. That means the visible username/user type/menu are not guaranteed to come from the host session state at all; the remote’s federation config mentioning BRI does not fix those legacy imports."
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": "**Investigation Result**\nThe issue is a cross-user state leak involving the host, auth provider, and federated header/footer.\n\nPrimary causes:\n\n1. `@bri/addons-auth-provider` is not configured as a singleton in `next.config.js:16`, despite the architecture requiring one shared React context across host and remotes.\n2. The header/footer logout does not emit the `qc-bridge-sync` logout event expected by `HostAuthGate.tsx:131`.\n3. The normal header/footer logout redirects to `/main-page` without `?logout=true`. Therefore, the reload workaround in `pages/_app.tsx:94` does not run.\n4. Cache cleanup in `pages/_app.tsx:101` only applies to `/landing-page`, not `/main-page`.\n5. The installed auth provider’s five-minute freshness cache is not associated with an access token. `auth.js:319` can therefore consider BA data fresh after the token changes to CU.\n6. Provider logout clears menus and authorities, but does not reset username, user type, company information, product authorities, readiness, or the global store.\n7. The BRI global store does not clear products/system configuration when the token is removed.\n8. `HostAuthGate.tsx:244` can publish the auth object captured before `guard()` completed.\n\nThis sequence explains the symptom:\n\n```text\nBA authenticated\n→ BA identity/menu cached in provider and global store\n→ logout clears token and some storage, but not all in-memory state\n→ CU token stored\n→ guard freshness check exits early or a separate provider instance is used\n→ host marks CU token validated\n→ header/footer still renders BA identity and menu\n```\n\nThe `qcash-ui-header-footer` prerelease branch was migrated to BRI auth, but it recently reverted from `^0.10.7-mfe` to `^0.10.6-mfe` in PR 701. The host currently uses `0.10.7-mfe`, making the missing singleton contract especially risky.\n\n**Implementation Plan**\n1. Restore `singleton: true` for `@bri/addons-auth-provider` in `next.config.js`.\n2. Add a single host session-reset mechanism that:\n   - Clears `session-user-data`, `productMenu`, `productRoles`, `validateMenu`, and menu ownership/cache keys.\n   - Resets `window.__QCASH_HOST_AUTH_GUARD__`.\n   - Replaces `window.__QCASH_AUTH_BRIDGE__` with a guest/not-ready state.\n   - Remounts the BRI auth and global-store providers to discard all BA React state.\n3. Trigger that reset from every logout path using `qc-bridge-sync` with `source: \"logout\"`.\n4. Update header/footer logout to emit that event and use the same logout contract.\n5. Apply fallback cleanup on both `/landing-page` and `/main-page` when no token exists.\n6. Change bridge publication so it uses post-guard state rather than the pre-guard auth snapshot.\n7. Raise an auth-provider fix so its freshness cache is scoped to the active token and logout resets every auth/global-store field.\n8. Add a regression test for:\n   `BA login → logout without closing tab → CU login → CU header/profile/menu only`.\n\nNo files were changed and no tests were run because this was a read-only investigation. The findings assume the reported issue is on the `prerelease` deployment; the exact environment should be confirmed before implementation."
+    }
+  ],
+  "source": "opencode",
+  "tags": [
+    "coding",
+    "assistant",
+    "opencode"
+  ]
+}
