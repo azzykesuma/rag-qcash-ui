@@ -1,0 +1,131 @@
+{
+  "id": "antigravity-54db65f13ed8b3f204f91d49549d6cab25ecf70a80b6db50f66cbd18dae301dc",
+  "conversations": [
+    {
+      "from": "human",
+      "value": "can you push the current commits?"
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": "Here is the current state of your repository:\n\n### 1. Commit Status\n* **Current Branch:** `v0.0.2-release-fix` (tracking `origin/v0.0.2-release`)\n* **Latest Commit:** [`b6dc512`](file:///D:/work/qcash-ui-forex/) (`fix(deps): synchronize package.json and bun.lock with dev to resolve frozen lockfile`)\n* **Remote Status:**\n  * [`b6dc512`](file:///D:/work/qcash-ui-forex/) **is already pushed** to `origin/v0.0.2-release-fix`.\n  * It is **1 commit ahead** of `origin/v0.0.2-release`.\n\n---\n\n### 2. Uncommitted Working Tree Changes\nYou also have uncommitted changes in your workspace:\n* **Staged:**\n  * [Dockerfile](file:///D:/work/qcash-ui-forex/Dockerfile) *(proxy environment variables configuration)*\n  * [package.json](file:///D:/work/qcash-ui-forex/package.json) *(newline formatting)*\n* **Unstaged:**\n  * [.husky/pre-commit](file:///D:/work/qcash-ui-forex/.husky/pre-commit) *(commented out `lint-staged`)*\n\n---\n\n### How would you like to proceed?\n1. **Commit and push the pending changes:** Commit the staged changes (e.g. `Dockerfile`) to `v0.0.2-release-fix` and push to `origin/v0.0.2-release-fix`.\n2. **Push directly to `origin/v0.0.2-release`:** Push existing commit `b6dc512` directly to the `v0.0.2-release` branch on remote.\n3. **Set upstream to `origin/v0.0.2-release-fix`:** Update the tracking branch of `v0.0.2-release-fix` to `origin/v0.0.2-release-fix`."
+    },
+    {
+      "from": "human",
+      "value": "option 1, but don't push the pre-commit"
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": "I have started the commit and will push once it completes. I will update you shortly."
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": "Pushing commit `2b71319` to `origin/v0.0.2-release-fix`..."
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": "The commit has been created and pushed to `origin/v0.0.2-release-fix`:\n\n* **Pushed Commit:** [`2b71319`](file:///D:/work/qcash-ui-forex/) (`fix(docker): parameterize proxy configuration in Dockerfile`)\n* **Included Files:** [Dockerfile](file:///D:/work/qcash-ui-forex/Dockerfile), [package.json](file:///D:/work/qcash-ui-forex/package.json)\n* **Left Uncommitted:** [.husky/pre-commit](file:///D:/work/qcash-ui-forex/.husky/pre-commit)\n* **Branch Tracking:** `v0.0.2-release-fix` is now up to date with `origin/v0.0.2-release-fix`\n* **Bitbucket PR #169:** [PR #169](https://internal-service.example.com/projects/NEWFE/repos/qcash-ui-forex/pull-requests/169)"
+    },
+    {
+      "from": "human",
+      "value": "thanks, now open the mcp_config file please"
+    },
+    {
+      "from": "human",
+      "value": "retry"
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": "Searching for your `mcp_config` file..."
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": "Here are your MCP configuration files:\n\n* Primary Antigravity CLI Config: [mcp_config.json](file:///C:~/.gemini/antigravity-cli/mcp_config.json)\n* Gemini Config: [mcp_config.json](file:///C:~/.gemini/config/mcp_config.json)\n\n---\n\n### Contents of `~\\.gemini\\antigravity-cli\\mcp_config.json`\n\n```json\n{\n  \"mcpServers\": {\n    \"playwright\": {\n      \"command\": \"npx.cmd\",\n      \"args\": [\n        \"@playwright/mcp@latest\"\n      ],\n      \"env\": {\n        \"npm_config_registry\": \"https://registry.npmjs.org/\"\n      }\n    },\n    \"context7\": {\n      \"serverUrl\": \"https://mcp.context7.com/mcp\",\n      \"headers\": {\n        \"CONTEXT7_API_KEY\": \"[ATLASSIAN_TOKEN_REDACTED]\"\n      }\n    },\n    \"jam\": {\n      \"serverUrl\": \"https://mcp.jam.dev/mcp\",\n      \"headers\": {\n        \"Authorization\": \"Bearer [ATLASSIAN_TOKEN_REDACTED]\",\n        \"JAM_PAT\": \"[ATLASSIAN_TOKEN_REDACTED]\"\n      }\n    },\n    \"sonarqube\": {\n      \"command\": \"node\",\n      \"args\": [\n        \"C:\\\\Users\\\\90181271\\\\.gemini\\\\antigravity-cli\\\\scratch\\\\node_modules\\\\sonarqube-mcp-server\\\\dist\\\\index.js\"\n      ],\n      \"env\": {\n        \"SONARQUBE_URL\": \"https://internal-service.example.com\",\n        \"SONARQUBE_TOKEN\": \"[ATLASSIAN_TOKEN_REDACTED]\",\n        \"SONARQUBE_ORG\": \"apps.sonarqube.user-vendor\",\n        \"NODE_TLS_REJECT_UNAUTHORIZED\": \"0\"\n      }\n    },\n    \"atlassian-jira-dc\": {\n      \"command\": \"npx\",\n      \"args\": [\n        \"-y\",\n        \"@atlassian-dc-mcp/jira\"\n      ],\n      \"env\": {\n        \"JIRA_HOST\": \"https://internal-service.example.com\",\n        \"JIRA_API_TOKEN\": \"[ATLASSIAN_TOKEN_REDACTED]\",\n        \"JIRA_TOKEN\": \"[ATLASSIAN_TOKEN_REDACTED]\",\n        \"NODE_TLS_REJECT_UNAUTHORIZED\": \"0\"\n      }\n    },\n    \"atlassian-confluence-dc\": {\n      \"command\": \"npx\",\n      \"args\": [\n        \"-y\",\n        \"@atlassian-dc-mcp/confluence\"\n      ],\n      \"env\": {\n        \"CONFLUENCE_HOST\": \"https://internal-service.example.com\",\n        \"CONFLUENCE_API_TOKEN\": \"[ATLASSIAN_TOKEN_REDACTED]\",\n        \"CONFLUENCE_TOKEN\": \"[ATLASSIAN_TOKEN_REDACTED]\",\n        \"NODE_TLS_REJECT_UNAUTHORIZED\": \"0\"\n      }\n    },\n    \"atlassian-bitbucket-dc\": {\n      \"command\": \"node\",\n      \"args\": [\n        \"C:\\\\Users\\\\90181271\\\\AppData\\\\Local\\\\npm-cache\\\\_npx\\\\8ed5ea13b8a1daeb\\\\node_modules\\\\@atlassian-dc-mcp\\\\bitbucket\\\\build\\\\index.js\"\n      ],\n      \"env\": {\n        \"BITBUCKET_HOST\": \"https://internal-service.example.com\",\n        \"BITBUCKET_API_TOKEN\": \"[ATLASSIAN_TOKEN_REDACTED]\",\n        \"NODE_TLS_REJECT_UNAUTHORIZED\": \"0\"\n      }\n    },\n    \"bamboo-build-doctor\": {\n      \"command\": \"pwsh\",\n      \"args\": [\n        \"-NoProfile\",\n        \"-File\",\n        \"C:\\\\Users\\\\90181271\\\\.config\\\\opencode\\\\scripts\\\\run-bamboo-mcp.ps1\"\n      ]\n    }\n  }\n}\n```\n\nLet me know if you would like to update or add any MCP server configurations!"
+    }
+  ],
+  "source": "antigravity",
+  "tags": [
+    "coding",
+    "assistant",
+    "antigravity"
+  ]
+}
