@@ -1,6 +1,6 @@
 # Session data persists after account switch
 
-- **ID**: `opencode-b04cc7982e801feb6557e5eb0f8215487a4b9d7b5b2be78ce21aa32bcce761f6`
+- **ID**: `opencode-f187d538634b48f4a99f0d13c19f95ebed84e044232e21779c7f9a859c361e98`
 - **Source Tool**: `opencode`
 - **Date**: `2026-09-28 09:22:50`
 - **Project**: `qcash-ui`
@@ -255,6 +255,189 @@ The `qcash-ui-header-footer` prerelease branch was migrated to BRI auth, but it 
    `BA login → logout without closing tab → CU login → CU header/profile/menu only`.
 
 No files were changed and no tests were run because this was a read-only investigation. The findings assume the reported issue is on the `prerelease` deployment; the exact environment should be confirmed before implementation.
+
+---
+
+## Turn 15: User
+
+can you check which data is being used to populate the header footer information? what is the source of truth for that component?
+
+---
+
+## Turn 16: Assistant
+
+<details><summary>🔧 Tool Invocations (8)</summary>
+
+- **grep**: Tool: grep
+- **atlassian-bitbucket-dc_bitbucket_searchCode**: Tool: atlassian-bitbucket-dc_bitbucket_searchCode
+- **atlassian-bitbucket-dc_bitbucket_searchCode**: Tool: atlassian-bitbucket-dc_bitbucket_searchCode
+- **atlassian-bitbucket-dc_bitbucket_searchCode**: Tool: atlassian-bitbucket-dc_bitbucket_searchCode
+- **atlassian-bitbucket-dc_bitbucket_searchCode**: Tool: atlassian-bitbucket-dc_bitbucket_searchCode
+- **atlassian-bitbucket-dc_bitbucket_searchCode**: Tool: atlassian-bitbucket-dc_bitbucket_searchCode
+- **atlassian-bitbucket-dc_bitbucket_searchCode**: Tool: atlassian-bitbucket-dc_bitbucket_searchCode
+- **atlassian-bitbucket-dc_bitbucket_searchCode**: Tool: atlassian-bitbucket-dc_bitbucket_searchCode
+
+</details>
+
+I’ll separate the displayed identity fields from the navigation menu, because the header/footer remote obtains them through different paths. I’ll trace each field back through the provider, API calls, global store, and browser-cache fallbacks.
+
+---
+
+## Turn 17: Assistant
+
+<details><summary>🔧 Tool Invocations (7)</summary>
+
+- **read**: Tool: read
+- **read**: Tool: read
+- **atlassian-bitbucket-dc_bitbucket_searchCode**: Tool: atlassian-bitbucket-dc_bitbucket_searchCode
+- **atlassian-bitbucket-dc_bitbucket_searchCode**: Tool: atlassian-bitbucket-dc_bitbucket_searchCode
+- **atlassian-bitbucket-dc_bitbucket_searchCode**: Tool: atlassian-bitbucket-dc_bitbucket_searchCode
+- **atlassian-bitbucket-dc_bitbucket_searchCode**: Tool: atlassian-bitbucket-dc_bitbucket_searchCode
+- **atlassian-bitbucket-dc_bitbucket_searchCode**: Tool: atlassian-bitbucket-dc_bitbucket_searchCode
+
+</details>
+
+
+
+---
+
+## Turn 18: Assistant
+
+<details><summary>🔧 Tool Invocations (5)</summary>
+
+- **atlassian-bitbucket-dc_bitbucket_searchCode**: Tool: atlassian-bitbucket-dc_bitbucket_searchCode
+- **atlassian-bitbucket-dc_bitbucket_searchCode**: Tool: atlassian-bitbucket-dc_bitbucket_searchCode
+- **atlassian-bitbucket-dc_bitbucket_searchCode**: Tool: atlassian-bitbucket-dc_bitbucket_searchCode
+- **atlassian-bitbucket-dc_bitbucket_searchCode**: Tool: atlassian-bitbucket-dc_bitbucket_searchCode
+- **atlassian-bitbucket-dc_bitbucket_searchCode**: Tool: atlassian-bitbucket-dc_bitbucket_searchCode
+
+</details>
+
+
+
+---
+
+## Turn 19: Assistant
+
+**Source Of Truth**
+For the migrated `prerelease` header/footer, the immediate source of truth for user information is the React context returned by:
+
+```ts
+useAuth() from "@bri/addons-auth-provider"
+```
+
+The backend source behind that context is primarily `GET /auth/me`.
+
+**Data Flow**
+```text
+localStorage["access-token"]
+    ↓
+BriProviders
+    ↓
+HostAuthGate calls briAuth.guard()
+    ↓
+GET /auth/me
+    ↓
+BRI AuthProvider React state
+    ↓
+header/footer useAuth()
+```
+
+Relevant host locations:
+
+- Provider mounted in `components/providers/BRIProviders.tsx:19`
+- Host reads the token in `components/providers/HostAuthGate.tsx:180`
+- Host calls `guard()` in `components/providers/HostAuthGate.tsx:240`
+- Provider calls `/auth/me` in `node_modules/@bri/addons-auth-provider/dist/services/auth.js:79`
+- Provider populates username/company/user type in `node_modules/@bri/addons-auth-provider/dist/src/auth.js:395`
+- Header/footer is loaded as a remote from `constants/features/registry.ts:44`
+
+**Header Fields**
+The header/footer layout reads these values directly from `useAuth()`:
+
+```ts
+const {
+  username,
+  companyName,
+  companyCode,
+  userType,
+  isAuthoritiesReady,
+} = useBriAuth();
+```
+
+They are passed into the header:
+
+```tsx
+<Header
+  username={username}
+  companyName={companyName}
+  companyCode={companyCode}
+  loading={!isAuthoritiesReady}
+/>
+```
+
+The profile dropdown separately reads:
+
+```ts
+const { logout, username, userType, region } = useAuth();
+```
+
+Therefore:
+
+| Displayed information | Runtime source | Backend source |
+|---|---|---|
+| Username | BRI auth React context | `/auth/me` |
+| Company name | BRI auth React context | `/auth/me` |
+| Company code | BRI auth React context | `/auth/me` |
+| User type, BA/CU | BRI auth React context | `/auth/me` |
+| Region | BRI auth React context | `/auth/me` |
+| Authorities and roles | BRI auth React context | `/auth/me` |
+| Auth-provider menus | BRI auth React context | `/menu/me` |
+
+`window.__QCASH_AUTH_BRIDGE__` is diagnostic/compatibility data published by `HostAuthGate`; the migrated prerelease header/footer no longer uses it as its primary source.
+
+**Navigation Menu**
+The visible navigation menu has several sources rather than one strict source of truth.
+
+The migrated `useMenu()` combines:
+
+1. `userType`, `userID`, and token from BRI `useAuth()`.
+2. Products from BRI `useGlobalStore()`, originally loaded from `GET /product`.
+3. Menu licenses/tree from `POST /menu/me`.
+4. Product roles from `GET /auth/me`.
+5. An additional product list from `GET /product`.
+6. Three-minute `ahooks` request caches.
+7. Browser fallbacks:
+   - `localStorage.productMenu`
+   - `localStorage.validateMenu`
+   - `localStorage.productRoles`
+   - `localStorage.menuCachedForUserType`
+
+The effective product-menu priority is:
+
+```text
+BRI global-store products
+→ freshly fetched products
+→ localStorage productMenu/productRoles
+```
+
+The product list and `/menu/me` result are then combined by `transformMenu()` to produce the rendered navigation.
+
+**Footer**
+I found no `useAuth()` or `useGlobalStore()` usage under the footer implementation. It appears to be static/configuration/localization-driven. The stale session symptom is therefore primarily the header/profile and navigation menu, not footer-specific user state.
+
+**Important Finding**
+There are two different “truths” depending on the deployed header/footer branch:
+
+- `prerelease`, after header/footer PR 634: directly uses `@bri/addons-auth-provider`.
+- Current indexed `master`: still contains `@ordentco/addons-auth-provider` imports.
+
+Consequently, the actual runtime source of truth depends on which `qcash-ui-header-footer` artifact your environment loads. For the migrated prerelease build, it should be the host’s BRI context. If Module Federation resolves a separate provider instance, that separate in-memory context becomes the practical source, which explains why BA data can survive after the host has a CU token.
+
+For this bug specifically:
+
+- Stale header identity most likely comes from old BRI provider React state.
+- Stale navigation can additionally come from BRI global-store products, `ahooks` cache, or local-storage menu fallbacks.
 
 ---
 

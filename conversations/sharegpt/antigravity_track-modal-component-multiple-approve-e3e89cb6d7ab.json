@@ -1,0 +1,171 @@
+{
+  "id": "antigravity-f064a5e2e477c1702f3a94175c1dffae21499a384b62d5402268e3e89cb6d7ab",
+  "conversations": [
+    {
+      "from": "human",
+      "value": "can you help me track the modal component for multiple approve here and that is handling the daily limit for transaction?"
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": "The modal component responsible for multiple (bulk) approvals and daily limit handling is **[`BulkActionModal`](file:///D:/work/qcash-global-component/components/table/bulk-action-modal.tsx)**, supported by the transaction utilities in **[`table-util-trf.ts`](file:///D:/work/qcash-global-component/components/table/table-util-trf.ts)**.\n\n---\n\n### 1. Key Component \u0026 File Locations\n\n* **Multiple / Bulk Approval Modal Component**:\n  * [`components/table/bulk-action-modal.tsx`](file:///D:/work/qcash-global-component/components/table/bulk-action-modal.tsx) — Main modal component that renders the table of selected items, summary cards, QR/OTP token inputs, and action buttons for Approve, Reject, Rework, or Cancel.\n  * Exported / connected through [`components/table/table.tsx`](file:///D:/work/qcash-global-component/components/table/table.tsx) and [`components/table/use-modal.ts`](file:///D:/work/qcash-global-component/components/table/use-modal.ts).\n\n* **Daily Limit Logic \u0026 Validation Helpers**:\n  * [`components/table/table-util-trf.ts`](file:///D:/work/qcash-global-component/components/table/table-util-trf.ts) — Houses the core daily limit calculations, filtering, and validation helpers.\n  * Unit tests: [`components/table/__tests__/table-util-trf.test.ts`](file:///D:/work/qcash-global-component/components/table/__tests__/table-util-trf.test.ts).\n\n* **Single Approval Modal (for comparison)**:\n  * [`components/transaction-modal/index.tsx`](file:///D:/work/qcash-global-component/components/transaction-modal/index.tsx) — Handles single-transaction approval, submit, and reject.\n\n---\n\n### 2. How Daily Limit is Handled in `BulkActionModal`\n\n1. **Fetching Limit Data**:\n   * Calls `getLimitSummary` from [`@/services/transactions`](file:///D:/work/qcash-global-component/services/transactions.ts) using the resolved `companyID` / `holdingID` obtained via [`getCompanyLimitIdentity`](file:///D:/work/qcash-global-component/components/table/table-util-trf.ts#L120-L141).\n\n2. **Transaction Applicability ([`isDailyLimitApplicableTransaction`](file:///D:/work/qcash-global-component/components/table/table-util-trf.ts#L300-L313))**:\n   * Excludes Internal Fund Transfers (IFT / BRI to BRI).\n   * Applies daily limit only to **immediate** transactions and **scheduled** transactions scheduled for today or earlier dates (future-scheduled transactions are excluded from today's daily limit).\n\n3. **Exceeded Limit Validation ([`getExceededCompanyLimitCurrencies`](file:///D:/work/qcash-global-component/components/table/table-util-trf.ts#L400-L415))**:\n   * Groups transactions by debit currency (via [`getExternalTransferCurrencyAmount`](file:///D:/work/qcash-global-component/components/table/table-util-trf.ts#L231-L277)) and sums the total amounts.\n   * Compares each currency total with `dailyCompanyLimit.available`.\n\n4. **UI Warnings \u0026 Approve Button Disabling**:\n   * Evaluated via [`getBulkActionCompanyLimitState`](file:///D:/work/qcash-global-component/components/table/table-util-trf.ts#L416-L449) and [`shouldDisableBulkActionSubmitButton`](file:///D:/work/qcash-global-component/components/table/table-util-trf.ts#L451-L482).\n   * Displays the per-currency daily limit via `renderDailyCompanyLimitTotal`.\n   * Displays error banners (`feedback.error.loadDailyLimit` or `feedback.warning.dailyLimitExceeds`) and disables the **Approve** button when the limit is exceeded or when limit retrieval fails."
+    },
+    {
+      "from": "human",
+      "value": "is the implementation is toggled using config.ts?"
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": "**No**, the **daily limit logic itself is not toggled by a feature flag in [`config.ts`](file:///D:/work/qcash-global-component/config.ts)**.\n\nInstead, the daily limit validation and UI integration in [`BulkActionModal`](file:///D:/work/qcash-global-component/components/table/bulk-action-modal.tsx) are **always active** and evaluated dynamically based on transaction characteristics and actions.\n\n---\n\n### How Daily Limit Activation is Actually Governed\n\nRather than a flag in `config.ts`, daily limit handling is activated dynamically when:\n\n1. **Action is Approve**: `action === TransactionActionEnum.Approve`\n2. **Module \u0026 Transaction Type**:\n   - Not an Internal Fund Transfer (`isModule !== \"IFT\"` and `!isInternalFundTransferTransaction(row)`).\n3. **Transaction Schedule ([`isDailyLimitApplicableTransaction`](file:///D:/work/qcash-global-component/components/table/table-util-trf.ts#L300-L313))**:\n   - Immediate transactions, or scheduled transactions scheduled for today/past dates. (Future-dated transactions are excluded).\n\nWhen applicable transactions are present, `BulkActionModal` automatically calls `getLimitSummary`, calculates totals, and enforces limit checks.\n\n---\n\n### What *is* toggled by [`config.ts`](file:///D:/work/qcash-global-component/config.ts) in `BulkActionModal`\n\nFor reference, the flags in [`config.ts`](file:///D:/work/qcash-global-component/config.ts) control other specific behaviors:\n\n| Config Flag | Purpose in `BulkActionModal` / `TransactionModal` |\n| :--- | :--- |\n| `newBulkAction` | Controls EFT payload format (`updateTask` with `transactions: [{ taskId, productId }]` vs standard `bulkUpdateTask`) and fee column rendering. |\n| `allowedStepTokenBulkAction` | Controls whether `verifier` / `approverbri` workflow steps require OTP tokens during bulk actions. |\n| `adjustTokenStp` | Adjusts token requirement for Straight-Through Processing (STP) workflows. |\n| `isUseQRTransaction` | Enables/disables QR OTP mode for transactions. |\n| `newWorkflowStp` | Controls new STP workflow routing rules. |"
+    },
+    {
+      "from": "gpt",
+      "value": "Everything is clear. Let me know if you would like to inspect or trace any specific part of the daily limit or bulk action workflow!"
+    }
+  ],
+  "source": "antigravity",
+  "tags": [
+    "coding",
+    "assistant",
+    "antigravity"
+  ]
+}

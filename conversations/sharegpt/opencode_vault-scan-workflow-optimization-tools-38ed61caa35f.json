@@ -1,0 +1,43 @@
+{
+  "id": "opencode-212b0c67c82b87515cbf44cacf9e936a4350f8069afc1f79c59238ed61caa35f",
+  "conversations": [
+    {
+      "from": "human",
+      "value": "check all of my vault scan, and recommend me the tools that i can create with you to optimize my workflow"
+    },
+    {
+      "from": "gpt",
+      "value": "I’ll inventory the vault’s organization and conversation history, then turn recurring work patterns into concrete, buildable tool recommendations."
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": "The vault contains substantially more than the first directory listing can display, with recurring `qcash-ui`, Git, Bamboo, SonarQube, API, and environment work visible already. I’m refreshing the vault scan and analyzing the full exported corpus by themes rather than relying on filenames alone."
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": "Scanned the complete vault: 250 Antigravity, 205 OpenCode, and 5 Codex sessions. The refresh imported 3 new/changed OpenCode exports and passed the full privacy audit.\n\nYour highest-leverage tools, based on recurring work:\n\n1. **MFE Release Train Planner**\n   - Maps affected repositories, release branches, prerequisite commits, PR order, deployment order, and rollback points.\n   - Best fit for repeated multi-repo promotion and cherry-pick work.\n\n2. **Federation Compatibility Linter**\n   - Checks all QCash MFEs for shared dependency/version drift, singleton settings, federation runtime versions, remotes, and dynamic import ordering.\n   - Prevents your recurring auth-context and production-only federation failures.\n\n3. **QShip 2: Resumable Delivery Orchestrator**\n   - Evolve `qship` into a stateful workflow: branch validation, change/test/Sonar evidence, required reviewers, PR creation, promotion PRs, and handoff message.\n   - Eliminates repeated delivery checklists and safely resumes interrupted releases.\n\n4. **Cross-Repo Pattern Finder**\n   - Searches local QCash repos, Bitbucket, and vault decisions together for proven implementations.\n   - Return implementation source, branch/commit, and a concise comparison.\n   - Targets the frequent “how does another repo handle this?” investigations.\n\n5. **Bamboo Failure Correlator**\n   - Connects failed logs to the likely Dockerfile, package script, Bamboo configuration, changed commit, root cause, and verification command.\n   - Build it on top of the existing Build Doctor integration.\n\n6. **Sonar New-Code Test Planner**\n   - Reads new-code coverage issues, maps them to exact source paths, finds nearby test conventions, and creates only the smallest tests needed for the quality gate.\n\n7. **Production MFE Artifact Inspector**\n   - Inspects deployed `remoteEntry.js` and chunks, maps them to release refs/configuration, and detects stale or cross-environment remotes.\n   - Strong fit for hard-to-reproduce production MFE incidents.\n\n8. **QA Flow Extractor with Playwright**\n   - Derives a route/form/state QA matrix from changed code, runs prioritized desktop/mobile smoke tests, and saves screenshots, console logs, and network failures.\n\n9. **API Contract and Error Flow Mapper**\n   - Traces an endpoint through service layer, payload, Axios/interceptors, UI state, process IDs, error dialogs, and tests.\n   - Useful for recurring API/error-handling investigations.\n\n10. **Vault Decision Digest**\n   - Produces source-cited project digests: established decisions, incident playbooks, recurring failures, and newly detected automation opportunities.\n   - Turns the vault into active institutional memory rather than archive-only search.\n\nStart with **MFE Release Train Planner**. It has the clearest ROI, uses your existing Bitbucket/Bamboo/Sonar integrations, and can later become a first-class phase of `QShip 2`.\n\nEvidence in the vault strongly centers on repository investigation, frontend fixes, delivery automation, MFE debugging, CI failures, and Sonar remediation."
+    }
+  ],
+  "source": "opencode",
+  "tags": [
+    "coding",
+    "assistant",
+    "opencode"
+  ]
+}

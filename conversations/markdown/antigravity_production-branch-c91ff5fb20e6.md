@@ -1,8 +1,8 @@
 # https://bri2-my.sharepoint.com/:x:/g/personal/00344629_hq_bri_co_id...
 
-- **ID**: `antigravity-0f9fffba132ef47c41e86fe2dfc8f8e353e5e2e53794d3778400ce7471df5f08`
+- **ID**: `antigravity-9d8be200c6ea2d19c44babcdf4e5ce0231355c22f38f3f5a0e6bc91ff5fb20e6`
 - **Source Tool**: `antigravity`
-- **Date**: `2026-10-01 10:35:13`
+- **Date**: `2026-10-01 11:00:02`
 - **Tags**: `coding`, `assistant`, `antigravity`
 
 ---
@@ -19131,6 +19131,953 @@ okay i want you to recheck the whole repo again, is there a repo under my name t
 </details>
 
 
+
+---
+
+## Turn 1706: Assistant
+
+<details><summary>🔧 Tool Invocations (1)</summary>
+
+- **run_command**: 
+
+</details>
+
+
+
+---
+
+## Turn 1707: Assistant
+
+<details><summary>🔧 Tool Invocations (1)</summary>
+
+- **run_command**: 
+
+</details>
+
+
+
+---
+
+## Turn 1708: Assistant
+
+<details><summary>🔧 Tool Invocations (1)</summary>
+
+- **run_command**: 
+
+</details>
+
+
+
+---
+
+## Turn 1709: Assistant
+
+<details><summary>🔧 Tool Invocations (1)</summary>
+
+- **run_command**: 
+
+</details>
+
+
+
+---
+
+## Turn 1710: Assistant
+
+Locating `About Roxanne.pdf`...
+
+---
+
+## Turn 1711: Assistant
+
+<details><summary>🔧 Tool Invocations (1)</summary>
+
+- **run_command**: 
+
+</details>
+
+
+
+---
+
+## Turn 1712: Assistant
+
+<details><summary>🔧 Tool Invocations (1)</summary>
+
+- **run_command**: 
+
+</details>
+
+
+
+---
+
+## Turn 1713: Assistant
+
+<details><summary>🔧 Tool Invocations (1)</summary>
+
+- **run_command**: 
+
+</details>
+
+
+
+---
+
+## Turn 1714: Assistant
+
+<details><summary>🔧 Tool Invocations (1)</summary>
+
+- **run_command**: 
+
+</details>
+
+
+
+---
+
+## Turn 1715: Assistant
+
+<details><summary>🔧 Tool Invocations (1)</summary>
+
+- **run_command**: 
+
+</details>
+
+
+
+---
+
+## Turn 1716: Assistant
+
+<details><summary>🔧 Tool Invocations (1)</summary>
+
+- **run_command**: 
+
+</details>
+
+
+
+---
+
+## Turn 1717: Assistant
+
+Checking tables in PDF...
+
+---
+
+## Turn 1718: Assistant
+
+<details><summary>🔧 Tool Invocations (1)</summary>
+
+- **run_command**: 
+
+</details>
+
+
+
+---
+
+## Turn 1719: Assistant
+
+Inspecting table headers in `About Roxanne.pdf`...
+
+---
+
+## Turn 1720: Assistant
+
+<details><summary>🔧 Tool Invocations (1)</summary>
+
+- **run_command**: 
+
+</details>
+
+
+
+---
+
+## Turn 1721: Assistant
+
+Inspecting columns in page 1...
+
+---
+
+## Turn 1722: Assistant
+
+<details><summary>🔧 Tool Invocations (1)</summary>
+
+- **run_command**: 
+
+</details>
+
+
+
+---
+
+## Turn 1723: Assistant
+
+Printing all column headers...
+
+---
+
+## Turn 1724: Assistant
+
+<details><summary>🔧 Tool Invocations (1)</summary>
+
+- **run_command**: 
+
+</details>
+
+
+
+---
+
+## Turn 1725: Assistant
+
+Inspecting table branches across PDF pages...
+
+---
+
+## Turn 1726: Assistant
+
+<details><summary>🔧 Tool Invocations (1)</summary>
+
+- **run_command**: 
+
+</details>
+
+
+
+---
+
+## Turn 1727: Assistant
+
+<details><summary>🔧 Tool Invocations (1)</summary>
+
+- **run_command**: 
+
+</details>
+
+
+
+---
+
+## Turn 1728: Assistant
+
+Extracting header text from `About Roxanne.pdf`...
+
+---
+
+## Turn 1729: Assistant
+
+<details><summary>🔧 Tool Invocations (1)</summary>
+
+- **run_command**: 
+
+</details>
+
+
+
+---
+
+## Turn 1730: Assistant
+
+<details><summary>🔧 Tool Invocations (1)</summary>
+
+- **write_to_file**: 
+
+</details>
+
+
+
+---
+
+## Turn 1731: Assistant
+
+<details><summary>🔧 Tool Invocations (1)</summary>
+
+- **run_command**: 
+
+</details>
+
+
+
+---
+
+## Turn 1732: Assistant
+
+Checking table structure in `About Roxanne.pdf`...
+
+---
+
+## Turn 1733: Assistant
+
+<details><summary>🔧 Tool Invocations (1)</summary>
+
+- **write_to_file**: 
+
+</details>
+
+
+
+---
+
+## Turn 1734: Assistant
+
+<details><summary>🔧 Tool Invocations (1)</summary>
+
+- **run_command**: 
+
+</details>
+
+
+
+---
+
+## Turn 1735: Assistant
+
+Checking pages 6-10...
+
+---
+
+## Turn 1736: Assistant
+
+<details><summary>🔧 Tool Invocations (1)</summary>
+
+- **write_to_file**: 
+
+</details>
+
+
+
+---
+
+## Turn 1737: Assistant
+
+<details><summary>🔧 Tool Invocations (1)</summary>
+
+- **run_command**: 
+
+</details>
+
+
+
+---
+
+## Turn 1738: Assistant
+
+Checking header columns...
+
+---
+
+## Turn 1739: Assistant
+
+<details><summary>🔧 Tool Invocations (1)</summary>
+
+- **write_to_file**: 
+
+</details>
+
+
+
+---
+
+## Turn 1740: Assistant
+
+<details><summary>🔧 Tool Invocations (1)</summary>
+
+- **run_command**: 
+
+</details>
+
+
+
+---
+
+## Turn 1741: Assistant
+
+Extracting column coordinates...
+
+---
+
+## Turn 1742: Assistant
+
+<details><summary>🔧 Tool Invocations (1)</summary>
+
+- **write_to_file**: 
+
+</details>
+
+
+
+---
+
+## Turn 1743: Assistant
+
+<details><summary>🔧 Tool Invocations (1)</summary>
+
+- **run_command**: 
+
+</details>
+
+
+
+---
+
+## Turn 1744: Assistant
+
+Extracting header words per column...
+
+---
+
+## Turn 1745: Assistant
+
+<details><summary>🔧 Tool Invocations (1)</summary>
+
+- **write_to_file**: 
+
+</details>
+
+
+
+---
+
+## Turn 1746: Assistant
+
+<details><summary>🔧 Tool Invocations (1)</summary>
+
+- **run_command**: 
+
+</details>
+
+
+
+---
+
+## Turn 1747: Assistant
+
+Finding vertical lines...
+
+---
+
+## Turn 1748: Assistant
+
+<details><summary>🔧 Tool Invocations (1)</summary>
+
+- **write_to_file**: 
+
+</details>
+
+
+
+---
+
+## Turn 1749: Assistant
+
+<details><summary>🔧 Tool Invocations (1)</summary>
+
+- **run_command**: 
+
+</details>
+
+
+
+---
+
+## Turn 1750: Assistant
+
+Inspecting rect borders...
+
+---
+
+## Turn 1751: Assistant
+
+<details><summary>🔧 Tool Invocations (1)</summary>
+
+- **write_to_file**: 
+
+</details>
+
+
+
+---
+
+## Turn 1752: Assistant
+
+<details><summary>🔧 Tool Invocations (1)</summary>
+
+- **run_command**: 
+
+</details>
+
+
+
+---
+
+## Turn 1753: Assistant
+
+Extracting exact column headers...
+
+---
+
+## Turn 1754: Assistant
+
+<details><summary>🔧 Tool Invocations (1)</summary>
+
+- **write_to_file**: 
+
+</details>
+
+
+
+---
+
+## Turn 1755: Assistant
+
+<details><summary>🔧 Tool Invocations (1)</summary>
+
+- **run_command**: 
+
+</details>
+
+
+
+---
+
+## Turn 1756: Assistant
+
+Finding row dividers...
+
+---
+
+## Turn 1757: Assistant
+
+<details><summary>🔧 Tool Invocations (1)</summary>
+
+- **write_to_file**: 
+
+</details>
+
+
+
+---
+
+## Turn 1758: Assistant
+
+<details><summary>🔧 Tool Invocations (1)</summary>
+
+- **run_command**: 
+
+</details>
+
+
+
+---
+
+## Turn 1759: Assistant
+
+Running extraction...
+
+---
+
+## Turn 1760: Assistant
+
+<details><summary>🔧 Tool Invocations (1)</summary>
+
+- **write_to_file**: 
+
+</details>
+
+
+
+---
+
+## Turn 1761: Assistant
+
+<details><summary>🔧 Tool Invocations (1)</summary>
+
+- **run_command**: 
+
+</details>
+
+
+
+---
+
+## Turn 1762: Assistant
+
+Inspecting row columns...
+
+---
+
+## Turn 1763: Assistant
+
+<details><summary>🔧 Tool Invocations (1)</summary>
+
+- **call_mcp_tool**: 
+
+</details>
+
+
+
+---
+
+## Turn 1764: Assistant
+
+<details><summary>🔧 Tool Invocations (1)</summary>
+
+- **call_mcp_tool**: 
+
+</details>
+
+
+
+---
+
+## Turn 1765: Assistant
+
+<details><summary>🔧 Tool Invocations (1)</summary>
+
+- **call_mcp_tool**: 
+
+</details>
+
+
+
+---
+
+## Turn 1766: Assistant
+
+<details><summary>🔧 Tool Invocations (1)</summary>
+
+- **view_file**: 
+
+</details>
+
+
+
+---
+
+## Turn 1767: Assistant
+
+<details><summary>🔧 Tool Invocations (1)</summary>
+
+- **run_command**: 
+
+</details>
+
+
+
+---
+
+## Turn 1768: Assistant
+
+<details><summary>🔧 Tool Invocations (1)</summary>
+
+- **run_command**: 
+
+</details>
+
+
+
+---
+
+## Turn 1769: Assistant
+
+Reading Step 292...
+
+---
+
+## Turn 1770: Assistant
+
+<details><summary>🔧 Tool Invocations (1)</summary>
+
+- **run_command**: 
+
+</details>
+
+
+
+---
+
+## Turn 1771: Assistant
+
+<details><summary>🔧 Tool Invocations (1)</summary>
+
+- **write_to_file**: 
+
+</details>
+
+
+
+---
+
+## Turn 1772: Assistant
+
+<details><summary>🔧 Tool Invocations (1)</summary>
+
+- **run_command**: 
+
+</details>
+
+
+
+---
+
+## Turn 1773: Assistant
+
+<details><summary>🔧 Tool Invocations (1)</summary>
+
+- **write_to_file**: 
+
+</details>
+
+
+
+---
+
+## Turn 1774: Assistant
+
+<details><summary>🔧 Tool Invocations (1)</summary>
+
+- **run_command**: 
+
+</details>
+
+
+
+---
+
+## Turn 1775: Assistant
+
+<details><summary>🔧 Tool Invocations (1)</summary>
+
+- **write_to_file**: 
+
+</details>
+
+
+
+---
+
+## Turn 1776: Assistant
+
+<details><summary>🔧 Tool Invocations (1)</summary>
+
+- **run_command**: 
+
+</details>
+
+
+
+---
+
+## Turn 1777: Assistant
+
+<details><summary>🔧 Tool Invocations (1)</summary>
+
+- **write_to_file**: 
+
+</details>
+
+
+
+---
+
+## Turn 1778: Assistant
+
+<details><summary>🔧 Tool Invocations (1)</summary>
+
+- **run_command**: 
+
+</details>
+
+
+
+---
+
+## Turn 1779: Assistant
+
+<details><summary>🔧 Tool Invocations (1)</summary>
+
+- **view_file**: 
+
+</details>
+
+
+
+---
+
+## Turn 1780: Assistant
+
+<details><summary>🔧 Tool Invocations (1)</summary>
+
+- **write_to_file**: 
+
+</details>
+
+
+
+---
+
+## Turn 1781: Assistant
+
+<details><summary>🔧 Tool Invocations (1)</summary>
+
+- **write_to_file**: 
+
+</details>
+
+
+
+---
+
+## Turn 1782: Assistant
+
+<details><summary>🔧 Tool Invocations (1)</summary>
+
+- **run_command**: 
+
+</details>
+
+
+
+---
+
+## Turn 1783: Assistant
+
+Querying Bamboo deployment environments...
+
+---
+
+## Turn 1784: Assistant
+
+<details><summary>🔧 Tool Invocations (1)</summary>
+
+- **write_to_file**: 
+
+</details>
+
+
+
+---
+
+## Turn 1785: Assistant
+
+<details><summary>🔧 Tool Invocations (1)</summary>
+
+- **run_command**: 
+
+</details>
+
+
+
+---
+
+## Turn 1786: Assistant
+
+Comparing `DC - ESB` (pilot) vs `DC - NEW` (prod) across all repositories in Bamboo...
+
+---
+
+## Turn 1787: Assistant
+
+<details><summary>🔧 Tool Invocations (1)</summary>
+
+- **run_command**: 
+
+</details>
+
+
+
+---
+
+## Turn 1788: Assistant
+
+I rechecked all **48 repositories** assigned to you (**Azzy**) plus `qcash-global-component` and `qcash-ui` by querying the live Bamboo Deployment Project API (`https://internal-service.example.com/rest/api/latest/deploy/project/all`).
+
+---
+
+### **Direct Answer**
+
+> [!IMPORTANT]
+> **No, there is 0 repository that has the exact same branch name between `DC - ESB` (pilot) and `DC - NEW` (prod).**
+
+Every single deployed repository uses a different branch naming convention between the two environments:
+- **`DC - ESB` (Pilot / Commercial)** is deployed from commercial branches (`*-release-com` or `*-com`).
+- **`DC - NEW` (Prod)** is deployed from standard release branches (`*-release` or `master`).
+
+---
+
+### **Breakdown of Findings**
+
+#### **1. Same Base Version (Only `-com` Suffix Difference) — 9 Repositories**
+In these repos, the release version numbers are aligned, but `DC - ESB` has the `-com` suffix:
+- `qcash-ui-account-management`: `v1.575.1-release-com` vs `v1.575.1-release`
+- `qcash-ui-account-receivable`: `v1.539-0.release-com` vs `v1.539.0-release`
+- `qcash-ui-announcement-management`: `v1.518.0-release-com` vs `v1.518.0-release`
+- `qcash-ui-company-code-mapping`: `v1.633.0-release-com` vs `v1.633.0-release`
+- `qcash-ui-create-briva`: `v1.615.0-release-com` vs `v1.615.0-release`
+- `qcash-ui-credit-card`: `v1.555.0-release-com` vs `v1.555.0-release`
+- `qcash-ui-dashboard-auto-collection`: `v1.670.0-release-com` vs `v1.670.0-release`
+- `qcash-ui-ewallet-topup`: `v1.605.0-release-com` vs `v1.605.0-release`
+- `qcash-ui-group-management`: `v1.575.0-release-com` vs `v1.575.0-release`
+
+---
+
+#### **2. Completely Different Versions or Master Divergence — 31 Repositories**
+In these repos, the branches point to completely different versions, or `DC - NEW` points to `master` while `DC - ESB` is on a dedicated `*-com` release:
+
+| No | Repository | `DC - ESB` (Pilot) Branch | `DC - NEW` (Prod) Branch |
+|:---|:---|:---|:---|
+| 1 | `qcash-ui-account-registration` | `v1.626.1-release-com` | `v1.626.0-release` |
+| 2 | `qcash-ui-account-statement` | `1.0.166-com` | `v1.661.1-release` |
+| 3 | `qcash-ui-account-summary` | `1.0.88-com` | `v1.664.1-release` |
+| 4 | `qcash-ui-account-validation` | `1.0.27-com` | `master` |
+| 5 | `qcash-ui-advise-lc` | `1.0.83-com` | `master` |
+| 6 | `qcash-ui-amend-cancel-lc` | `1.0.320-com` | `master` |
+| 7 | `qcash-ui-approval-signature` | `1.0.50-com` | `master` |
+| 8 | `qcash-ui-bank-monitoring` | `v1.644.0-release-com` | `v1.644.1-release` |
+| 9 | `qcash-ui-beneficiary-account-management` | `v1.558.1-release-com` | `v1.674.0-release` |
+| 10 | `qcash-ui-bond-price` | `1.0.33-com` | `master` |
+| 11 | `qcash-ui-bricams-redirect` | `v1.538.0-release-com` | `v1.538.0-release` |
+| 12 | `qcash-ui-cashcard` | `1.0.113-com` | `master` |
+| 13 | `qcash-ui-company-management` | `v1.592.2-release-com` | `v1.592.3-release` |
+| 14 | `qcash-ui-complaint` | `v1.603.0-release-com` | `v1.618.1-release` |
+| 15 | `qcash-ui-cut-off-management` | `1.0.14-com` | `master` |
+| 16 | `qcash-ui-dashboard` | `v1.590.3-release-com` | `v1.627.1-release` |
+| 17 | `qcash-ui-dashboard-dhe` | `v1.671.1-release-com` | `v1.671.2-release` |
+| 18 | `qcash-ui-df-pupuk-indonesia` | `1.0.45-com 1` | `v1.659.1-release` |
+| 19 | `qcash-ui-digi-guarantee` | `v1.636.0-release-com` | `v1.636.1-release` |
+| 20 | `qcash-ui-do-pertamina` | `v1.634.0-release-com` | `v1.619.1-release` |
+| 21 | `qcash-ui-do-pupuk-indonesia` | `v1.494.0-release-com` | `v1.611.0-release` |
+| 22 | `qcash-ui-do-semen-indonesia` | `1.0.46-com` | `master` |
+| 23 | `qcash-ui-forex` | `v1.630.1-release-com` | `v1.630.0-release` |
+| 24 | `qcash-ui-fund-transfer` | `v1.669.3-release-com` | `v1.667.2-release` |
+| 25 | `qcash-ui-global-account-summary` | `1.0.37-com` | `master` |
+| 26 | `qcash-ui-global-external-transfer` | `v1.600.1-release-com` | `v1.600.0-release` |
+| 27 | `qcash-ui-global-internal-transfer` | `v1.600.1-release-com` | `v1.600.0-release` |
+| 28 | `qcash-ui-header-footer` | `v1.684.0-release-com` | `v1.684.3-release` |
+| 29 | `qcash-ui-helpdesk-portal` | `1.0.10-com` | `master` |
+| 30 | `qcash-ui-holiday-management` | `1.0.13-com` | `master` |
+| 31 | `qcash-global-component` | `v1.678.0-release-com` | `v1.678.4-release` |
+
+---
+
+#### **3. Never Deployed or Environment Missing — 10 Repositories**
+
+| No | Repository | `DC - ESB` (Pilot) | `DC - NEW` (Prod) | Notes |
+|:---|:---|:---|:---|:---|
+| 1 | `qcash-ui-auto-collection-registration` | *Never Deployed* | *Never Deployed* | No deployment history on Bamboo |
+| 2 | `qcash-ui-bgn` | *Never Deployed* | *Never Deployed* | No deployment history on Bamboo |
+| 3 | `qcash-ui-bricams-coming-soon` | `v1.533.0-release-com` | *Never Deployed* | Prod environment never deployed |
+| 4 | `qcash-ui-content-management-system` | *Never Deployed* | `v1.648.0-release` | Pilot environment never deployed |
+| 5 | `qcash-ui-dashboard-merchant` | *Never Deployed* | *Never Deployed* | No deployment history on Bamboo |
+| 6 | `qcash-ui-deposito` | *Never Deployed* | *Never Deployed* | No deployment history on Bamboo |
+| 7 | `qcash-ui-ecosystem` | *Never Deployed* | *Never Deployed* | No deployment history on Bamboo |
+| 8 | `qcash-ui-employee-data` | *Never Deployed* | *Never Deployed* | No deployment history on Bamboo |
+| 9 | `qcash-ui-global-account-statement` | *Never Deployed* | *Never Deployed* | No deployment history on Bamboo |
+| 10 | `qcash-ui` (Shell) | *Env Not Configured* | *Env Not Configured* | Deployed via separate host pipelines |
 
 ---
 
