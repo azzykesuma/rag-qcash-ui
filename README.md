@@ -196,13 +196,15 @@ Project aliases are captured from source metadata when available. For older expo
 This mapping remains local and is not committed.
 
 ### 5. Local Web Dashboard
-Launch the embedded dashboard to browse conversations, filter by assistant/project/date, run ranked search, generate bounded prompt context, and run a privacy audit:
+Launch the embedded dashboard to browse conversations grouped by topic, explore an interactive knowledge graph, filter by topic/assistant/project/date, run ranked search, generate bounded prompt context, and run a privacy audit:
 ```bash
 vault ui
 vault ui --port 3000 --no-browser
 vault ui --vault-dir /path/to/llm-context-vault
 ```
-By default, the dashboard opens your browser at `http://127.0.0.1:8080`. It runs locally with no external web assets or runtime dependencies. Conversations are displayed as exported Markdown text. Press `Ctrl+C` in the terminal to stop it.
+By default, the dashboard opens your browser at `http://127.0.0.1:8080`. It runs locally with no external web assets or runtime dependencies. Conversations are displayed as exported Markdown text and classified into deterministic topic groups such as Bamboo/CI fixes, bug fixing, testing, authentication, and Git workflows. The knowledge graph links those topics to conversations, projects, and source assistants. Press `Ctrl+C` in the terminal to stop it.
+
+In the conversation viewer, change a topic using the topic selector ("Auto-detect topic" clears the correction). Corrections are kept locally in `.vault/topics.json`, not in the exported dataset. The viewer shows an extractive problem statement, the last assistant note, and full-text-search-based related conversations. Outcomes remain unknown unless a later user turn explicitly confirms success. Related matches are shown as dashed links in the graph when the selected conversation is visible. Click a graph topic or project to focus its immediate connections. Saved views store named filters and graph position in your browser; the last-used view is restored on reload.
 
 ### 6. Audit Before Git Push
 Verify that 0 secrets or machine paths exist in your repository:

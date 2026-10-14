@@ -1,39 +1,491 @@
 <!doctype html>
 <html lang="en">
 <head>
-<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
 <title>LLM Context Vault</title>
 <style>
-:root{color-scheme:dark;font:15px system-ui;background:#10151f;color:#e6edf3}body{margin:0}header{padding:24px 32px;background:#182130;border-bottom:1px solid #334155}h1{margin:0 0 8px;font-size:24px}p{color:#aab9cb}main{padding:24px 32px;max-width:1500px;margin:auto}.toolbar{display:flex;gap:10px;flex-wrap:wrap;margin:18px 0}input,select,button{font:inherit;border:1px solid #42536d;border-radius:7px;padding:10px;background:#1e293b;color:inherit}input{flex:1;min-width:180px}button{cursor:pointer}button:hover{background:#334765}button:disabled{opacity:.5;cursor:wait}.layout{display:grid;grid-template-columns:minmax(250px,1fr) minmax(0,2fr);gap:22px}#sessions{max-height:70vh;overflow:auto}.session{display:block;text-align:left;width:100%;margin-bottom:8px}.session small{display:block;color:#aab9cb;margin-top:6px}pre{white-space:pre-wrap;overflow-wrap:anywhere;background:#182130;padding:20px;border-radius:8px;max-height:65vh;overflow:auto;font:13px/1.6 ui-monospace,monospace}h2{font-size:18px}#status{min-height:22px;color:#93c5fd}#metrics{color:#9bc4fc}#detail-title{overflow-wrap:anywhere}@media(max-width:750px){.layout{grid-template-columns:1fr}main,header{padding:18px}#sessions{max-height:35vh}}
+:root {
+  color-scheme: dark;
+  font: 15px Inter, ui-sans-serif, system-ui, sans-serif;
+  --ink: #edf5f2;
+  --muted: #8ca49d;
+  --panel: #111b1a;
+  --panel-2: #172422;
+  --line: #29403b;
+  --accent: #d9f99d;
+  --accent-2: #66d9c2;
+  background: #09110f;
+  color: var(--ink);
+}
+* { box-sizing: border-box; }
+body { margin: 0; min-height: 100vh; background: radial-gradient(circle at 80% -10%, #193b34 0, transparent 36rem), #09110f; }
+button, input, select { font: inherit; }
+button, input, select { border: 1px solid var(--line); border-radius: 7px; background: var(--panel); color: inherit; }
+button { cursor: pointer; padding: 9px 13px; }
+button:hover, button.active { border-color: #79bda9; background: #1d312d; }
+button:focus-visible, input:focus-visible, select:focus-visible { outline: 2px solid var(--accent-2); outline-offset: 2px; }
+button:disabled { opacity: .5; cursor: wait; }
+input, select { padding: 10px 11px; }
+header { padding: 28px clamp(18px, 4vw, 56px) 22px; border-bottom: 1px solid var(--line); }
+.eyebrow { color: var(--accent-2); font: 700 11px/1 ui-monospace, monospace; letter-spacing: .16em; text-transform: uppercase; }
+h1 { margin: 9px 0 5px; font: 620 clamp(25px, 4vw, 38px)/1.1 Georgia, serif; }
+header p { margin: 0; color: var(--muted); }
+main { max-width: 1720px; margin: auto; padding: 20px clamp(18px, 4vw, 56px) 36px; }
+#metrics { color: var(--muted); font-size: 13px; min-height: 20px; }
+.toolbar { display: flex; gap: 9px; flex-wrap: wrap; align-items: center; margin: 13px 0; }
+.toolbar .query { flex: 1 1 280px; }
+.toolbar label { display: flex; align-items: center; gap: 7px; color: var(--muted); font-size: 13px; }
+.toolbar input[type="number"] { width: 82px; }
+.view-switch { margin-left: auto; display: flex; gap: 3px; padding: 3px; border: 1px solid var(--line); border-radius: 9px; }
+.view-switch button { border: 0; padding: 6px 11px; }
+#status { min-height: 23px; color: var(--accent-2); font-size: 13px; }
+.layout { display: grid; grid-template-columns: minmax(290px, .8fr) minmax(0, 2.2fr); gap: 18px; min-height: 610px; }
+.pane { min-width: 0; border: 1px solid var(--line); border-radius: 11px; background: color-mix(in srgb, var(--panel) 92%, transparent); overflow: hidden; }
+.pane-head { min-height: 53px; padding: 13px 16px; border-bottom: 1px solid var(--line); display: flex; align-items: center; gap: 10px; }
+.pane-head h2 { margin: 0; font-size: 14px; font-weight: 650; letter-spacing: .02em; }
+.pane-head select { margin-left: auto; padding: 6px 8px; font-size: 12px; }
+#sessions { height: 67vh; min-height: 540px; overflow: auto; padding: 8px; }
+.group { margin: 4px 0 12px; }
+.group-title { position: sticky; top: -8px; z-index: 2; display: flex; justify-content: space-between; padding: 10px 9px 7px; background: linear-gradient(#111b1a 75%, transparent); color: var(--accent); font: 700 11px/1.2 ui-monospace, monospace; letter-spacing: .08em; text-transform: uppercase; }
+.group-title span { color: var(--muted); }
+.session { display: block; width: 100%; margin-bottom: 5px; padding: 10px; text-align: left; border-color: transparent; background: transparent; }
+.session:hover { background: var(--panel-2); }
+.session > span { display: block; overflow: hidden; text-overflow: ellipsis; }
+.session small { display: block; margin-top: 5px; color: var(--muted); font-size: 11px; }
+.session .preview { line-height: 1.35; color: #abc0ba; }
+#detail { height: 67vh; min-height: 540px; margin: 0; padding: 20px; overflow: auto; white-space: pre-wrap; overflow-wrap: anywhere; color: #c7d7d2; font: 13px/1.65 ui-monospace, monospace; }
+.overview { padding: 14px 18px; border-bottom: 1px solid var(--line); font-size: 13px; line-height: 1.5; }
+.overview[hidden] { display: none; }
+.overview p { margin: 7px 0; color: #c7d7d2; overflow-wrap: anywhere; }
+.overview strong { color: var(--accent); }
+.overview select { max-width: 100%; padding: 6px; }
+.overview .related { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 8px; }
+.overview .related button { font-size: 12px; text-align: left; }
+.overview .related small { display: block; color: var(--muted); }
+#graph-panel { display: none; position: relative; height: calc(67vh + 54px); min-height: 594px; }
+#graph { display: block; width: 100%; height: 100%; background: radial-gradient(circle at center, #14231f, #0c1513 70%); cursor: grab; touch-action: none; }
+#graph.panning { cursor: grabbing; }
+#graph text { fill: #dcebe6; font: 10px ui-sans-serif, system-ui; pointer-events: none; paint-order: stroke; stroke: #0b1412; stroke-width: 3px; stroke-linejoin: round; }
+.graph-note { position: absolute; top: 12px; left: 14px; z-index: 2; max-width: 390px; padding: 8px 10px; border: 1px solid var(--line); border-radius: 7px; background: #0b1412d9; color: var(--muted); font-size: 11px; }
+.graph-focus { position: absolute; top: 12px; right: 14px; z-index: 2; border: 1px solid var(--line); border-radius: 7px; background: #0b1412e8; padding: 7px; color: var(--accent); font-size: 12px; }
+.graph-focus[hidden] { display: none; }
+.graph-legend { position: absolute; right: 13px; bottom: 12px; display: flex; flex-wrap: wrap; gap: 10px; padding: 8px 10px; border: 1px solid var(--line); border-radius: 7px; background: #0b1412df; color: var(--muted); font-size: 11px; }
+.dot { display: inline-block; width: 8px; height: 8px; margin-right: 4px; border-radius: 50%; }
+.empty { padding: 25px 12px; color: var(--muted); text-align: center; }
+@media (max-width: 850px) {
+  .view-switch { margin-left: 0; }
+  .layout { grid-template-columns: 1fr; }
+  #sessions, #detail { height: 43vh; min-height: 320px; }
+  #graph-panel { height: 68vh; min-height: 480px; }
+  .graph-note { max-width: calc(100% - 28px); }
+}
 </style>
 </head>
 <body>
-<header><h1>LLM Context Vault</h1><div>Browse your sanitized assistant conversations, search, and build prompt context.</div></header>
+<header>
+  <div class="eyebrow">Local knowledge map</div>
+  <h1>LLM Context Vault</h1>
+  <p>Find the thread, see the pattern, reuse the solution.</p>
+</header>
 <main>
-<div id="metrics">Loading vault…</div>
-<form id="search-form"><div class="toolbar"><input id="query" aria-label="Search conversations" placeholder="Search by topic, error, or question…"><select id="tool" aria-label="Filter by assistant"><option value="">All assistants</option></select><input id="project" aria-label="Project alias" placeholder="Project alias (optional)"><button>Search</button><button type="button" id="reset">Reset</button></div><div class="toolbar"><label>From <input id="after" type="date" aria-label="Earliest date"></label><label>To <input id="before" type="date" aria-label="Latest date"></label><label>Results <input id="limit" type="number" min="1" max="100" value="10" aria-label="Result limit"></label><label>Context characters <input id="max-chars" type="number" min="512" max="1000000" value="12000" aria-label="Context character budget"></label></div></form>
-<div class="toolbar"><button id="context">Generate context</button><button id="audit">Run privacy audit</button><button id="refresh">Refresh</button><button id="copy">Copy displayed text</button></div>
-<div id="status" role="status" aria-live="polite"></div>
-<div class="layout"><section><h2 id="list-title">Conversations</h2><div id="sessions"></div></section><section><h2 id="detail-title">Conversation viewer</h2><pre id="detail">Select a conversation to view its exported Markdown.</pre></section></div>
+  <div id="metrics">Loading vault...</div>
+  <form id="search-form">
+    <div class="toolbar">
+      <input class="query" id="query" aria-label="Search conversations" placeholder="Search by topic, error, or question...">
+      <select id="topic" aria-label="Filter by topic"><option value="">All topics</option></select>
+      <select id="tool" aria-label="Filter by assistant"><option value="">All assistants</option></select>
+      <input id="project" aria-label="Project alias" placeholder="Project alias">
+      <button>Search</button>
+      <button type="button" id="reset">Reset</button>
+    </div>
+    <div class="toolbar">
+      <label>From <input id="after" type="date" aria-label="Earliest date"></label>
+      <label>To <input id="before" type="date" aria-label="Latest date"></label>
+      <label>Results <input id="limit" type="number" min="1" max="100" value="10" aria-label="Result limit"></label>
+      <label>Context <input id="max-chars" type="number" min="512" max="1000000" value="12000" aria-label="Context character budget"></label>
+      <div class="view-switch" aria-label="View mode">
+        <button type="button" id="list-view" class="active">Grouped list</button>
+        <button type="button" id="graph-view">Knowledge graph</button>
+      </div>
+    </div>
+  </form>
+  <div class="toolbar">
+    <button id="context">Generate context</button>
+    <button id="audit">Run privacy audit</button>
+    <button id="refresh">Refresh</button>
+    <button id="copy">Copy displayed text</button>
+    <select id="saved-views" aria-label="Saved views"><option value="">Saved views</option></select>
+    <button id="save-view">Save view</button><button id="delete-view">Delete view</button>
+  </div>
+  <div id="status" role="status" aria-live="polite"></div>
+  <div id="list-layout" class="layout">
+    <section class="pane">
+      <div class="pane-head"><h2 id="list-title">Conversations</h2><select id="group-by" aria-label="Group conversations"><option value="topic">Group by topic</option><option value="project">Group by project</option><option value="tool">Group by assistant</option><option value="none">No grouping</option></select></div>
+      <div id="sessions"></div>
+    </section>
+    <section class="pane">
+      <div class="pane-head"><h2 id="detail-title">Conversation viewer</h2></div>
+      <div id="overview" class="overview" hidden></div>
+      <pre id="detail">Select a conversation to view its exported Markdown.</pre>
+    </section>
+  </div>
+  <section id="graph-panel" class="pane">
+    <div class="graph-note">Click a topic or project to focus its connections; click again to clear. Drag empty space to pan, drag nodes to rearrange, and scroll to zoom. Select a conversation to open it. Showing up to 180 newest filtered conversations.</div>
+    <button id="clear-focus" class="graph-focus" hidden>Clear focus</button>
+    <svg id="graph" role="img" aria-label="Conversation knowledge graph"></svg>
+    <div class="graph-legend"><span><i class="dot" style="background:#d9f99d"></i>Topic</span><span><i class="dot" style="background:#67e8f9"></i>Project</span><span><i class="dot" style="background:#c4b5fd"></i>Assistant</span><span><i class="dot" style="background:#7b948d"></i>Conversation</span></div>
+  </section>
 </main>
 <script>
-const $=id=>document.getElementById(id);
-let sessions=[],matches=null;
-async function request(path,json=true){const response=await fetch(path);if(!response.ok)throw new Error(await response.text());return json?response.json():response.text()}
-async function action(fn){$('status').textContent='Working…';try{await fn();$('status').textContent='Ready.'}catch(error){$('status').textContent=error.message}}
-function show(title,text){$('detail-title').textContent=title;$('detail').textContent=text}
-function render(){const project=$('project').value.trim().toLowerCase(),after=$('after').value,before=$('before').value;const visible=sessions.filter(s=>(!$('tool').value||s.tool===$('tool').value)&&(!project||s.project.toLowerCase()===project)&&(!after||s.date.slice(0,10)>=after)&&(!before||s.date.slice(0,10)<=before)&&(!matches||matches.has(s.file)));if(matches)visible.sort((a,b)=>matches.get(b.file).Score-matches.get(a.file).Score);$('list-title').textContent=(matches?'Ranked matches':'Conversations')+' ('+visible.length+')';$('sessions').replaceChildren();for(const s of visible){const button=document.createElement('button');button.className='session';button.textContent=s.title;const meta=document.createElement('small');const match=matches?.get(s.file);meta.textContent=s.tool+(s.project?' · '+s.project:'')+' · '+s.date+(match?' · lines '+match.StartLine+'–'+match.EndLine:'');button.append(meta);if(match){const preview=document.createElement('small');preview.textContent=match.Snippet.slice(0,220);button.append(preview)}button.onclick=()=>action(async()=>show(s.title,await request('/api/conversation?file='+encodeURIComponent(s.file),false)));$('sessions').append(button)}if(!visible.length)$('sessions').textContent='No matching conversations.'}
-async function load(){sessions=await request('/api/sessions');sessions.sort((a,b)=>b.date.localeCompare(a.date));const counts={};for(const s of sessions)counts[s.tool]=(counts[s.tool]||0)+1;$('metrics').textContent=sessions.length+' sessions · '+Object.entries(counts).map(([tool,n])=>tool+': '+n).join(' · ');const selected=$('tool').value;$('tool').replaceChildren(new Option('All assistants',''));for(const tool of Object.keys(counts).sort())$('tool').add(new Option(tool,tool));$('tool').value=selected;matches=null;render()}
-function queryParams(){const params=new URLSearchParams({q:$('query').value.trim()});for(const name of ['tool','project','after','before','limit','max-chars'])if($(name).value)params.set(name,$(name).value);return params}
-async function search(){const q=$('query').value.trim();if(!q){matches=null}else{const results=await request('/api/search?'+queryParams());matches=new Map((results||[]).map(r=>[r.Path.split(/[\\/]/).pop(),r]))}render()}
-$('search-form').onsubmit=event=>{event.preventDefault();action(search)};
-$('tool').onchange=()=>action(search);for(const name of ['project','after','before'])$(name).onchange=()=>action(search);
-$('reset').onclick=()=>{for(const name of ['query','tool','project','after','before'])$(name).value='';matches=null;render()};
-$('refresh').onclick=()=>action(load);
-$('context').onclick=()=>action(async()=>{const q=$('query').value.trim();if(!q)throw new Error('Enter a search query first.');show('Prompt context',await request('/api/context?'+queryParams()))});
-$('audit').onclick=()=>action(async()=>{const results=await request('/api/audit');const entries=Object.entries(results||{});show('Privacy audit',entries.length?entries.map(([file,warnings])=>file+'\n'+warnings.join('\n')).join('\n\n'):'Privacy audit passed: no potential leaks detected.')});
-$('copy').onclick=()=>action(async()=>{await navigator.clipboard.writeText($('detail').textContent)});
-action(load);
+const $ = id => document.getElementById(id);
+let sessions = [], matches = null, visible = [], view = 'list', graphCleanup = null;
+const colors = { topic: '#d9f99d', project: '#67e8f9', tool: '#c4b5fd', conversation: '#7b948d' };
+const viewKey = 'llm-vault-dashboard-views-v1', currentKey = 'llm-vault-dashboard-current-v1';
+const initialView = stored(currentKey, null);
+let selectedSession = null, currentInsights = null, graphFocus = null, graphTransform = { x: 0, y: 0, k: 1 }, insightRequest = 0;
+function stored(key, fallback) { try { return JSON.parse(localStorage.getItem(key)) || fallback; } catch { return fallback; } }
+function viewState() { return { filters: Object.fromEntries(['query', 'tool', 'topic', 'project', 'after', 'before', 'limit', 'max-chars', 'group-by'].map(id => [id, $(id).value])), mode: view, transform: graphTransform }; }
+function saveCurrent() { try { localStorage.setItem(currentKey, JSON.stringify(viewState())); } catch { /* Browsing remains usable when storage is unavailable. */ } }
+function refreshSavedViews() {
+  const selected = $('saved-views').value, names = Object.keys(stored(viewKey, {})).sort();
+  $('saved-views').replaceChildren(new Option('Saved views', ''));
+  for (const name of names) $('saved-views').add(new Option(name, name));
+  $('saved-views').value = selected;
+}
+async function applyView(state) {
+  for (const [id, value] of Object.entries(state.filters || {})) if ($(id)) $(id).value = value;
+  graphTransform = state.transform && Number.isFinite(state.transform.k) ? state.transform : { x: 0, y: 0, k: 1 };
+  await search(); setView(state.mode === 'graph' ? 'graph' : 'list'); saveCurrent();
+}
+
+async function request(path, json = true) {
+  const response = await fetch(path);
+  if (!response.ok) throw new Error(await response.text());
+  return json ? response.json() : response.text();
+}
+async function action(fn) {
+  $('status').textContent = 'Working...';
+  try { await fn(); $('status').textContent = 'Ready.'; }
+  catch (error) { $('status').textContent = error.message; }
+}
+function show(title, text) {
+  $('detail-title').textContent = title;
+  $('detail').textContent = text;
+  $('overview').hidden = true;
+  selectedSession = null;
+  currentInsights = null;
+  insightRequest++;
+}
+async function openSession(session) {
+  setView('list');
+  const markdown = await request('/api/conversation?file=' + encodeURIComponent(session.file), false);
+  show(session.title, markdown);
+  selectedSession = session;
+  const token = insightRequest;
+  $('overview').hidden = false;
+  $('overview').textContent = 'Loading overview and related conversations...';
+  try {
+    const insights = await request('/api/insights?file=' + encodeURIComponent(session.file));
+    if (token !== insightRequest) return;
+    currentInsights = insights;
+    renderOverview();
+  } catch (error) { if (token === insightRequest) $('overview').textContent = 'Overview unavailable: ' + error.message; }
+}
+function renderOverview() {
+  if (!selectedSession || !currentInsights) return;
+  const overview = $('overview'); overview.replaceChildren();
+  const selector = document.createElement('select'); selector.setAttribute('aria-label', 'Conversation topic');
+  selector.add(new Option('Auto-detect topic', ''));
+  selector.add(new Option('General development', 'General development'));
+  for (const name of [...$('topic').options].map(o => o.value).filter(Boolean).sort()) if (name !== 'General development') selector.add(new Option(name, name));
+  if (![...selector.options].some(o => o.value === selectedSession.topic)) selector.add(new Option(selectedSession.topic, selectedSession.topic));
+  selector.value = selectedSession.topic;
+  selector.onchange = () => action(async () => {
+    const response = await fetch('/api/topic', { method:'PUT', headers:{'Content-Type':'application/json'}, body:JSON.stringify({ file:selectedSession.file, topic:selector.value }) });
+    if (!response.ok) throw new Error(await response.text());
+    selectedSession.topic = selector.value || selectedSession.autoTopic;
+    const tool = $('tool').value, topic = $('topic').value;
+    await load(); $('tool').value = tool; $('topic').value = topic; render(); renderOverview();
+  });
+  const label = document.createElement('label'); label.textContent = 'Topic: '; label.append(selector); overview.append(label);
+  for (const [labelText, value] of [['Problem', currentInsights.problem], ['Last assistant note (unverified)', currentInsights.finding], ['Outcome', currentInsights.outcome]]) {
+    const p = document.createElement('p'), strong = document.createElement('strong'); strong.textContent = labelText + ': '; p.append(strong, document.createTextNode(value)); overview.append(p);
+  }
+  const relatedLabel = document.createElement('strong'); relatedLabel.textContent = 'Related conversations (shared search terms):'; overview.append(relatedLabel);
+  const related = document.createElement('div'); related.className = 'related';
+  for (const suggestion of currentInsights.related || []) {
+    const button = document.createElement('button'); button.textContent = suggestion.title; button.title = suggestion.reason + '\n' + suggestion.snippet;
+    const meta = document.createElement('small'); meta.textContent = suggestion.reason; button.append(meta);
+    button.onclick = () => { const match = sessions.find(s => s.file === suggestion.file); if (match) action(() => openSession(match)); };
+    related.append(button);
+  }
+  if (!related.childElementCount) related.textContent = 'No sufficiently similar sessions found.';
+  overview.append(related);
+}
+function filteredSessions() {
+  const project = $('project').value.trim().toLowerCase(), after = $('after').value, before = $('before').value;
+  const result = sessions.filter(s =>
+    (!$('tool').value || s.tool === $('tool').value) &&
+    (!$('topic').value || s.topic === $('topic').value) &&
+    (!project || s.project.toLowerCase() === project) &&
+    (!after || s.date.slice(0, 10) >= after) &&
+    (!before || s.date.slice(0, 10) <= before) &&
+    (!matches || matches.has(s.file)));
+  if (matches) result.sort((a, b) => matches.get(b.file).Score - matches.get(a.file).Score);
+  return result;
+}
+function groupName(session, mode) {
+  if (mode === 'project') return session.project || 'No project';
+  if (mode === 'tool') return session.tool || 'Unknown assistant';
+  if (mode === 'none') return 'All conversations';
+  return session.topic;
+}
+function renderList() {
+  const mode = $('group-by').value, groups = new Map();
+  for (const session of visible) {
+    const name = groupName(session, mode);
+    if (!groups.has(name)) groups.set(name, []);
+    groups.get(name).push(session);
+  }
+  const ordered = [...groups.entries()];
+  if (!matches && mode !== 'none') ordered.sort((a, b) => b[1].length - a[1].length || a[0].localeCompare(b[0]));
+  $('sessions').replaceChildren();
+  for (const [name, items] of ordered) {
+    const section = document.createElement('section'); section.className = 'group';
+    const heading = document.createElement('div'); heading.className = 'group-title'; heading.textContent = name;
+    const count = document.createElement('span'); count.textContent = items.length; heading.append(count); section.append(heading);
+    for (const session of items) {
+      const button = document.createElement('button'); button.className = 'session';
+      const title = document.createElement('span'); title.textContent = session.title; button.append(title);
+      const meta = document.createElement('small'), match = matches?.get(session.file);
+      meta.textContent = session.tool + (session.project ? ' / ' + session.project : '') + ' / ' + (session.date || 'unknown date') + (match ? ' / lines ' + match.StartLine + '-' + match.EndLine : '');
+      button.append(meta);
+      if (match) { const preview = document.createElement('small'); preview.className = 'preview'; preview.textContent = match.Snippet.slice(0, 220); button.append(preview); }
+      button.onclick = () => action(() => openSession(session)); section.append(button);
+    }
+    $('sessions').append(section);
+  }
+  if (!visible.length) { const empty = document.createElement('div'); empty.className = 'empty'; empty.textContent = 'No matching conversations.'; $('sessions').append(empty); }
+}
+function render() {
+  visible = filteredSessions();
+  $('list-title').textContent = (matches ? 'Ranked matches' : 'Conversations') + ' (' + visible.length + ')';
+  renderList();
+  if (view === 'graph') renderGraph();
+}
+async function load() {
+  sessions = await request('/api/sessions');
+  sessions.sort((a, b) => b.date.localeCompare(a.date));
+  const tools = {}, topics = {};
+  for (const session of sessions) { tools[session.tool] = (tools[session.tool] || 0) + 1; topics[session.topic] = (topics[session.topic] || 0) + 1; }
+  $('metrics').textContent = sessions.length + ' sessions / ' + Object.keys(topics).length + ' topics / ' + Object.entries(tools).map(([tool, n]) => tool + ': ' + n).join(' / ');
+  refillSelect($('tool'), 'All assistants', tools);
+  refillSelect($('topic'), 'All topics', topics, true);
+  matches = null; render();
+}
+function refillSelect(select, first, counts, byCount = false) {
+  const selected = select.value; select.replaceChildren(new Option(first, ''));
+  const names = Object.keys(counts).sort((a, b) => byCount ? counts[b] - counts[a] || a.localeCompare(b) : a.localeCompare(b));
+  for (const name of names) select.add(new Option(name + (byCount ? ' (' + counts[name] + ')' : ''), name));
+  select.value = selected;
+}
+function queryParams() {
+  const params = new URLSearchParams({ q: $('query').value.trim() });
+  for (const name of ['tool', 'project', 'after', 'before', 'limit', 'max-chars']) if ($(name).value) params.set(name, $(name).value);
+  return params;
+}
+async function search() {
+  const q = $('query').value.trim();
+  if (!q) matches = null;
+  else { const results = await request('/api/search?' + queryParams()); matches = new Map((results || []).map(r => [r.Path.split(/[\\/]/).pop(), r])); }
+  render();
+  saveCurrent();
+}
+function setView(next) {
+  view = next;
+  $('list-layout').style.display = next === 'list' ? 'grid' : 'none';
+  $('graph-panel').style.display = next === 'graph' ? 'block' : 'none';
+  $('list-view').classList.toggle('active', next === 'list');
+  $('graph-view').classList.toggle('active', next === 'graph');
+  if (next === 'graph') renderGraph();
+  else if (graphCleanup) { graphCleanup(); graphCleanup = null; }
+  saveCurrent();
+}
+
+function renderGraph() {
+  if (graphCleanup) graphCleanup();
+  const svg = $('graph'), width = svg.clientWidth || 1000, height = svg.clientHeight || 650;
+  svg.replaceChildren(); svg.setAttribute('viewBox', `0 0 ${width} ${height}`);
+  const sample = visible.slice(0, 180), nodes = [], links = [], hubs = new Map();
+  const hub = (type, label) => {
+    const id = type + ':' + label;
+    if (!hubs.has(id)) { const node = { id, type, label, r: type === 'topic' ? 12 : 9 }; hubs.set(id, node); nodes.push(node); }
+    return hubs.get(id);
+  };
+  for (const session of sample) {
+    const topic = hub('topic', session.topic), tool = hub('tool', session.tool);
+    const node = { id: session.file, type: 'conversation', label: session.title, session, topic, r: 4 }; nodes.push(node);
+    links.push({ source: node, target: topic }, { source: node, target: tool });
+    if (session.project) links.push({ source: node, target: hub('project', session.project) });
+  }
+  if (!nodes.length) { const text = document.createElementNS('http://www.w3.org/2000/svg', 'text'); text.setAttribute('x', width / 2); text.setAttribute('y', height / 2); text.setAttribute('text-anchor', 'middle'); text.textContent = 'No conversations match the current filters.'; svg.append(text); return; }
+  const seed = value => { let h = 0; for (const char of value) h = (h * 31 + char.charCodeAt(0)) | 0; return Math.abs(h); };
+  for (const node of nodes) node.degree = 0;
+  for (const link of links) { link.source.degree++; link.target.degree++; }
+  for (const node of nodes) { node.mass = 1 + Math.sqrt(node.degree) * (node.type === 'conversation' ? .25 : 1.4); node.vx = node.vy = 0; }
+  const topics = nodes.filter(node => node.type === 'topic'), radius = Math.min(width, height) * Math.min(.24, .09 + topics.length * .018);
+  topics.forEach((node, index) => {
+    const angle = topics.length === 1 ? 0 : index * Math.PI * 2 / topics.length - Math.PI / 2;
+    node.x = width / 2 + (topics.length === 1 ? 0 : Math.cos(angle) * radius);
+    node.y = height / 2 + (topics.length === 1 ? 0 : Math.sin(angle) * radius);
+  });
+  for (const node of nodes) {
+    if (node.type === 'topic') continue;
+    const n = seed(node.id), angle = n % 6283 / 1000, spread = node.type === 'conversation' ? 28 + n % 58 : 35 + n % 95;
+    const anchor = node.topic || topics[n % topics.length];
+    node.x = (anchor?.x || width / 2) + Math.cos(angle) * spread;
+    node.y = (anchor?.y || height / 2) + Math.sin(angle) * spread;
+  }
+  const viewport = document.createElementNS('http://www.w3.org/2000/svg', 'g'), lineLayer = document.createElementNS('http://www.w3.org/2000/svg', 'g'), nodeLayer = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+  viewport.append(lineLayer, nodeLayer); svg.append(viewport);
+  const nodeByFile = new Map(nodes.filter(n => n.session).map(n => [n.session.file, n]));
+  if (selectedSession && currentInsights) for (const suggestion of currentInsights.related || []) {
+    const source = nodeByFile.get(selectedSession.file), target = nodeByFile.get(suggestion.file);
+    if (source && target) links.push({ source, target, related:true });
+  }
+  for (const link of links) { const line = document.createElementNS('http://www.w3.org/2000/svg', 'line'); line.setAttribute('stroke', '#36544d'); line.setAttribute('stroke-opacity', '.35'); line.setAttribute('stroke-width', '.7'); link.el = line; lineLayer.append(line); }
+  for (const link of links.filter(l => l.related)) { link.el.setAttribute('stroke', '#fbbf24'); link.el.setAttribute('stroke-dasharray', '4 3'); link.el.setAttribute('stroke-opacity', '.9'); link.el.setAttribute('stroke-width', '1.5'); }
+  const focus = id => {
+    graphFocus = graphFocus === id ? null : id;
+    const center = nodes.find(n => n.id === graphFocus);
+    const connected = new Set(center ? [center] : []);
+    if (center) for (const link of links) { if (link.source === center) connected.add(link.target); if (link.target === center) connected.add(link.source); }
+    for (const node of nodes) node.el.style.opacity = center && !connected.has(node) ? '.13' : '1';
+    for (const link of links) link.el.style.opacity = center && link.source !== center && link.target !== center ? '.07' : '1';
+    $('clear-focus').hidden = !center;
+    $('clear-focus').textContent = center ? 'Clear focus: ' + center.label : 'Clear focus';
+    saveCurrent();
+  };
+  $('clear-focus').onclick = () => focus(graphFocus);
+  for (const node of nodes) {
+    const group = document.createElementNS('http://www.w3.org/2000/svg', 'g'), circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle'), title = document.createElementNS('http://www.w3.org/2000/svg', 'title');
+    circle.setAttribute('r', node.r); circle.setAttribute('fill', colors[node.type]); circle.setAttribute('fill-opacity', node.type === 'conversation' ? '.72' : '.95'); circle.setAttribute('stroke', '#07100e'); circle.setAttribute('stroke-width', '1.5');
+    title.textContent = node.label; group.append(circle, title); node.el = group;
+    if (node.type !== 'conversation') { const text = document.createElementNS('http://www.w3.org/2000/svg', 'text'); text.setAttribute('x', node.r + 4); text.setAttribute('y', '3'); text.textContent = node.label.length > 32 ? node.label.slice(0, 31) + '...' : node.label; group.append(text); }
+    group.addEventListener('click', () => {
+      if (node.didDrag) return;
+      if (node.session) action(() => openSession(node.session));
+      else focus(node.id);
+    });
+    group.setAttribute('tabindex', '0'); group.setAttribute('role', 'button');
+    group.setAttribute('aria-label', node.session ? 'Open conversation: ' + node.label : 'Focus ' + node.type + ': ' + node.label);
+    group.addEventListener('keydown', event => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); group.dispatchEvent(new Event('click')); } });
+    group.style.cursor = node.session ? 'pointer' : 'grab'; nodeLayer.append(group);
+  }
+  let frame = 0, stopped = false, transform = { ...graphTransform }, dragged = null, dragOrigin = null, panning = null;
+  const updateTransform = () => { viewport.setAttribute('transform', `translate(${transform.x} ${transform.y}) scale(${transform.k})`); graphTransform = { ...transform }; saveCurrent(); };
+  updateTransform();
+  if (graphFocus) focus(graphFocus);
+  const simulate = () => {
+    for (let i = 0; i < nodes.length; i++) for (let j = i + 1; j < nodes.length; j++) {
+      const a = nodes[i], b = nodes[j], dx = b.x - a.x || .1, dy = b.y - a.y || .1, d2 = Math.max(144, dx * dx + dy * dy), strength = a.type === 'conversation' && b.type === 'conversation' ? 22 : 52, force = strength / d2;
+      a.vx -= dx * force / a.mass; a.vy -= dy * force / a.mass; b.vx += dx * force / b.mass; b.vy += dy * force / b.mass;
+    }
+    for (const link of links) {
+      const dx = link.target.x - link.source.x, dy = link.target.y - link.source.y, distance = Math.hypot(dx, dy) || 1, ideal = link.target.type === 'topic' ? 62 : link.target.type === 'project' ? 92 : 118, force = (distance - ideal) * .0022;
+      link.source.vx += dx * force / link.source.mass; link.source.vy += dy * force / link.source.mass;
+      link.target.vx -= dx * force / link.target.mass; link.target.vy -= dy * force / link.target.mass;
+    }
+    for (const node of nodes) {
+      const margin = node.type === 'conversation' ? 24 : 48;
+      node.vx += (width / 2 - node.x) * .0007 / node.mass; node.vy += (height / 2 - node.y) * .0007 / node.mass;
+      if (node.x < margin) node.vx += (margin - node.x) * .025;
+      if (node.x > width - margin) node.vx -= (node.x - width + margin) * .025;
+      if (node.y < margin) node.vy += (margin - node.y) * .025;
+      if (node.y > height - margin) node.vy -= (node.y - height + margin) * .025;
+      if (node !== dragged) {
+        node.vx *= .84; node.vy *= .84;
+        const speed = Math.hypot(node.vx, node.vy), limit = 2.4;
+        if (speed > limit) { node.vx *= limit / speed; node.vy *= limit / speed; }
+        node.x += node.vx; node.y += node.vy;
+        if (node.x < margin) { node.x = margin; node.vx = Math.max(0, node.vx) * .35; }
+        if (node.x > width - margin) { node.x = width - margin; node.vx = Math.min(0, node.vx) * .35; }
+        if (node.y < margin) { node.y = margin; node.vy = Math.max(0, node.vy) * .35; }
+        if (node.y > height - margin) { node.y = height - margin; node.vy = Math.min(0, node.vy) * .35; }
+      }
+    }
+  };
+  const draw = () => {
+    for (const node of nodes) {
+      node.el.setAttribute('transform', `translate(${node.x} ${node.y})`);
+    }
+    for (const link of links) { link.el.setAttribute('x1', link.source.x); link.el.setAttribute('y1', link.source.y); link.el.setAttribute('x2', link.target.x); link.el.setAttribute('y2', link.target.y); }
+  };
+  for (let i = 0; i < 90; i++) simulate();
+  draw();
+  const tick = () => {
+    if (stopped) return;
+    simulate(); draw();
+    if (++frame < 360 || dragged) requestAnimationFrame(tick);
+  };
+  const point = event => { const rect = svg.getBoundingClientRect(); return { x: (event.clientX - rect.left - transform.x) / transform.k, y: (event.clientY - rect.top - transform.y) / transform.k }; };
+  for (const node of nodes) node.el.addEventListener('pointerdown', event => {
+    if (event.button !== 0) return;
+    event.stopPropagation(); dragged = node; dragOrigin = { x: event.clientX, y: event.clientY }; node.didDrag = false; node.el.setPointerCapture(event.pointerId);
+  });
+  svg.addEventListener('pointerdown', event => {
+    if (event.button !== 0) return;
+    panning = { x: event.clientX, y: event.clientY, tx: transform.x, ty: transform.y };
+    svg.classList.add('panning'); svg.setPointerCapture(event.pointerId);
+  });
+  svg.addEventListener('pointermove', event => {
+    if (dragged) {
+      if (Math.hypot(event.clientX - dragOrigin.x, event.clientY - dragOrigin.y) > 3) dragged.didDrag = true;
+      const p = point(event); dragged.x = p.x; dragged.y = p.y; dragged.vx = dragged.vy = 0; frame = 0; requestAnimationFrame(tick); return;
+    }
+    if (panning) { transform.x = panning.tx + event.clientX - panning.x; transform.y = panning.ty + event.clientY - panning.y; updateTransform(); }
+  });
+  const endPointer = () => { dragged = null; dragOrigin = null; panning = null; svg.classList.remove('panning'); };
+  svg.addEventListener('pointerup', endPointer);
+  svg.addEventListener('pointercancel', endPointer);
+  svg.addEventListener('wheel', event => { event.preventDefault(); const rect = svg.getBoundingClientRect(), old = transform.k, next = Math.max(.35, Math.min(3, old * (event.deltaY > 0 ? .9 : 1.1))), px = event.clientX - rect.left, py = event.clientY - rect.top; transform.x = px - (px - transform.x) * next / old; transform.y = py - (py - transform.y) * next / old; transform.k = next; updateTransform(); }, { passive: false });
+  graphCleanup = () => { stopped = true; };
+  requestAnimationFrame(tick);
+}
+
+let graphResizeTimer;
+window.addEventListener('resize', () => {
+  if (view !== 'graph') return;
+  clearTimeout(graphResizeTimer);
+  graphResizeTimer = setTimeout(renderGraph, 150);
+});
+
+$('search-form').onsubmit = event => { event.preventDefault(); action(search); };
+for (const name of ['tool', 'topic', 'project', 'after', 'before']) $(name).onchange = () => action(search);
+for (const name of ['query', 'limit', 'max-chars']) $(name).onchange = saveCurrent;
+$('group-by').onchange = () => { renderList(); saveCurrent(); };
+$('reset').onclick = () => { for (const name of ['query', 'tool', 'topic', 'project', 'after', 'before']) $(name).value = ''; matches = null; graphFocus = null; graphTransform = { x:0, y:0, k:1 }; render(); saveCurrent(); };
+$('refresh').onclick = () => action(load);
+$('list-view').onclick = () => setView('list');
+$('graph-view').onclick = () => setView('graph');
+$('context').onclick = () => action(async () => { const q = $('query').value.trim(); if (!q) throw new Error('Enter a search query first.'); show('Prompt context', await request('/api/context?' + queryParams())); setView('list'); });
+$('audit').onclick = () => action(async () => { const results = await request('/api/audit'), entries = Object.entries(results || {}); show('Privacy audit', entries.length ? entries.map(([file, warnings]) => file + '\n' + warnings.join('\n')).join('\n\n') : 'Privacy audit passed: no potential leaks detected.'); setView('list'); });
+$('copy').onclick = () => action(async () => navigator.clipboard.writeText($('detail').textContent));
+$('saved-views').onchange = () => { const state = stored(viewKey, {})[$('saved-views').value]; if (state) action(() => applyView(state)); };
+$('save-view').onclick = () => {
+  const name = prompt('Name this view:', $('saved-views').value || 'My view')?.trim();
+  if (!name) return;
+  if (name.length > 80) { $('status').textContent = 'View name must be 80 characters or fewer.'; return; }
+  try { const views = stored(viewKey, {}); views[name] = viewState(); localStorage.setItem(viewKey, JSON.stringify(views)); refreshSavedViews(); $('saved-views').value = name; $('status').textContent = 'View saved.'; }
+  catch (error) { $('status').textContent = 'Could not save view: ' + error.message; }
+};
+$('delete-view').onclick = () => {
+  const name = $('saved-views').value; if (!name) return;
+  try { const views = stored(viewKey, {}); delete views[name]; localStorage.setItem(viewKey, JSON.stringify(views)); refreshSavedViews(); $('status').textContent = 'View deleted.'; }
+  catch (error) { $('status').textContent = 'Could not delete view: ' + error.message; }
+};
+action(async () => { await load(); refreshSavedViews(); if (initialView) await applyView(initialView); });
 </script>
 </body>
 </html>

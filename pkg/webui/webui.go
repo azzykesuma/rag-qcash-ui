@@ -14,6 +14,7 @@ import (
 	"runtime"
 	"strconv"
 	"strings"
+	"sync"
 	"time"
 
 	"llm-context-vault/pkg/sanitizer"
@@ -24,11 +25,42 @@ import (
 var dashboard string
 
 type session struct {
-	File    string `json:"file"`
-	Title   string `json:"title"`
-	Tool    string `json:"tool"`
-	Date    string `json:"date"`
-	Project string `json:"project"`
+	File      string `json:"file"`
+	Title     string `json:"title"`
+	Tool      string `json:"tool"`
+	Date      string `json:"date"`
+	Project   string `json:"project"`
+	Topic     string `json:"topic"`
+	AutoTopic string `json:"autoTopic"`
+}
+
+var topicRules = []struct {
+	name  string
+	terms []string
+}{
+	{"Bamboo & CI fixes", []string{"bamboo", "build pipeline", "ci pipeline", "ci/cd", "build error", "build failure", "failing build", "yarn build"}},
+	{"Testing & coverage", []string{"unit test", "test coverage", "failing test", "jest", "vitest", "playwright", "coverage"}},
+	{"Sonar & code quality", []string{"sonar", "code quality", "quality gate", "code smell"}},
+	{"Git & pull requests", []string{"git ", "branch", "commit", "cherry-pick", "cherry pick", "pull request", "merge conflict", "bitbucket", "push changes"}},
+	{"Authentication", []string{"auth", "login", "logout", "session expir", "unauthorized", "permission", "token"}},
+	{"Docker & deployment", []string{"docker", "deploy", "container", "kubernetes", "helm", "nexus", "registry"}},
+	{"APIs & integration", []string{" api", "api ", "endpoint", "axios", "request", "response", "integration"}},
+	{"UI & frontend", []string{" ui", "ui ", "component", "dialog", "modal", "dropdown", "form", "css", "frontend", "navigation"}},
+	{"Vault maintenance", []string{"vault", "conversation export", "sanitiz", "redact"}},
+	{"Architecture & analysis", []string{"architect", "analy", "investigat", "trace ", "explain", "review"}},
+	{"Bug fixing", []string{"bug", "fix", "error", "issue", "fail", "broken", "crash", "not working"}},
+}
+
+func sessionTopic(s session) string {
+	haystack := " " + strings.ToLower(s.Title+" "+s.File) + " "
+	for _, rule := range topicRules {
+		for _, term := range rule.terms {
+			if strings.Contains(haystack, term) {
+				return rule.name
+			}
+		}
+	}
+	return "General development"
 }
 
 // Run serves the dashboard on loopback until the process is stopped.
@@ -73,7 +105,7 @@ func launchBrowser(url string) error {
 	return nil
 }
 
-// NewHandler exposes only exported Markdown and read-only vault operations.
+// NewHandler serves exported Markdown and local-only dashboard metadata.
 func NewHandler(baseDir string) (http.Handler, error) {
 	root, err := os.OpenRoot(filepath.Join(baseDir, "conversations", "markdown"))
 	if err != nil {
@@ -83,6 +115,7 @@ func NewHandler(baseDir string) (http.Handler, error) {
 	root.Close()
 	v := vault.New(baseDir, sanitizer.New(sanitizer.DefaultConfig()))
 	mdDir := filepath.Join(baseDir, "conversations", "markdown")
+	var topicMu sync.Mutex
 	mux := http.NewServeMux()
 	mux.HandleFunc("GET /favicon.ico", func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusNoContent)
@@ -93,6 +126,13 @@ func NewHandler(baseDir string) (http.Handler, error) {
 	})
 	mux.HandleFunc("GET /api/sessions", func(w http.ResponseWriter, r *http.Request) {
 		aliases, err := loadProjectAliases(baseDir)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		topicMu.Lock()
+		overrides, err := loadTopicOverrides(baseDir)
+		topicMu.Unlock()
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
@@ -139,13 +179,69 @@ func NewHandler(baseDir string) (http.Handler, error) {
 			if alias := aliases[entry.Name()]; alias != "" {
 				s.Project = alias
 			}
+			s.AutoTopic = sessionTopic(s)
+			s.Topic = s.AutoTopic
+			if topic := overrides[s.File]; topic != "" {
+				s.Topic = topic
+			}
 			sessions = append(sessions, s)
 		}
 		writeJSON(w, sessions, nil)
 	})
+	mux.HandleFunc("PUT /api/topic", func(w http.ResponseWriter, r *http.Request) {
+		var update struct {
+			File  string `json:"file"`
+			Topic string `json:"topic"`
+		}
+		if err := json.NewDecoder(http.MaxBytesReader(w, r.Body, 2048)).Decode(&update); err != nil || !validSessionFile(update.File) || !validTopic(update.Topic) {
+			http.Error(w, "Invalid topic update", http.StatusBadRequest)
+			return
+		}
+		root, err := os.OpenRoot(mdDir)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		f, err := root.Open(update.File)
+		root.Close()
+		if err != nil {
+			http.NotFound(w, r)
+			return
+		}
+		f.Close()
+		topicMu.Lock()
+		defer topicMu.Unlock()
+		overrides, err := loadTopicOverrides(baseDir)
+		if err == nil {
+			if update.Topic == "" {
+				delete(overrides, update.File)
+			} else {
+				overrides[update.File] = update.Topic
+			}
+			err = saveTopicOverrides(baseDir, overrides)
+		}
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		writeJSON(w, map[string]string{"topic": update.Topic}, nil)
+	})
+	mux.HandleFunc("GET /api/insights", func(w http.ResponseWriter, r *http.Request) {
+		name := r.URL.Query().Get("file")
+		if !validSessionFile(name) {
+			http.Error(w, "Invalid conversation filename", http.StatusBadRequest)
+			return
+		}
+		result, err := conversationInsights(mdDir, name, v)
+		if os.IsNotExist(err) {
+			http.NotFound(w, r)
+			return
+		}
+		writeJSON(w, result, err)
+	})
 	mux.HandleFunc("GET /api/conversation", func(w http.ResponseWriter, r *http.Request) {
 		name := r.URL.Query().Get("file")
-		if name == "" || strings.ContainsAny(name, "/\\:") || filepath.Ext(name) != ".md" {
+		if !validSessionFile(name) {
 			http.Error(w, "Invalid conversation filename", http.StatusBadRequest)
 			return
 		}
