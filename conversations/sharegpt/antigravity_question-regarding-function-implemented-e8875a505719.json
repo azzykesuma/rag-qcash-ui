@@ -1,0 +1,79 @@
+{
+  "id": "antigravity-95a8808fc6f6cd2f1e940c81808cd8516515d1ee926ec70395dfe8875a505719",
+  "conversations": [
+    {
+      "from": "human",
+      "value": "i got some question regarding the function not implemented error, you can search rag for this question\n1. my question here is, there is a company that is using my app that has the most frequent errors for this function not implemented issue, so why is this company always hits this particular issue ? i mean other company do hits this error, but this single company hits the error the most"
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": "I have initiated a search in the Context Vault for discussions and incident records regarding the \"function not implemented\" error. I will analyze the findings as soon as the results are returned."
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": "I am retrieving and analyzing the occurrences and investigations of the \"function not implemented\" error from the vault logs. I will have the findings in a moment."
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": "I am checking additional incident references across client reports. Let me know if you would like me to focus on specific modules as well."
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": "Based on the investigations recorded in the Context Vault, here is the technical breakdown of what the **`\"Function not implemented\"`** error actually is, and **why one specific company is triggering it significantly more frequently than others**.\n\n---\n\n### 1. What the Error Actually Is (Root Cause)\n\nIn `@ordentco/addons-auth-provider` (and `@bri/addons-auth-provider`), the default React context defines fallback stub functions:\n\n```ts\nconst AUTH_INITIAL_VALUES = {\n  isAuthoritiesReady: false,\n  guard: () =\u003e {\n    throw new Error(\"Function not implemented.\"); // 👈 Thrown ONLY when guard() is executed!\n  },\n  setToken: () =\u003e { throw new Error(\"Function not implemented.\"); },\n  // ...\n};\n\nconst AuthContext = createContext(AUTH_INITIAL_VALUES);\n```\n\nThis error is **action-triggered**:\n* It occurs when a remote micro-frontend (MFE) component consumes `useAuth()` and invokes `guard()` (e.g. inside `useEffect(() =\u003e { guard(); }, [])`), but **Module Federation failed to connect the remote component to the Shell's active `\u003cAuthProvider\u003e`**.\n* When there is a **version drift**, **missing `singleton: true` in `next.config.js`**, or a **dynamic import mount delay**, Webpack instantiates an isolated `AuthContext` in the remote chunk. Without a provider wrapping it, `useAuth()` falls back to `AUTH_INITIAL_VALUES` and crashes with `Uncaught Error: Function not implemented`.\n\n---\n\n### 2. Why Does This Single Company Hit It the Most?\n\nBecause all companies share the same codebase, the disparity in error frequency comes down to **module entitlement, payload characteristics, user behavior patterns, and network environments**:\n\n#### A. Entitlement to Un-migrated, Guard-Heavy Remote MFEs (e.g., Mass Transfer / LC / Payroll)\n* Not all client companies use the same modules. Standard companies might primarily use Single Transfer, Account Inquiry, or Core Dashboard screens (which may not call `guard()` directly).\n* In contrast, large enterprises frequently use modules like **Mass Transfer**, **Issuance LC**, or **Auto Collection**.\n* As identified in the stack trace logs, **all exposed pages in `mass-transfer` (Maker Confirmation, Upload Transaction, Transaction Action, etc.) contain unhandled `guard()` calls in passive effects**:\n  ```tsx\n  useEffect(() =\u003e {\n    guard(); // ⚠️ Fires on every mount without promise rejection handling\n  }, []);\n  ```\n  If this company's daily business operations heavily revolve around these specific remote MFEs, their users hit the dangerous code path hundreds of times more often than other companies.\n\n#### B. Heavy Maker / Checker / Signer Traffic and Frequent SPA Route Transitions\n* A high-transaction company usually has multiple dedicated operators (makers, checkers, signers) working in shifts.\n* These users frequently jump between the **Task List / Inbox**, **Dashboard**, and **Remote Feature Screens** to review and approve batches.\n* Because every inter-module SPA navigation mounts and unmounts federated micro-frontends, each transition re-triggers the remote chunk's `useEffect(() =\u003e guard(), [])`. Higher navigation volume directly correlates with a higher probability of hitting the race window.\n\n#### C. Massive Authority / Menu Payload Size Widens the Race Window\n* Large enterprise accounts have complex organizational structures: dozens or hundreds of accounts, multi-tier approvals, and extensive product licenses.\n* When their users log in or validate auth, the backend responses for `/menu/me` and `/auth/me` are substantially larger in payload size.\n* A heavier payload increases API latency, which **widens the timing window** during which `isAuthoritiesReady` is `false` and the provider is still hydrating. If a remote component mounts before this completes, any early `guard()` invocation immediately explodes.\n\n#### D. Corporate Network Proxies \u0026 Aggressive Browser Disk Caching\n* Enterprise clients often operate inside locked-down corporate LANs, forward proxies, VPNs, or virtual desktop infrastructures (VDI / Citrix).\n* If the company's internal proxy or browser policy aggressively caches JavaScript chunks (`remoteEntry.js` or chunk bundles), their client machines may run **stale remote chunks that still contain older auth guard calls**, while the host shell has already moved forward.\n* Mismatched chunk hashes across federation boundaries guarantee context isolation, leading directly to the `Function not implemented` stub fallback.\n\n#### E. Multi-Tab \u0026 Concurrent Session Behavior\n* High-volume financial operators commonly open multiple tabs simultaneously (e.g., keeping the dashboard open in Tab 1 while processing transactions in Tabs 2 and 3).\n* When token expiration or storage sync events occur across tabs, multiple concurrent `guard()` or revalidation requests fire simultaneously, overloading the shared federation state and causing race conditions.\n\n---\n\n### Summary \u0026 Permanent Resolution\n\nThe issue is disproportionately hitting this company because **their specific workflow (heavy remote MFE usage + frequent maker-checker page transitions + larger account/permission payloads)** repeatedly triggers the unhandled `guard()` call sites.\n\nThe established permanent fix across the architecture consists of:\n1. **Centralizing the Guard (Passive Remotes):** Removing `useEffect(() =\u003e { guard(); }, [])` from federated remote pages and having remotes only passively read auth status (`isAuthoritiesReady`, `username`, `userType`).\n2. **Strict Webpack Singleton Enforcement:** Ensuring all remote repositories configure `@ordentco/addons-auth-provider` with `{ singleton: true, requiredVersion: false }`.\n3. **Static Provider Imports in the Host:** Importing `\u003cAuthProvider\u003e` statically rather than through `next/dynamic({ ssr: false })` to eliminate tick-0 mounting delays."
+    }
+  ],
+  "source": "antigravity",
+  "tags": [
+    "coding",
+    "assistant",
+    "antigravity"
+  ]
+}
