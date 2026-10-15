@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"flag"
 	"fmt"
 	"os"
@@ -9,6 +10,7 @@ import (
 	"strings"
 	"time"
 
+	"llm-context-vault/pkg/benchmark"
 	"llm-context-vault/pkg/sanitizer"
 	"llm-context-vault/pkg/vault"
 	"llm-context-vault/pkg/webui"
@@ -29,6 +31,7 @@ COMMANDS:
   import <path>          Extract, sanitize, and add a single file/folder
   search <query>         Search indexed conversations for solutions or code
   context <query>        Generate context snippet to inject into local LLM prompt
+  benchmark [options]    Benchmark token usage, response speed, and accuracy (Baseline vs Vault)
   audit                  Audit all stored conversations for secrets / leaked paths
   stats                  Display statistics about stored conversations
   ui                     Launch the local web dashboard (--port 8080, --no-browser)
@@ -199,6 +202,12 @@ func main() {
 
 	case "stats":
 		showStats(workDir)
+
+	case "benchmark":
+		if err := runBenchmark(workDir, args[1:]); err != nil {
+			fmt.Printf("❌ Benchmark failed: %v\n", err)
+			os.Exit(1)
+		}
 
 	case "pull":
 		if err := pullRepo(workDir, args[1:]); err != nil {
@@ -409,3 +418,77 @@ func indent(s, prefix string) string {
 	}
 	return strings.Join(lines, "\n")
 }
+
+func runBenchmark(baseDir string, args []string) error {
+	fs := flag.NewFlagSet("benchmark", flag.ContinueOnError)
+	tasksFlag := fs.String("tasks", filepath.Join(baseDir, "benchmark", "tasks.json"), "Path to benchmark tasks JSON")
+	reportFlag := fs.String("out", filepath.Join(baseDir, "benchmark", "report.md"), "Path to output Markdown report")
+	jsonFlag := fs.String("json", filepath.Join(baseDir, "benchmark", "results.json"), "Path to output JSON summary")
+	runnerFlag := fs.String("runner", "auto", "LLM runner backend: auto, gemini, opencode, openai, offline")
+	modelFlag := fs.String("model", "", "Model identifier (e.g. gemini-2.5-flash, deepseek/deepseek-flash, gpt-4o-mini)")
+	apiKeyFlag := fs.String("api-key", "", "API key (defaults to GEMINI_API_KEY / OPENAI_API_KEY)")
+	baseURLFlag := fs.String("base-url", "", "Custom base URL for OpenAI-compatible endpoint")
+	limitFlag := fs.Int("limit", 0, "Maximum number of tasks to evaluate (0 = all)")
+	maxCharsFlag := fs.Int("max-chars", 6000, "Maximum characters of vault context to inject")
+	judgeFlag := fs.Bool("judge", false, "Enable LLM-as-a-judge scoring")
+	judgeModelFlag := fs.String("judge-model", "", "Model name for LLM judge (defaults to --model)")
+
+	if err := fs.Parse(args); err != nil {
+		return err
+	}
+
+	v := vault.New(baseDir, sanitizer.New(sanitizer.DefaultConfig()))
+
+	// Ensure search index is up-to-date
+	if err := v.RefreshSearchIndex(); err != nil {
+		fmt.Printf("⚠️ Note on search index: %v\n", err)
+	}
+
+	cfg := benchmark.RunnerConfig{
+		Vault:       v,
+		TasksFile:   *tasksFlag,
+		ReportFile:  *reportFlag,
+		JSONFile:    *jsonFlag,
+		RunnerType:  *runnerFlag,
+		Model:       *modelFlag,
+		APIKey:      *apiKeyFlag,
+		BaseURL:     *baseURLFlag,
+		MaxChars:    *maxCharsFlag,
+		Limit:       *limitFlag,
+		EnableJudge: *judgeFlag,
+		JudgeModel:  *judgeModelFlag,
+	}
+
+	runner, err := benchmark.NewRunner(cfg)
+	if err != nil {
+		return fmt.Errorf("failed to initialize benchmark runner: %w", err)
+	}
+
+	fmt.Printf("🚀 Starting LLM Context Vault Benchmark\n")
+	fmt.Printf("   - Backend: %s\n", runner.BackendName())
+	fmt.Printf("   - Tasks:   %s\n\n", *tasksFlag)
+
+	summary, err := runner.Run(context.Background())
+	if err != nil {
+		return fmt.Errorf("benchmark execution error: %w", err)
+	}
+
+	if err := benchmark.SaveReport(summary, *reportFlag, *jsonFlag); err != nil {
+		return fmt.Errorf("failed to save report: %w", err)
+	}
+
+	fmt.Printf("\n✅ Benchmark completed successfully!\n")
+	fmt.Printf("   - Tasks Evaluated: %d (Successful: %d)\n", summary.TotalTasks, summary.SuccessfulTasks)
+	fmt.Printf("   - Net Token Impact: %+.1f%%\n", -summary.NetTokenSavingsPct)
+	fmt.Printf("   - Speedup Factor:   %.2fx\n", summary.SpeedupFactor)
+	fmt.Printf("   - Accuracy Gain:    %+.1f%%\n", summary.AccuracyImprovementPct)
+	if *reportFlag != "" {
+		fmt.Printf("   - Markdown Report:  %s\n", *reportFlag)
+	}
+	if *jsonFlag != "" {
+		fmt.Printf("   - JSON Summary:     %s\n", *jsonFlag)
+	}
+
+	return nil
+}
+

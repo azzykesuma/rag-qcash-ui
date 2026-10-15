@@ -195,7 +195,27 @@ Project aliases are captured from source metadata when available. For older expo
 
 This mapping remains local and is not committed.
 
-### 5. Local Web Dashboard
+### 5. Benchmark Context Vault Effectiveness
+Quantify token savings, retrieval latency, and accuracy gains comparing **Baseline (No Vault)** vs **Vault-Assisted** execution across curated engineering tasks:
+
+```bash
+# Run benchmark with automatic runner detection
+vault benchmark
+
+# Run benchmark against local OpenCode or Gemini
+vault benchmark --runner opencode --model deepseek/deepseek-flash
+vault benchmark --runner gemini --model gemini-2.5-flash
+
+# Run offline deterministic benchmark without API keys
+vault benchmark --runner offline
+
+# Custom task suite, limit, and output report
+vault benchmark --tasks benchmark/tasks.json --out benchmark/report.md --limit 5
+```
+
+The benchmark runs each task under two conditions (Arm A: blind query, Arm B: query + `vault context`), tracks exact prompt/completion token usage and wall-clock times, evaluates fact recall against ground truth criteria, and exports an executive scorecard and task breakdown in `benchmark/report.md` and `benchmark/results.json`.
+
+### 6. Local Web Dashboard
 Launch the embedded dashboard to browse conversations grouped by topic, explore an interactive knowledge graph, filter by topic/assistant/project/date, run ranked search, generate bounded prompt context, and run a privacy audit:
 ```bash
 vault ui
@@ -206,13 +226,13 @@ By default, the dashboard opens your browser at `http://127.0.0.1:8080`. It runs
 
 In the conversation viewer, change a topic using the topic selector ("Auto-detect topic" clears the correction). Corrections are kept locally in `.vault/topics.json`, not in the exported dataset. The viewer shows an extractive problem statement, the last assistant note, and full-text-search-based related conversations. Outcomes remain unknown unless a later user turn explicitly confirms success. Related matches are shown as dashed links in the graph when the selected conversation is visible. Click a graph topic or project to focus its immediate connections. Saved views store named filters and graph position in your browser; the last-used view is restored on reload.
 
-### 6. Audit Before Git Push
+### 7. Audit Before Git Push
 Verify that 0 secrets or machine paths exist in your repository:
 ```bash
 vault audit
 ```
 
-### 7. Pull Latest Changes
+### 8. Pull Latest Changes
 Fetch and fast-forward the vault repository to the latest changes from GitHub:
 ```bash
 vault pull

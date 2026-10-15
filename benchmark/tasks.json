@@ -1,0 +1,47 @@
+[
+  {
+    "id": "auth-gate-architecture",
+    "project": "qcash-ui",
+    "category": "architecture",
+    "query": "How is page readiness and authentication gating handled across pages in QCash micro-frontends?",
+    "ground_truth": "HostAuthGate owns /auth/me and /menu/me. Pages should control rendering readiness through isAuthoritiesReady rather than stale local cache or local login strings.",
+    "expected_keywords": ["HostAuthGate", "isAuthoritiesReady", "/auth/me", "/menu/me"],
+    "negative_keywords": ["NextAuth", "Django", "passport.js"]
+  },
+  {
+    "id": "vault-scan-optimization",
+    "project": "llm-context-vault",
+    "category": "performance",
+    "query": "How does llm-context-vault optimize repeat scans and avoid re-processing unchanged sessions?",
+    "ground_truth": "Uses an incremental cache to skip unchanged file-based sessions, limits changed sessions per batch (default 10), and defers the repository-wide privacy audit for bounded scans.",
+    "expected_keywords": ["incremental cache", "unchanged", "audit", "bounded", "deferred"],
+    "negative_keywords": ["Redis", "Elasticsearch"]
+  },
+  {
+    "id": "sanitization-path-policy",
+    "project": "llm-context-vault",
+    "category": "security",
+    "query": "What is the vault sanitization policy for Windows and Unix machine file paths before publishing?",
+    "ground_truth": "Strips Windows paths (C:\\Users\\username\\...) and Unix paths (/home/username/...) replacing them with ~/...",
+    "expected_keywords": ["C:\\Users", "~/...", "redact", "path"],
+    "negative_keywords": ["plain text", "unmasked"]
+  },
+  {
+    "id": "overengineering-dead-assets",
+    "project": "qcash-ui-dashboard-auto-collection",
+    "category": "refactor",
+    "query": "What dead scripts and unnecessary assets were identified for removal during the overengineering audit?",
+    "ground_truth": "scripts/analyze-bundle.js, scripts/update-version-file.js, unused asset directories (files, flags, fonts, icons, images, img), and version file.",
+    "expected_keywords": ["analyze-bundle.js", "update-version-file.js", "assets", "audit"],
+    "negative_keywords": ["npm install webpack-bundle-analyzer"]
+  },
+  {
+    "id": "negative-control-novel-task",
+    "project": "general",
+    "category": "negative_control",
+    "query": "How do we calculate quantum entropy using the BB84 protocol simulation in Python?",
+    "ground_truth": "Standard BB84 quantum key distribution simulation using qubit state preparation, basis measurement, and error rate estimation.",
+    "expected_keywords": ["qubit", "basis", "entropy", "BB84"],
+    "negative_keywords": []
+  }
+]
