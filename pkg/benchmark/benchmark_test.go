@@ -127,6 +127,9 @@ HostAuthGate owns /auth/me and page readiness uses isAuthoritiesReady.
 	if summary.TotalTasks != 1 || summary.SuccessfulTasks != 1 {
 		t.Fatalf("expected 1 successful task, got %d/%d", summary.SuccessfulTasks, summary.TotalTasks)
 	}
+	if summary.Results[0].ContextSnippet == "" {
+		t.Fatal("expected real retrieved context for the successful task")
+	}
 
 	if err := SaveReport(summary, reportFile, jsonFile); err != nil {
 		t.Fatalf("SaveReport failed: %v", err)
@@ -142,5 +145,72 @@ HostAuthGate owns /auth/me and page readiness uses isAuthoritiesReady.
 	}
 	if !strings.Contains(reportContent, "auth-gate") {
 		t.Fatalf("report missing task ID: %s", reportContent)
+	}
+}
+
+type recordingBackend struct{ prompts []string }
+
+func (b *recordingBackend) Name() string { return "recording" }
+func (b *recordingBackend) Generate(_ context.Context, _, prompt string) (string, TokenUsage, error) {
+	b.prompts = append(b.prompts, prompt)
+	return "answer", TokenUsage{TotalTokens: 5}, nil
+}
+
+func TestMissingContextExcludesTask(t *testing.T) {
+	dir := t.TempDir()
+	if err := os.MkdirAll(filepath.Join(dir, "conversations", "markdown"), 0755); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(filepath.Join(dir, "tasks.json"), []byte(`[{"id":"missing","query":"nonexistent fact","expected_keywords":["fact"]}]`), 0644); err != nil {
+		t.Fatal(err)
+	}
+	r, err := NewRunner(RunnerConfig{Vault: vault.New(dir, sanitizer.New(sanitizer.DefaultConfig())), TasksFile: filepath.Join(dir, "tasks.json"), RunnerType: "offline"})
+	if err != nil {
+		t.Fatal(err)
+	}
+	s, err := r.Run(context.Background())
+	if err != nil {
+		t.Fatal(err)
+	}
+	if s.SuccessfulTasks != 0 || s.Results[0].Error == "" || s.AvgVaultKeywordScore != 0 {
+		t.Fatalf("missing context must not count as a successful vault task: %+v", s)
+	}
+	report := GenerateMarkdownReport(s)
+	if !strings.Contains(report, "**Failed:**") || !strings.Contains(report, "| `—` | `—` | `—` |") {
+		t.Fatalf("failure must be explicit and unscored in report: %s", report)
+	}
+}
+
+func TestRepeatedRunsAlternateArmOrder(t *testing.T) {
+	dir := t.TempDir()
+	if err := os.MkdirAll(filepath.Join(dir, "conversations", "markdown"), 0755); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(filepath.Join(dir, "tasks.json"), []byte(`[{"id":"control","category":"negative_control","query":"unrelated question"}]`), 0644); err != nil {
+		t.Fatal(err)
+	}
+	r, err := NewRunner(RunnerConfig{Vault: vault.New(dir, sanitizer.New(sanitizer.DefaultConfig())), TasksFile: filepath.Join(dir, "tasks.json"), RunnerType: "offline", Repeats: 2})
+	if err != nil {
+		t.Fatal(err)
+	}
+	b := &recordingBackend{}
+	r.backend = b
+	s, err := r.Run(context.Background())
+	if err != nil {
+		t.Fatal(err)
+	}
+	if s.TotalTasks != 2 || s.SuccessfulTasks != 2 || len(b.prompts) != 4 {
+		t.Fatalf("unexpected repeated results: %+v, prompts: %v", s, b.prompts)
+	}
+	if b.prompts[0] != "unrelated question" || b.prompts[1] == "unrelated question" || b.prompts[2] == "unrelated question" || b.prompts[3] != "unrelated question" {
+		t.Fatalf("arm execution order was not reversed: %v", b.prompts)
+	}
+}
+
+func TestParseScoreRejectsInvalidValues(t *testing.T) {
+	for _, score := range []string{"Score A: 0", "Score A: 5.9", "Score A: 50"} {
+		if got := parseScore(score, "Score A:"); got != 0 {
+			t.Errorf("%q parsed as %v", score, got)
+		}
 	}
 }

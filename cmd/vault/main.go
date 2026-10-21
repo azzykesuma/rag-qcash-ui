@@ -31,7 +31,7 @@ COMMANDS:
   import <path>          Extract, sanitize, and add a single file/folder
   search <query>         Search indexed conversations for solutions or code
   context <query>        Generate context snippet to inject into local LLM prompt
-  benchmark [options]    Benchmark token usage, response speed, and accuracy (Baseline vs Vault)
+	  benchmark [options]    Compare blind-query and vault-injected generation
   audit                  Audit all stored conversations for secrets / leaked paths
   stats                  Display statistics about stored conversations
   ui                     Launch the local web dashboard (--port 8080, --no-browser)
@@ -429,12 +429,16 @@ func runBenchmark(baseDir string, args []string) error {
 	apiKeyFlag := fs.String("api-key", "", "API key (defaults to GEMINI_API_KEY / OPENAI_API_KEY)")
 	baseURLFlag := fs.String("base-url", "", "Custom base URL for OpenAI-compatible endpoint")
 	limitFlag := fs.Int("limit", 0, "Maximum number of tasks to evaluate (0 = all)")
+	repeatsFlag := fs.Int("repeats", 2, "Runs per task (alternates which arm runs first)")
 	maxCharsFlag := fs.Int("max-chars", 6000, "Maximum characters of vault context to inject")
 	judgeFlag := fs.Bool("judge", false, "Enable LLM-as-a-judge scoring")
 	judgeModelFlag := fs.String("judge-model", "", "Model name for LLM judge (defaults to --model)")
 
 	if err := fs.Parse(args); err != nil {
 		return err
+	}
+	if *repeatsFlag < 1 {
+		return fmt.Errorf("--repeats must be at least 1")
 	}
 
 	v := vault.New(baseDir, sanitizer.New(sanitizer.DefaultConfig()))
@@ -455,6 +459,7 @@ func runBenchmark(baseDir string, args []string) error {
 		BaseURL:     *baseURLFlag,
 		MaxChars:    *maxCharsFlag,
 		Limit:       *limitFlag,
+		Repeats:     *repeatsFlag,
 		EnableJudge: *judgeFlag,
 		JudgeModel:  *judgeModelFlag,
 	}
@@ -479,9 +484,9 @@ func runBenchmark(baseDir string, args []string) error {
 
 	fmt.Printf("\n✅ Benchmark completed successfully!\n")
 	fmt.Printf("   - Tasks Evaluated: %d (Successful: %d)\n", summary.TotalTasks, summary.SuccessfulTasks)
-	fmt.Printf("   - Net Token Impact: %+.1f%%\n", -summary.NetTokenSavingsPct)
-	fmt.Printf("   - Speedup Factor:   %.2fx\n", summary.SpeedupFactor)
-	fmt.Printf("   - Accuracy Gain:    %+.1f%%\n", summary.AccuracyImprovementPct)
+	fmt.Printf("   - Token Change: %+.1f%%\n", summary.TokenChangePct)
+	fmt.Printf("   - Generation Time Ratio (retrieval excluded): %.2fx\n", summary.GenerationTimeRatio)
+	fmt.Printf("   - Keyword Coverage Change (proxy): %+.1f%%\n", summary.KeywordCoverageChangePct)
 	if *reportFlag != "" {
 		fmt.Printf("   - Markdown Report:  %s\n", *reportFlag)
 	}
@@ -491,4 +496,3 @@ func runBenchmark(baseDir string, args []string) error {
 
 	return nil
 }
-

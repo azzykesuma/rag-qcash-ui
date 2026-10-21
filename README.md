@@ -196,7 +196,7 @@ Project aliases are captured from source metadata when available. For older expo
 This mapping remains local and is not committed.
 
 ### 5. Benchmark Context Vault Effectiveness
-Quantify token savings, retrieval latency, and accuracy gains comparing **Baseline (No Vault)** vs **Vault-Assisted** execution across curated engineering tasks:
+Compare generation token usage, retrieval latency, and keyword coverage between **blind questions** and **questions with vault context** across curated engineering tasks. This does not measure interactive repository exploration or verified factual accuracy:
 
 ```bash
 # Run benchmark with automatic runner detection
@@ -210,10 +210,10 @@ vault benchmark --runner gemini --model gemini-2.5-flash
 vault benchmark --runner offline
 
 # Custom task suite, limit, and output report
-vault benchmark --tasks benchmark/tasks.json --out benchmark/report.md --limit 5
+vault benchmark --tasks benchmark/tasks.json --out benchmark/report.md --limit 5 --repeats 2
 ```
 
-The benchmark runs each task under two conditions (Arm A: blind query, Arm B: query + `vault context`), tracks exact prompt/completion token usage and wall-clock times, evaluates fact recall against ground truth criteria, and exports an executive scorecard and task breakdown in `benchmark/report.md` and `benchmark/results.json`.
+The benchmark alternates arm order across repeats (default 2), excludes failed retrievals and generations from aggregate comparisons, and exports `benchmark/report.md` and `benchmark/results.json`. Token usage is provider-reported for Gemini/OpenAI and estimated for OpenCode/offline. Generation latency excludes context retrieval (reported separately). Keyword coverage is an imperfect proxy; optional `--judge` compares answers to ground truth, but should be independently reviewed. Offline mode uses fixed synthetic answers and is only a pipeline smoke test, not evidence of quality gains. Running with default output paths overwrites the existing saved report and JSON results.
 
 ### 6. Local Web Dashboard
 Launch the embedded dashboard to browse conversations grouped by topic, explore an interactive knowledge graph, filter by topic/assistant/project/date, run ranked search, generate bounded prompt context, and run a privacy audit:

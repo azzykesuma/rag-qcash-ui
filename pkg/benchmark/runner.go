@@ -37,6 +37,7 @@ type RunnerConfig struct {
 	BaseURL     string
 	MaxChars    int
 	Limit       int
+	Repeats     int
 	EnableJudge bool
 	JudgeModel  string
 	Timeout     time.Duration
@@ -56,6 +57,12 @@ func NewRunner(cfg RunnerConfig) (*Runner, error) {
 	}
 	if cfg.Timeout <= 0 {
 		cfg.Timeout = 60 * time.Second
+	}
+	if cfg.Repeats <= 0 {
+		cfg.Repeats = 1
+	}
+	if cfg.Vault == nil {
+		return nil, fmt.Errorf("benchmark requires a vault")
 	}
 
 	backend, err := resolveBackend(cfg.RunnerType, cfg.Model, cfg.APIKey, cfg.BaseURL, cfg.Timeout)
@@ -96,27 +103,30 @@ func (r *Runner) Run(ctx context.Context) (*BenchmarkSummary, error) {
 	}
 
 	summary := &BenchmarkSummary{
-		TotalTasks: len(tasks),
+		TotalTasks: len(tasks) * r.cfg.Repeats,
+		Repeats:    r.cfg.Repeats,
 		Model:      r.cfg.Model,
 		RunnerName: r.backend.Name(),
 		Timestamp:  time.Now().Format("2006-01-02 15:04:05"),
-		Results:    make([]TaskResult, 0, len(tasks)),
+		Results:    make([]TaskResult, 0, len(tasks)*r.cfg.Repeats),
 	}
 
 	systemInstruction := "You are a professional software engineer answering technical and architectural questions about this codebase. Answer concisely and accurately, citing specific components, files, or patterns when known."
 
-	for i, task := range tasks {
-		fmt.Printf("[%d/%d] Evaluating task: %s (%s)...\n", i+1, len(tasks), task.ID, task.Query)
-		res := r.evaluateTask(ctx, task, systemInstruction)
-		summary.Results = append(summary.Results, res)
-		if res.Error == "" {
-			summary.SuccessfulTasks++
-			fmt.Printf("   ✅ Baseline: %d tokens (%d ms) | Vault: %d tokens (%d ms) | Acc: %.0f%% -> %.0f%%\n",
-				res.Baseline.TotalTokens, res.Baseline.DurationMs,
-				res.VaultAssisted.TotalTokens, res.VaultAssisted.DurationMs,
-				res.Baseline.KeywordScore*100.0, res.VaultAssisted.KeywordScore*100.0)
-		} else {
-			fmt.Printf("   ⚠️ Error: %s\n", res.Error)
+	for repeat := 1; repeat <= r.cfg.Repeats; repeat++ {
+		for i, task := range tasks {
+			fmt.Printf("[%d/%d] Evaluating task: %s (%s), repeat %d/%d...\n", (repeat-1)*len(tasks)+i+1, summary.TotalTasks, task.ID, task.Query, repeat, r.cfg.Repeats)
+			res := r.evaluateTask(ctx, task, systemInstruction, repeat)
+			summary.Results = append(summary.Results, res)
+			if res.Error == "" {
+				summary.SuccessfulTasks++
+				fmt.Printf("   ✅ Baseline: %d tokens (%d ms) | Vault: %d tokens (%d ms) | Keyword proxy: %.0f%% -> %.0f%%\n",
+					res.Baseline.TotalTokens, res.Baseline.DurationMs,
+					res.VaultAssisted.TotalTokens, res.VaultAssisted.DurationMs,
+					res.Baseline.KeywordScore*100.0, res.VaultAssisted.KeywordScore*100.0)
+			} else {
+				fmt.Printf("   ⚠️ Error: %s\n", res.Error)
+			}
 		}
 	}
 
@@ -125,33 +135,13 @@ func (r *Runner) Run(ctx context.Context) (*BenchmarkSummary, error) {
 	return summary, nil
 }
 
-func (r *Runner) evaluateTask(ctx context.Context, task Task, systemInstruction string) TaskResult {
+func (r *Runner) evaluateTask(ctx context.Context, task Task, systemInstruction string, repeat int) TaskResult {
 	res := TaskResult{
-		Task: task,
+		Task:   task,
+		Repeat: repeat,
 	}
 
-	// 1. Arm A: Baseline (No Vault institutional context)
-	armAStart := time.Now()
-	respA, usageA, errA := r.backend.Generate(ctx, systemInstruction, task.Query)
-	armADuration := time.Since(armAStart)
-
-	if errA != nil {
-		res.Error = fmt.Sprintf("baseline failed: %v", errA)
-	}
-
-	res.Baseline = ArmExecution{
-		Prompt:           task.Query,
-		Response:         respA,
-		PromptTokens:     usageA.PromptTokens,
-		CompletionTokens: usageA.CompletionTokens,
-		TotalTokens:      usageA.TotalTokens,
-		Duration:         armADuration,
-		DurationMs:       armADuration.Milliseconds(),
-	}
-	res.Baseline.KeywordsMatched, res.Baseline.KeywordScore = evaluateKeywords(respA, task.ExpectedKeywords, task.NegativeKeywords)
-
-	// 2. Arm B: Vault-Assisted
-	// Step 2a: In-memory context retrieval from Vault SQLite FTS
+	// Retrieve before either arm so retrieval is not included in just one arm's generation time.
 	retrievalStart := time.Now()
 	searchOpts := vault.SearchOptions{
 		Project: task.Project,
@@ -161,18 +151,43 @@ func (r *Runner) evaluateTask(ctx context.Context, task Task, systemInstruction 
 	retrievalDuration := time.Since(retrievalStart)
 
 	res.ContextRetrievalMs = retrievalDuration.Milliseconds()
-	if errContext == nil && contextSnippet != "" {
-		res.ContextSnippet = contextSnippet
-		res.ContextChars = len([]rune(contextSnippet))
-		res.ContextTokens = estimateTokens(contextSnippet)
+	if errContext != nil {
+		res.Error = fmt.Sprintf("vault retrieval failed: %v", errContext)
+		return res
 	}
+	if (contextSnippet == "" || contextSnippet == "No relevant previous conversations found in the vault.") && task.Category != "negative_control" {
+		res.Error = "vault retrieval returned no relevant context"
+		return res
+	}
+	res.ContextSnippet = contextSnippet
+	res.ContextChars = len([]rune(contextSnippet))
+	res.ContextTokens = estimateTokens(contextSnippet)
 
-	// Step 2b: Generate with injected vault context
 	augmentedPrompt := fmt.Sprintf("%s\n\nUser Question:\n%s", res.ContextSnippet, task.Query)
-	armBStart := time.Now()
-	respB, usageB, errB := r.backend.Generate(ctx, systemInstruction, augmentedPrompt)
-	armBDuration := time.Since(armBStart)
-
+	generate := func(prompt string) (ArmExecution, error) {
+		start := time.Now()
+		response, usage, err := r.backend.Generate(ctx, systemInstruction, prompt)
+		duration := time.Since(start)
+		arm := ArmExecution{
+			Prompt: prompt, Response: response,
+			PromptTokens: usage.PromptTokens, CompletionTokens: usage.CompletionTokens,
+			TotalTokens: usage.TotalTokens, Duration: duration, DurationMs: duration.Milliseconds(),
+		}
+		arm.KeywordsMatched, arm.KeywordScore = evaluateKeywords(response, task.ExpectedKeywords, task.NegativeKeywords)
+		return arm, err
+	}
+	var errA, errB error
+	// Alternate execution order to reduce warm-up and service-load bias.
+	if repeat%2 == 1 {
+		res.Baseline, errA = generate(task.Query)
+		res.VaultAssisted, errB = generate(augmentedPrompt)
+	} else {
+		res.VaultAssisted, errB = generate(augmentedPrompt)
+		res.Baseline, errA = generate(task.Query)
+	}
+	if errA != nil {
+		res.Error = fmt.Sprintf("baseline failed: %v", errA)
+	}
 	if errB != nil {
 		if res.Error != "" {
 			res.Error += "; "
@@ -180,20 +195,9 @@ func (r *Runner) evaluateTask(ctx context.Context, task Task, systemInstruction 
 		res.Error += fmt.Sprintf("vault-assisted failed: %v", errB)
 	}
 
-	res.VaultAssisted = ArmExecution{
-		Prompt:           augmentedPrompt,
-		Response:         respB,
-		PromptTokens:     usageB.PromptTokens,
-		CompletionTokens: usageB.CompletionTokens,
-		TotalTokens:      usageB.TotalTokens,
-		Duration:         armBDuration,
-		DurationMs:       armBDuration.Milliseconds(),
-	}
-	res.VaultAssisted.KeywordsMatched, res.VaultAssisted.KeywordScore = evaluateKeywords(respB, task.ExpectedKeywords, task.NegativeKeywords)
-
 	// 3. Optional LLM Judge
 	if r.judge != nil && res.Error == "" {
-		scoreA, scoreB, feedback := r.runLLMJudge(ctx, task, respA, respB)
+		scoreA, scoreB, feedback := r.runLLMJudge(ctx, task, res.Baseline.Response, res.VaultAssisted.Response)
 		res.Baseline.JudgeScore = scoreA
 		res.VaultAssisted.JudgeScore = scoreB
 		res.Baseline.JudgeFeedback = feedback
@@ -246,11 +250,13 @@ Feedback: [Short summary comparing precision, avoidance of hallucinations, and t
 }
 
 func parseScore(text, prefix string) float64 {
-	re := regexp.MustCompile(fmt.Sprintf(`(?i)%s\s*([0-5](?:\.[0-9]+)?)`, regexp.QuoteMeta(prefix)))
+	re := regexp.MustCompile(fmt.Sprintf(`(?i)%s\s*([1-5](?:\.[0-9]+)?)\b`, regexp.QuoteMeta(prefix)))
 	matches := re.FindStringSubmatch(text)
 	if len(matches) > 1 {
 		if val, err := strconv.ParseFloat(matches[1], 64); err == nil {
-			return val
+			if val >= 1 && val <= 5 {
+				return val
+			}
 		}
 	}
 	return 0
@@ -265,6 +271,7 @@ func (r *Runner) calculateAggregates(s *BenchmarkSummary) {
 	var sumBaseDur, sumVaultDur float64
 	var sumBaseKW, sumVaultKW float64
 	var sumBaseJudge, sumVaultJudge float64
+	judgeCount := 0
 	validCount := 0
 
 	for _, res := range s.Results {
@@ -278,8 +285,11 @@ func (r *Runner) calculateAggregates(s *BenchmarkSummary) {
 		sumVaultDur += float64(res.VaultAssisted.DurationMs)
 		sumBaseKW += res.Baseline.KeywordScore
 		sumVaultKW += res.VaultAssisted.KeywordScore
-		sumBaseJudge += res.Baseline.JudgeScore
-		sumVaultJudge += res.VaultAssisted.JudgeScore
+		if res.Baseline.JudgeScore >= 1 && res.VaultAssisted.JudgeScore >= 1 {
+			sumBaseJudge += res.Baseline.JudgeScore
+			sumVaultJudge += res.VaultAssisted.JudgeScore
+			judgeCount++
+		}
 	}
 
 	if validCount > 0 {
@@ -290,17 +300,19 @@ func (r *Runner) calculateAggregates(s *BenchmarkSummary) {
 		s.AvgVaultDurationMs = sumVaultDur / n
 		s.AvgBaselineKeywordScore = sumBaseKW / n
 		s.AvgVaultKeywordScore = sumVaultKW / n
-		s.AvgBaselineJudgeScore = sumBaseJudge / n
-		s.AvgVaultJudgeScore = sumVaultJudge / n
+		if judgeCount > 0 {
+			s.AvgBaselineJudgeScore = sumBaseJudge / float64(judgeCount)
+			s.AvgVaultJudgeScore = sumVaultJudge / float64(judgeCount)
+		}
 
 		if s.AvgBaselineTokens > 0 {
-			s.NetTokenSavingsPct = ((s.AvgBaselineTokens - s.AvgVaultTokens) / s.AvgBaselineTokens) * 100.0
+			s.TokenChangePct = ((s.AvgVaultTokens - s.AvgBaselineTokens) / s.AvgBaselineTokens) * 100.0
 		}
 		if s.AvgVaultDurationMs > 0 {
-			s.SpeedupFactor = s.AvgBaselineDurationMs / s.AvgVaultDurationMs
+			s.GenerationTimeRatio = s.AvgBaselineDurationMs / s.AvgVaultDurationMs
 		}
 		if s.AvgBaselineKeywordScore > 0 {
-			s.AccuracyImprovementPct = ((s.AvgVaultKeywordScore - s.AvgBaselineKeywordScore) / s.AvgBaselineKeywordScore) * 100.0
+			s.KeywordCoverageChangePct = ((s.AvgVaultKeywordScore - s.AvgBaselineKeywordScore) / s.AvgBaselineKeywordScore) * 100.0
 		}
 	}
 }
@@ -611,10 +623,10 @@ func (o *OpenAIBackend) Generate(ctx context.Context, systemPrompt, userPrompt s
 // --- OpenCode Backend Implementation ---
 
 type OpenCodeBackend struct {
-	model    string
-	server   string
-	authB64  string
-	client   *http.Client
+	model   string
+	server  string
+	authB64 string
+	client  *http.Client
 }
 
 func NewOpenCodeBackend(model string, timeout time.Duration) (*OpenCodeBackend, error) {

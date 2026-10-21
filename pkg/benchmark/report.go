@@ -19,18 +19,24 @@ func GenerateMarkdownReport(s *BenchmarkSummary) string {
 		b.WriteString(fmt.Sprintf("**Model:** `%s`  \n", s.Model))
 	}
 	b.WriteString(fmt.Sprintf("**Tasks Evaluated:** %d (Successful: %d)  \n\n", s.TotalTasks, s.SuccessfulTasks))
+	b.WriteString(fmt.Sprintf("**Repeats:** %d (each task; odd runs baseline first, even runs vault first)  \n\n", s.Repeats))
+	b.WriteString("**Scope:** Blind question versus question with retrieved vault context. No repository exploration or tool calls are measured. Keyword coverage is a proxy, not verified factual accuracy. Token counts may be estimated by the backend. Offline mode uses fixed synthetic answers and is only a pipeline smoke test.\n\n")
 
 	b.WriteString("---\n\n")
 	b.WriteString("## 📊 Executive Scorecard\n\n")
 
 	b.WriteString("| Metric | Baseline (Arm A) | Vault-Assisted (Arm B) | Improvement / Impact |\n")
 	b.WriteString("| :--- | :--- | :--- | :--- |\n")
-	b.WriteString(fmt.Sprintf("| **Average Tokens / Task** | `%.0f` tokens | `%.0f` tokens | **%+.1f%%** tokens |\n",
-		s.AvgBaselineTokens, s.AvgVaultTokens, -s.NetTokenSavingsPct))
-	b.WriteString(fmt.Sprintf("| **Average Wall-Clock Time** | `%.0f ms` | `%.0f ms` | **%.2fx speedup** |\n",
-		s.AvgBaselineDurationMs, s.AvgVaultDurationMs, s.SpeedupFactor))
-	b.WriteString(fmt.Sprintf("| **Fact / Keyword Recall** | `%.1f%%` | `%.1f%%` | **%+.1f%% accuracy** |\n",
-		s.AvgBaselineKeywordScore*100.0, s.AvgVaultKeywordScore*100.0, s.AccuracyImprovementPct))
+	if s.SuccessfulTasks == 0 {
+		b.WriteString("| No successful paired runs | — | — | — |\n")
+	} else {
+		b.WriteString(fmt.Sprintf("| **Average Tokens / Task** | `%.0f` tokens | `%.0f` tokens | **%+.1f%%** tokens |\n",
+			s.AvgBaselineTokens, s.AvgVaultTokens, s.TokenChangePct))
+		b.WriteString(fmt.Sprintf("| **Average Generation Time (retrieval excluded)** | `%.0f ms` | `%.0f ms` | **%.2fx ratio** |\n",
+			s.AvgBaselineDurationMs, s.AvgVaultDurationMs, s.GenerationTimeRatio))
+		b.WriteString(fmt.Sprintf("| **Keyword Coverage (proxy)** | `%.1f%%` | `%.1f%%` | **%+.1f%% relative change** |\n",
+			s.AvgBaselineKeywordScore*100.0, s.AvgVaultKeywordScore*100.0, s.KeywordCoverageChangePct))
+	}
 
 	if s.AvgVaultJudgeScore > 0 {
 		judgeDiff := s.AvgVaultJudgeScore - s.AvgBaselineJudgeScore
@@ -39,13 +45,13 @@ func GenerateMarkdownReport(s *BenchmarkSummary) string {
 	}
 
 	b.WriteString("\n> [!NOTE]\n")
-	b.WriteString("> **Exploration Savings Context:** In interactive agent workflows, a baseline agent typically requires 5–15 roundtrip tool calls (`grep`, `view_file`, `read`) consuming **15,000–50,000+ tokens** to locate institutional knowledge. Injecting a bounded vault excerpt upfront eliminates these exploratory turns.\n\n")
+	b.WriteString("> A failed task is excluded from averages. Retrieval latency is shown separately and is not included in the generation-time ratio. For end-to-end latency, add retrieval to the vault arm. No tool-use or exploration savings are inferred.\n\n")
 
 	b.WriteString("---\n\n")
 	b.WriteString("## 📋 Per-Task Comparison Table\n\n")
 
-	b.WriteString("| Task ID | Project | FTS Latency | Baseline Tokens | Vault Tokens | Baseline Acc | Vault Acc | Δ Score |\n")
-	b.WriteString("| :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- |\n")
+	b.WriteString("| Task ID | Run | Project | FTS Latency | Baseline Tokens | Vault Tokens | Baseline Keywords | Vault Keywords | Δ Score |\n")
+	b.WriteString("| :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- |\n")
 
 	for _, r := range s.Results {
 		status := "✅"
@@ -57,11 +63,14 @@ func GenerateMarkdownReport(s *BenchmarkSummary) string {
 			proj = "general"
 		}
 
-		b.WriteString(fmt.Sprintf("| `%s` %s | `%s` | `%d ms` | `%d` | `%d` | `%.0f%%` | `%.0f%%` | `%+.0f%%` |\n",
-			r.Task.ID, status, proj, r.ContextRetrievalMs,
+		baseScore, vaultScore, diff := fmt.Sprintf("%.0f%%", r.Baseline.KeywordScore*100), fmt.Sprintf("%.0f%%", r.VaultAssisted.KeywordScore*100), fmt.Sprintf("%+.0f%%", r.ScoreDiff*100)
+		if r.Error != "" {
+			baseScore, vaultScore, diff = "—", "—", "—"
+		}
+		b.WriteString(fmt.Sprintf("| `%s` %s | `%d` | `%s` | `%d ms` | `%d` | `%d` | `%s` | `%s` | `%s` |\n",
+			r.Task.ID, status, r.Repeat, proj, r.ContextRetrievalMs,
 			r.Baseline.TotalTokens, r.VaultAssisted.TotalTokens,
-			r.Baseline.KeywordScore*100.0, r.VaultAssisted.KeywordScore*100.0,
-			r.ScoreDiff*100.0))
+			baseScore, vaultScore, diff))
 	}
 
 	b.WriteString("\n---\n\n")
@@ -69,6 +78,9 @@ func GenerateMarkdownReport(s *BenchmarkSummary) string {
 
 	for i, r := range s.Results {
 		b.WriteString(fmt.Sprintf("### Task %d: `%s`\n\n", i+1, r.Task.ID))
+		if r.Error != "" {
+			b.WriteString(fmt.Sprintf("**Failed:** %s  \n", r.Error))
+		}
 		b.WriteString(fmt.Sprintf("**Query:** *\"%s\"*  \n", r.Task.Query))
 		b.WriteString(fmt.Sprintf("**Ground Truth:** `%s`  \n\n", r.Task.GroundTruth))
 
