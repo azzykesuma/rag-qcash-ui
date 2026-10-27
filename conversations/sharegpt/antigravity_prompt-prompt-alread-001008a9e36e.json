@@ -1,0 +1,123 @@
+{
+  "id": "antigravity-122e8ae7617be2fe3c9937ff953cf51ec1873084888c089b3e3b001008a9e36e",
+  "conversations": [
+    {
+      "from": "human",
+      "value": "can you check the system prompt and see if the system prompt already include the direction to search the vault llm context?"
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": "**No**, the system prompt does **not** include a directive to automatically or proactively search the LLM Context Vault.\n\n---\n\n### What is currently present in the system prompt:\nThe vault is registered **only as an optional on-demand skill** under the `\u003cskills\u003e` section:\n\n```markdown\n- vault (~\\.gemini\\config\\skills\\vault\\SKILL.md): Searches and retrieves past architectural decisions and bugfix discussions across local AI assistants from LLM Context Vault. Use when looking for previous decisions, historical bugfixes, or cross-assistant context.\n```\n\nThe only instruction associated with skills is:\n\u003e *\"If a skill seems relevant to your current task, you MUST read its `SKILL.md` instructions before proceeding.\"*\n\n---\n\n### What is missing:\n- **No proactive/mandatory rule:** There is no instruction in `\u003cguidelines\u003e` or `\u003cuser_rules\u003e` instructing the agent to search the vault automatically before formulating a plan, answering architecture questions, or starting a task.\n- Currently, the agent will only consult the vault if explicitly asked or if a query specifically pertains to past decisions/ADRs.\n\n---\n\n### How to add it:\nIf you want the agent to check the vault systematically, you can add a global rule (e.g., in a rules file like `~\\.gemini\\config\\rules\\vault.md` or in the project's root `AGENTS.md`):\n\n```markdown\n# LLM Context Vault Directive\nBefore making architectural recommendations, introducing new dependencies, or resolving recurring bugs, always consult the `vault` skill and check local context stores (.vault/, docs/adr/, commit history) for prior decisions.\n```"
+    },
+    {
+      "from": "human",
+      "value": "okay add the system prompt for it then. add it to your own system prompt, if i query something , please refer to the vault conversation here C:\\code\\rag-qcash-ui \nbut instead of literally reading all of the vault context which will consume massive amount of token, just skim read it, or maybe add some token cap for reading it"
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": "I have added the vault reference directive to your system rules and prompt configuration.\n\n### What Was Configured\n\n1. **Global System Prompt Rule**:\n   - Location: [`C:~/.gemini/config/plugins/vault/rules/AGENTS.md`](file:///C:~/.gemini/config/plugins/vault/rules/AGENTS.md)\n   - Automatically loaded into `\u003cuser_rules\u003e` in every session.\n\n2. **Workspace Rule**:\n   - Location: [`C:/code/AGENTS.md`](file:///C:/code/AGENTS.md)\n   - Discovered automatically whenever operating in `C:\\code`.\n\n3. **Vault Skill Definition**:\n   - Location: [`C:~/.gemini/config/skills/vault/SKILL.md`](file:///C:~/.gemini/config/skills/vault/SKILL.md)\n\n---\n\n### The Active Rule Content\n\n```markdown\n# LLM Context Vault Retrieval Guidelines\n\nWhen answering queries, troubleshooting bugs, or reviewing architectural patterns:\n\n1. Consult Local Vault:\n   Refer to past discussions, architectural decisions, and previous solutions stored at C:\\code\\rag-qcash-ui.\n   Query the vault CLI directly instead of reading full markdown/dataset files:\n   - Extract targeted context:\n     \u0026 \"C:\\code\\rag-qcash-ui\\vault.exe\" context \"\u003cquery\u003e\" --vault-dir \"C:\\code\\rag-qcash-ui\" --max-chars 2000\n   - Or search indexed topics:\n     \u0026 \"C:\\code\\rag-qcash-ui\\vault.exe\" search \"\u003cquery\u003e\" --vault-dir \"C:\\code\\rag-qcash-ui\" --limit 3\n\n2. Token Capping \u0026 Skim Reading:\n   - Never ingest or read entire markdown files from C:\\code\\rag-qcash-ui\\conversations.\n   - Always enforce a strict token/character budget (--max-chars 2000 or maximum 3 results).\n   - Skim-read excerpts for key takeaways, rationale, and past code fixes, then synthesize the answer concisely.\n```"
+    }
+  ],
+  "source": "antigravity",
+  "tags": [
+    "coding",
+    "assistant",
+    "antigravity"
+  ]
+}
