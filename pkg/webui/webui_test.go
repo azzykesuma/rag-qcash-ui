@@ -59,6 +59,31 @@ func TestDashboardRoutes(t *testing.T) {
 	}
 }
 
+func TestDashboardIncludesActivityHeatmap(t *testing.T) {
+	for _, marker := range []string{
+		`id="heatmap-view"`, `id="heatmap-panel"`, `id="heatmap-content"`,
+		`function renderHeatmap(filtered)`, `heatmapSelection = { topic, start: week, end: isoDay(end) }`,
+		`['list', 'graph', 'heatmap'].includes(state.mode)`,
+	} {
+		if !strings.Contains(dashboard, marker) {
+			t.Errorf("dashboard missing heatmap feature: %s", marker)
+		}
+	}
+}
+
+func TestDashboardIncludesGroupAccordions(t *testing.T) {
+	for _, marker := range []string{
+		`document.createElement('details')`, `document.createElement('summary')`,
+		`section.open = !collapsedGroups.has(key)`,
+		`section.addEventListener('toggle'`,
+		`collapsedGroups: [...collapsedGroups]`,
+	} {
+		if !strings.Contains(dashboard, marker) {
+			t.Errorf("dashboard missing group accordion feature: %s", marker)
+		}
+	}
+}
+
 func TestSessionTopicUsesSpecificGroupsBeforeBugFallback(t *testing.T) {
 	tests := []struct {
 		title string

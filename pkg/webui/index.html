@@ -47,8 +47,15 @@ main { max-width: 1720px; margin: auto; padding: 20px clamp(18px, 4vw, 56px) 36p
 .pane-head select { margin-left: auto; padding: 6px 8px; font-size: 12px; }
 #sessions { height: 67vh; min-height: 540px; overflow: auto; padding: 8px; }
 .group { margin: 4px 0 12px; }
-.group-title { position: sticky; top: -8px; z-index: 2; display: flex; justify-content: space-between; padding: 10px 9px 7px; background: linear-gradient(#111b1a 75%, transparent); color: var(--accent); font: 700 11px/1.2 ui-monospace, monospace; letter-spacing: .08em; text-transform: uppercase; }
+.group-title { position: sticky; top: -8px; z-index: 2; display: flex; align-items: center; gap: 8px; padding: 10px 9px 7px; background: linear-gradient(#111b1a 75%, transparent); color: var(--accent); font: 700 11px/1.2 ui-monospace, monospace; letter-spacing: .08em; text-transform: uppercase; list-style: none; cursor: pointer; }
+.group-title::-webkit-details-marker { display: none; }
+.group-title::before { content: '▾'; color: var(--accent-2); font-size: 14px; }
+.group:not([open]) .group-title::before { content: '▸'; }
+.group-title:hover { background: var(--panel-2); }
+.group-title:focus-visible { outline: 2px solid var(--accent-2); outline-offset: -2px; }
+.group-title .group-name { min-width: 0; overflow: hidden; text-overflow: ellipsis; }
 .group-title span { color: var(--muted); }
+.group-title .group-count { margin-left: auto; }
 .session { display: block; width: 100%; margin-bottom: 5px; padding: 10px; text-align: left; border-color: transparent; background: transparent; }
 .session:hover { background: var(--panel-2); }
 .session > span { display: block; overflow: hidden; text-overflow: ellipsis; }
@@ -72,6 +79,34 @@ main { max-width: 1720px; margin: auto; padding: 20px clamp(18px, 4vw, 56px) 36p
 .graph-focus[hidden] { display: none; }
 .graph-legend { position: absolute; right: 13px; bottom: 12px; display: flex; flex-wrap: wrap; gap: 10px; padding: 8px 10px; border: 1px solid var(--line); border-radius: 7px; background: #0b1412df; color: var(--muted); font-size: 11px; }
 .dot { display: inline-block; width: 8px; height: 8px; margin-right: 4px; border-radius: 50%; }
+.heatmap-panel { display: none; padding: 20px; }
+.heatmap-heading { display: flex; justify-content: space-between; gap: 12px; align-items: start; flex-wrap: wrap; margin-bottom: 18px; }
+.heatmap-heading h2 { margin: 0 0 5px; font-size: 18px; }
+.heatmap-heading p, .heatmap-caption { margin: 0; color: var(--muted); font-size: 12px; }
+.heatmap-stats { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; margin-bottom: 22px; }
+.heatmap-stat { padding: 15px; border: 1px solid var(--line); border-radius: 8px; background: var(--panel-2); }
+.heatmap-stat strong { display: block; margin-top: 9px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font: 600 22px/1.2 ui-sans-serif, system-ui; color: var(--ink); }
+.heatmap-stat small { color: var(--muted); font-size: 11px; letter-spacing: .06em; text-transform: uppercase; }
+.heatmap-scroll { max-width: 100%; overflow-x: auto; padding-bottom: 8px; }
+.heatmap-table { width: 100%; min-width: 800px; table-layout: fixed; border-spacing: 4px; }
+.heatmap-table th { color: var(--muted); font: 600 11px ui-monospace, monospace; text-align: left; white-space: nowrap; }
+.heatmap-table thead th { height: 32px; vertical-align: bottom; }
+.heatmap-table th:first-child { width: 205px; position: sticky; left: 0; z-index: 1; background: var(--panel); }
+.heatmap-table tbody th { overflow: hidden; text-overflow: ellipsis; color: var(--ink); font: 12px ui-sans-serif, system-ui; }
+.heatmap-table td { padding: 0; }
+.heatmap-cell { display: block; width: 100%; height: 29px; padding: 0; border: 1px solid #253a35; border-radius: 3px; background: #1c2d29; }
+.heatmap-cell[data-level="1"] { background: #28544a; border-color: #356758; }
+.heatmap-cell[data-level="2"] { background: #398672; border-color: #4b9a84; }
+.heatmap-cell[data-level="3"] { background: #69c19b; border-color: #79cba7; }
+.heatmap-cell[data-level="4"] { background: #d9f99d; border-color: #d9f99d; }
+.heatmap-cell:not(:disabled):hover { border-color: white; box-shadow: 0 0 0 1px white; }
+.heatmap-cell:disabled { cursor: default; opacity: 1; }
+.heatmap-footer { display: flex; gap: 12px; align-items: center; justify-content: space-between; flex-wrap: wrap; margin-top: 16px; }
+.heatmap-legend { display: flex; align-items: center; gap: 5px; color: var(--muted); font-size: 11px; }
+.heatmap-legend i { display: inline-block; width: 17px; height: 12px; border: 1px solid var(--line); border-radius: 2px; }
+.drilldown { padding: 9px 16px; border-bottom: 1px solid var(--line); color: var(--accent); font-size: 12px; }
+.drilldown[hidden] { display: none; }
+.drilldown button { margin-left: 10px; padding: 4px 8px; font-size: 11px; }
 .empty { padding: 25px 12px; color: var(--muted); text-align: center; }
 @media (max-width: 850px) {
   .view-switch { margin-left: 0; }
@@ -79,6 +114,8 @@ main { max-width: 1720px; margin: auto; padding: 20px clamp(18px, 4vw, 56px) 36p
   #sessions, #detail { height: 43vh; min-height: 320px; }
   #graph-panel { height: 68vh; min-height: 480px; }
   .graph-note { max-width: calc(100% - 28px); }
+  .heatmap-stats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .heatmap-panel { padding: 14px; }
 }
 </style>
 </head>
@@ -106,6 +143,7 @@ main { max-width: 1720px; margin: auto; padding: 20px clamp(18px, 4vw, 56px) 36p
       <label>Context <input id="max-chars" type="number" min="512" max="1000000" value="12000" aria-label="Context character budget"></label>
       <div class="view-switch" aria-label="View mode">
         <button type="button" id="list-view" class="active">Grouped list</button>
+        <button type="button" id="heatmap-view">Activity heatmap</button>
         <button type="button" id="graph-view">Knowledge graph</button>
       </div>
     </div>
@@ -122,6 +160,7 @@ main { max-width: 1720px; margin: auto; padding: 20px clamp(18px, 4vw, 56px) 36p
   <div id="list-layout" class="layout">
     <section class="pane">
       <div class="pane-head"><h2 id="list-title">Conversations</h2><select id="group-by" aria-label="Group conversations"><option value="topic">Group by topic</option><option value="project">Group by project</option><option value="tool">Group by assistant</option><option value="none">No grouping</option></select></div>
+      <div id="drilldown" class="drilldown" hidden></div>
       <div id="sessions"></div>
     </section>
     <section class="pane">
@@ -130,6 +169,12 @@ main { max-width: 1720px; margin: auto; padding: 20px clamp(18px, 4vw, 56px) 36p
       <pre id="detail">Select a conversation to view its exported Markdown.</pre>
     </section>
   </div>
+  <section id="heatmap-panel" class="pane heatmap-panel" aria-label="Conversation activity heatmap">
+    <div class="heatmap-heading"><div><div class="eyebrow">Activity / topics over time</div><h2>Conversation heatmap</h2><p id="heatmap-range"></p></div></div>
+    <div id="heatmap-stats" class="heatmap-stats"></div>
+    <div id="heatmap-content" class="heatmap-scroll"></div>
+    <div class="heatmap-footer"><p id="heatmap-caption" class="heatmap-caption"></p><div class="heatmap-legend" aria-label="Conversation count intensity"><span>Less</span><i style="background:#1c2d29"></i><i style="background:#28544a"></i><i style="background:#398672"></i><i style="background:#69c19b"></i><i style="background:#d9f99d"></i><span>More</span></div></div>
+  </section>
   <section id="graph-panel" class="pane">
     <div class="graph-note">Click a topic or project to focus its connections; click again to clear. Drag empty space to pan, drag nodes to rearrange, and scroll to zoom. Select a conversation to open it. Showing up to 180 newest filtered conversations.</div>
     <button id="clear-focus" class="graph-focus" hidden>Clear focus</button>
@@ -139,13 +184,13 @@ main { max-width: 1720px; margin: auto; padding: 20px clamp(18px, 4vw, 56px) 36p
 </main>
 <script>
 const $ = id => document.getElementById(id);
-let sessions = [], matches = null, visible = [], view = 'list', graphCleanup = null;
+let sessions = [], matches = null, visible = [], view = 'list', graphCleanup = null, heatmapSelection = null, collapsedGroups = new Set();
 const colors = { topic: '#d9f99d', project: '#67e8f9', tool: '#c4b5fd', conversation: '#7b948d' };
 const viewKey = 'llm-vault-dashboard-views-v1', currentKey = 'llm-vault-dashboard-current-v1';
 const initialView = stored(currentKey, null);
 let selectedSession = null, currentInsights = null, graphFocus = null, graphTransform = { x: 0, y: 0, k: 1 }, insightRequest = 0;
 function stored(key, fallback) { try { return JSON.parse(localStorage.getItem(key)) || fallback; } catch { return fallback; } }
-function viewState() { return { filters: Object.fromEntries(['query', 'tool', 'topic', 'project', 'after', 'before', 'limit', 'max-chars', 'group-by'].map(id => [id, $(id).value])), mode: view, transform: graphTransform }; }
+function viewState() { return { filters: Object.fromEntries(['query', 'tool', 'topic', 'project', 'after', 'before', 'limit', 'max-chars', 'group-by'].map(id => [id, $(id).value])), mode: view, transform: graphTransform, collapsedGroups: [...collapsedGroups] }; }
 function saveCurrent() { try { localStorage.setItem(currentKey, JSON.stringify(viewState())); } catch { /* Browsing remains usable when storage is unavailable. */ } }
 function refreshSavedViews() {
   const selected = $('saved-views').value, names = Object.keys(stored(viewKey, {})).sort();
@@ -156,7 +201,9 @@ function refreshSavedViews() {
 async function applyView(state) {
   for (const [id, value] of Object.entries(state.filters || {})) if ($(id)) $(id).value = value;
   graphTransform = state.transform && Number.isFinite(state.transform.k) ? state.transform : { x: 0, y: 0, k: 1 };
-  await search(); setView(state.mode === 'graph' ? 'graph' : 'list'); saveCurrent();
+  collapsedGroups = new Set(Array.isArray(state.collapsedGroups) ? state.collapsedGroups.filter(key => typeof key === 'string') : []);
+  heatmapSelection = null;
+  await search(); setView(['list', 'graph', 'heatmap'].includes(state.mode) ? state.mode : 'list'); saveCurrent();
 }
 
 async function request(path, json = true) {
@@ -252,9 +299,18 @@ function renderList() {
   if (!matches && mode !== 'none') ordered.sort((a, b) => b[1].length - a[1].length || a[0].localeCompare(b[0]));
   $('sessions').replaceChildren();
   for (const [name, items] of ordered) {
-    const section = document.createElement('section'); section.className = 'group';
-    const heading = document.createElement('div'); heading.className = 'group-title'; heading.textContent = name;
-    const count = document.createElement('span'); count.textContent = items.length; heading.append(count); section.append(heading);
+    const section = document.createElement('details'); section.className = 'group';
+    const key = JSON.stringify([mode, name]); section.open = !collapsedGroups.has(key);
+    const heading = document.createElement('summary'); heading.className = 'group-title';
+    const label = document.createElement('strong'); label.className = 'group-name'; label.textContent = name;
+    const count = document.createElement('span'); count.className = 'group-count'; count.textContent = items.length;
+    heading.append(label, count); section.append(heading);
+    section.addEventListener('toggle', () => {
+      if (!section.isConnected) return;
+      if (section.open) collapsedGroups.delete(key);
+      else collapsedGroups.add(key);
+      saveCurrent();
+    });
     for (const session of items) {
       const button = document.createElement('button'); button.className = 'session';
       const title = document.createElement('span'); title.textContent = session.title; button.append(title);
@@ -269,10 +325,92 @@ function renderList() {
   if (!visible.length) { const empty = document.createElement('div'); empty.className = 'empty'; empty.textContent = 'No matching conversations.'; $('sessions').append(empty); }
 }
 function render() {
-  visible = filteredSessions();
+  const filtered = filteredSessions();
+  visible = heatmapSelection ? filtered.filter(s => s.topic === heatmapSelection.topic && s.date.slice(0, 10) >= heatmapSelection.start && s.date.slice(0, 10) <= heatmapSelection.end) : filtered;
   $('list-title').textContent = (matches ? 'Ranked matches' : 'Conversations') + ' (' + visible.length + ')';
+  const drilldown = $('drilldown'); drilldown.replaceChildren(); drilldown.hidden = !heatmapSelection;
+  if (heatmapSelection) {
+    drilldown.append(document.createTextNode(heatmapSelection.topic + ' / week of ' + heatmapSelection.start));
+    const clear = document.createElement('button'); clear.textContent = 'Show all filtered conversations';
+    clear.onclick = () => { heatmapSelection = null; render(); };
+    drilldown.append(clear);
+  }
   renderList();
   if (view === 'graph') renderGraph();
+  if (view === 'heatmap') renderHeatmap(filtered);
+}
+function dateOnly(value) {
+  const day = value.slice(0, 10);
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(day)) return null;
+  const date = new Date(day + 'T00:00:00Z');
+  return Number.isFinite(date.getTime()) && date.toISOString().slice(0, 10) === day ? date : null;
+}
+function isoDay(date) { return date.toISOString().slice(0, 10); }
+function weekStart(date) {
+  const monday = new Date(date);
+  monday.setUTCDate(monday.getUTCDate() - (monday.getUTCDay() + 6) % 7);
+  return monday;
+}
+function renderHeatmap(filtered) {
+  const content = $('heatmap-content'), stats = $('heatmap-stats');
+  content.replaceChildren(); stats.replaceChildren();
+  const dated = filtered.map(session => ({ session, day: dateOnly(session.date) })).filter(item => item.day);
+  const latest = dated.reduce((max, item) => !max || item.day > max ? item.day : max, null);
+  $('heatmap-range').textContent = latest ? '26 weeks ending ' + isoDay(new Date(weekStart(latest).getTime() + 6 * 86400000)) : 'No dated conversations in the current filters';
+  if (!latest) {
+    const empty = document.createElement('div'); empty.className = 'empty'; empty.textContent = 'No dated conversations match the current filters.'; content.append(empty);
+    $('heatmap-caption').textContent = filtered.length ? filtered.length + ' conversations have no valid date.' : 'Try changing the search or filters.';
+    return;
+  }
+  const first = weekStart(latest); first.setUTCDate(first.getUTCDate() - 25 * 7);
+  const weeks = Array.from({ length: 26 }, (_, i) => { const date = new Date(first); date.setUTCDate(date.getUTCDate() + i * 7); return isoDay(date); });
+  const counts = new Map(), totals = new Map(); let shown = 0, peak = 0;
+  for (const { session, day } of dated) {
+    const week = isoDay(weekStart(day));
+    if (week < weeks[0]) continue;
+    const key = session.topic + '\0' + week, count = (counts.get(key) || 0) + 1;
+    counts.set(key, count); totals.set(session.topic, (totals.get(session.topic) || 0) + 1);
+    peak = Math.max(peak, count); shown++;
+  }
+  const topics = [...totals].sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]));
+  const statValues = [['Conversations in range', shown], ['Active weeks', new Set([...counts.keys()].map(key => key.split('\0')[1])).size + ' / 26'], ['Busiest topic', topics[0]?.[0] || '—'], ['Peak topic / week', peak]];
+  for (const [label, value] of statValues) {
+    const card = document.createElement('div'); card.className = 'heatmap-stat';
+    const name = document.createElement('small'), number = document.createElement('strong'); name.textContent = label; number.textContent = value; number.title = String(value);
+    card.append(name, number); stats.append(card);
+  }
+  const table = document.createElement('table'); table.className = 'heatmap-table';
+  const head = document.createElement('thead'), header = document.createElement('tr'), corner = document.createElement('th'); corner.scope = 'col'; corner.textContent = 'Topic / week'; header.append(corner);
+  for (let i = 0; i < weeks.length; i++) {
+    const th = document.createElement('th'); th.scope = 'col'; th.title = 'Week of ' + weeks[i];
+    if (i % 4 === 0) th.textContent = weeks[i].slice(5);
+    header.append(th);
+  }
+  head.append(header); table.append(head);
+  const body = document.createElement('tbody');
+  for (const [topic, total] of topics) {
+    const row = document.createElement('tr'), label = document.createElement('th'); label.scope = 'row'; label.textContent = topic + ' (' + total + ')'; label.title = topic + ': ' + total + ' conversations'; row.append(label);
+    for (const week of weeks) {
+      const count = counts.get(topic + '\0' + week) || 0, cell = document.createElement('td'), button = document.createElement('button');
+      button.className = 'heatmap-cell'; button.dataset.level = count ? Math.max(1, Math.ceil(4 * Math.sqrt(count / peak))) : 0;
+      button.disabled = !count;
+      button.title = `${topic}: ${count} conversation${count === 1 ? '' : 's'}, week of ${week}`;
+      button.setAttribute('aria-label', button.title);
+      if (count) button.onclick = () => {
+        const end = new Date(week + 'T00:00:00Z'); end.setUTCDate(end.getUTCDate() + 6);
+        collapsedGroups.delete(JSON.stringify(['topic', topic]));
+        heatmapSelection = { topic, start: week, end: isoDay(end) };
+        setView('list'); render();
+      };
+      cell.append(button); row.append(cell);
+    }
+    body.append(row);
+  }
+  table.append(body); content.append(table);
+  const notes = ['Click a colored cell to see its conversations.'];
+  if (dated.length > shown) notes.push((dated.length - shown) + ' older conversations are outside this 26-week window.');
+  if (filtered.length > dated.length) notes.push((filtered.length - dated.length) + ' conversations have no valid date.');
+  $('heatmap-caption').textContent = notes.join(' ');
 }
 async function load() {
   sessions = await request('/api/sessions');
@@ -282,7 +420,7 @@ async function load() {
   $('metrics').textContent = sessions.length + ' sessions / ' + Object.keys(topics).length + ' topics / ' + Object.entries(tools).map(([tool, n]) => tool + ': ' + n).join(' / ');
   refillSelect($('tool'), 'All assistants', tools);
   refillSelect($('topic'), 'All topics', topics, true);
-  matches = null; render();
+  matches = null; heatmapSelection = null; render();
 }
 function refillSelect(select, first, counts, byCount = false) {
   const selected = select.value; select.replaceChildren(new Option(first, ''));
@@ -296,6 +434,7 @@ function queryParams() {
   return params;
 }
 async function search() {
+  heatmapSelection = null;
   const q = $('query').value.trim();
   if (!q) matches = null;
   else { const results = await request('/api/search?' + queryParams()); matches = new Map((results || []).map(r => [r.Path.split(/[\\/]/).pop(), r])); }
@@ -305,11 +444,15 @@ async function search() {
 function setView(next) {
   view = next;
   $('list-layout').style.display = next === 'list' ? 'grid' : 'none';
+  $('heatmap-panel').style.display = next === 'heatmap' ? 'block' : 'none';
   $('graph-panel').style.display = next === 'graph' ? 'block' : 'none';
-  $('list-view').classList.toggle('active', next === 'list');
-  $('graph-view').classList.toggle('active', next === 'graph');
+  for (const mode of ['list', 'heatmap', 'graph']) {
+    $(mode + '-view').classList.toggle('active', next === mode);
+    $(mode + '-view').setAttribute('aria-pressed', String(next === mode));
+  }
   if (next === 'graph') renderGraph();
   else if (graphCleanup) { graphCleanup(); graphCleanup = null; }
+  if (next === 'heatmap') renderHeatmap(filteredSessions());
   saveCurrent();
 }
 
@@ -465,9 +608,10 @@ $('search-form').onsubmit = event => { event.preventDefault(); action(search); }
 for (const name of ['tool', 'topic', 'project', 'after', 'before']) $(name).onchange = () => action(search);
 for (const name of ['query', 'limit', 'max-chars']) $(name).onchange = saveCurrent;
 $('group-by').onchange = () => { renderList(); saveCurrent(); };
-$('reset').onclick = () => { for (const name of ['query', 'tool', 'topic', 'project', 'after', 'before']) $(name).value = ''; matches = null; graphFocus = null; graphTransform = { x:0, y:0, k:1 }; render(); saveCurrent(); };
+$('reset').onclick = () => { for (const name of ['query', 'tool', 'topic', 'project', 'after', 'before']) $(name).value = ''; matches = null; heatmapSelection = null; graphFocus = null; graphTransform = { x:0, y:0, k:1 }; render(); saveCurrent(); };
 $('refresh').onclick = () => action(load);
 $('list-view').onclick = () => setView('list');
+$('heatmap-view').onclick = () => setView('heatmap');
 $('graph-view').onclick = () => setView('graph');
 $('context').onclick = () => action(async () => { const q = $('query').value.trim(); if (!q) throw new Error('Enter a search query first.'); show('Prompt context', await request('/api/context?' + queryParams())); setView('list'); });
 $('audit').onclick = () => action(async () => { const results = await request('/api/audit'), entries = Object.entries(results || {}); show('Privacy audit', entries.length ? entries.map(([file, warnings]) => file + '\n' + warnings.join('\n')).join('\n\n') : 'Privacy audit passed: no potential leaks detected.'); setView('list'); });
