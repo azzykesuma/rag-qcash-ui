@@ -1,0 +1,19 @@
+{
+  "id": "antigravity-f156f27df921d6b2944c738c0c194e60fb9de7bd52ae536f7fc9559cbcc9cf31",
+  "conversations": [
+    {
+      "from": "human",
+      "value": "You are a professional software engineer answering technical and architectural questions about this codebase. Answer concisely and accurately, citing specific components, files, or patterns when known.\n\nDo not use tools, inspect files, or search the web. Answer using only the question and any supplied vault excerpt.\n\nHow is page readiness and authentication gating handled across pages in QCash micro-frontends?"
+    },
+    {
+      "from": "gpt",
+      "value": "In QCash micro-frontends (MFEs), page readiness and authentication gating are structured through a coordinated shell-and-remote architecture using the following patterns:\n\n---\n\n### 1. Authentication Gating\n* **Host/Shell-Level Auth Control**: \n  * The root container (shell) manages primary session lifecycle, token storage (JWT/refresh tokens), and SSO state.\n  * Auth state is passed to remote MFEs via a shared context/singleton store (e.g., shared React Context or Zustand/Redux instance via Module Federation shared scope) or custom cross-application events (`window.dispatchEvent`).\n* **Route Guards (`AuthGuard` / `ProtectedRoute`)**:\n  * Pages or MFE sub-routes are wrapped in authentication guards (e.g., `\u003cProtectedRoute\u003e` or `\u003cAuthGuard\u003e`).\n  * The guard verifies token existence, expiration, and user role/permission claims before allowing the child component tree to mount.\n  * If unauthenticated or unauthorized, the guard redirects the user to the central login route or triggers a shell-level redirect.\n* **HTTP / Interceptor-Level Gating**:\n  * Shared API clients (e.g., configured Axios instances) attach authentication headers and intercept `401 Unauthorized` / `403 Forbidden` responses to invalidate the session, trigger token refresh flows, or broadcast logout events to all mounted MFEs.\n\n---\n\n### 2. Page Readiness \u0026 Lifecycle\n* **Module Federation Suspense \u0026 Lazy Loading**:\n  * Remote MFE entry points and page chunks are dynamically imported using `React.lazy()` and wrapped in `\u003cSuspense\u003e` boundaries.\n  * Fallback placeholders (skeleton screens or loaders) are displayed while the remote bundle is fetched and parsed.\n* **Initialization \u0026 Pre-flight Hooks (`usePageReady` / `useAuth`)**:\n  * Pages use initialization hooks or state checks to verify that:\n    1. Remote dependencies and shared singletons (e.g., React, routing, store) are resolved.\n    2. User permissions and session context have populated.\n    3. Mandatory initial API data (e.g., via React Query / RTK Query) has completed its first fetch without critical errors.\n* **Error Boundaries**:\n  * Remote boundaries (`\u003cErrorBoundary\u003e`) catch bundle loading failures (e.g., network timeout fetching remote entry points) or runtime render crashes, providing retry mechanisms or fallback UI without crashing the host container."
+    }
+  ],
+  "source": "antigravity",
+  "tags": [
+    "coding",
+    "assistant",
+    "antigravity"
+  ]
+}

@@ -1,0 +1,127 @@
+{
+  "id": "antigravity-d1128be7c68932b373804d58aa3eb024b530d5477ef0d768cc6db2e7dfbc5ce7",
+  "conversations": [
+    {
+      "from": "human",
+      "value": "http://internal-service.example.com/api/bg/v2/issuing/task?page=1\u0026limit=10\u0026query=\u0026filter=\u0026filterOr=data.issuingPortal:%40%3E%5B%7B%22status%22:%22Draft%22%7D%5D%7Cdata.issuingPortal:%40%3E%5B%7B%22status%22:%22Approval%22%7D%5D%7Cdata.issuingPortal:%40%3E%5B%7B%22status%22:%22Posting%22%7D%5D%7Cdata.issuingPortal:%40%3E%5B%7B%22status%22:%22Confirmation+BRISpot%22%7D%5D%7Cdata.issuingPortal:%40%3E%5B%7B%22status%22:%22Draft+BRISpot%22%7D%5D%7Cdata.issuingPortal:%40%3E%5B%7B%22status%22:%22Review%22%7D%5D%7Cdata.issuingPortal:%40%3E%5B%7B%22status%22:%22Approval%22%7D%5D%7Cdata.issuingPortal:%40%3E%5B%7B%22status%22:%22Hold+Account%22%7D%5D%7Cdata.issuingPortal:%40%3E%5B%7B%22status%22:%22Posting%22%7D%5D%7Cdata.issuingPortal:%40%3E%5B%7B%22status%22:%22Insurance+Covering+Submission%22%7D%5D%7C(status:1,workflow_doc.workflow.currentStep:checker)%7C(status:1,workflow_doc.workflow.currentStep:signer)%7C(status:1,workflow_doc.workflow.currentStep:releaser)%7Cstatus:3%7Cstatus:2%7C(status:1,workflow_doc.workflow.currentStep:maker)\u0026sort=status\u0026dir=DESC\u0026tab=on+going can you investigate this url endpoing, when this is being fired and depends on what"
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": "### Endpoint Overview\n\nThis request is a `GET` call to the **Bank Guarantee (BG) Issuing Task V2** API:\n* **Service Method:** [`getDataBGIssuing`](file:///C:/Work/qcash-ui-digi-guarantee/services/digi-guarantee/bg-issuing-operations.ts#L33-L35) in [`services/digi-guarantee/bg-issuing-operations.ts`](file:///C:/Work/qcash-ui-digi-guarantee/services/digi-guarantee/bg-issuing-operations.ts).\n* **Base URL:** Configured via [`config.ts`](file:///C:/Work/qcash-ui-digi-guarantee/config.ts#L4-L15) resolving in the DEV environment to `http://internal-service.example.com/api`.\n* **Path:** `/bg/v2/issuing/task`\n\n---\n\n### When It Is Fired\n\nThis call is triggered from the **BG Issuing History / List** page (`/digi-guarantee/bg-issuing/history` via [`pages/bg-issuing/history/index.tsx`](file:///C:/Work/qcash-ui-digi-guarantee/pages/bg-issuing/history/index.tsx#L52)) through the [`usePagination`](file:///C:/Work/qcash-ui-digi-guarantee/hooks/use-pagination.ts#L95-L121) hook in [`containers/bg-issuing/index.tsx`](file:///C:/Work/qcash-ui-digi-guarantee/containers/bg-issuing/index.tsx#L265-L273).\n\nSpecifically, it fires:\n\n1. **On Initial Page Mount:**\n   When navigating to the BG Issuing page, `usePagination` mounts with default params for the **\"Transaksi Berjalan\" (Ongoing)** tab and immediately executes `fetch()`.\n2. **On Tab Switching / Status Filter:**\n   When the user clicks the \"Transaksi Berjalan\" tab header or selects the \"All\" status pill inside the Ongoing view ([`handleFilter`](file:///C:/Work/qcash-ui-digi-guarantee/containers/bg-issuing/index.tsx#L309-L349)).\n3. **On Table Pagination or Sorting:**\n   When changing page numbers (`setPageIndex`), page sizes (`setPageLimit`), or clicking table headers to re-sort (`sortChanged`).\n4. **On Search \u0026 Filter Application:**\n   When typing into the search field ([`handleSearch`](file:///C:/Work/qcash-ui-digi-guarantee/containers/bg-issuing/index.tsx#L292-L307)) or applying date/type filters ([`handleSetFilter`](file:///C:/Work/qcash-ui-digi-guarantee/containers/bg-issuing/index.tsx#L371-L463)).\n5. **On Manual Refresh / Action Reload:**\n   When clicking the **Refresh** button or after completing actions like task deletion or checking status in [`containers/bg-issuing/index.tsx`](file:///C:/Work/qcash-ui-digi-guarantee/containers/bg-issuing/index.tsx#L620-L633).\n\n---\n\n### What It Depends On\n\n#### 1. Preconditions \u0026 Feature Toggles\n* **V2 Toggle:** [`ENV.HIDE_V2`](file:///C:/Work/qcash-ui-digi-guarantee/pages/bg-issuing/history/index.tsx#L10) must not be `\"true\"`. If `HIDE_V2` is active, it falls back to the V1 endpoint `/bg/issuing/task`.\n* **User Authorization:** \n  * `productAuthorities.BG_ISSUING.anyAuthority` must be `true` ([`pages/bg-issuing/history/index.tsx`](file:///C:/Work/qcash-ui-digi-guarantee/pages/bg-issuing/history/index.tsx#L37)).\n  * An `access-token` must exist in `localStorage`, injected by the [`customAxios`](file:///C:/Work/qcash-ui-digi-guarantee/services/custom-axios.ts#L16-L24) request interceptor.\n\n#### 2. Query Parameters Breakdown\n\n| Parameter | Value in URL | Source / Dependency |\n| :--- | :--- | :--- |\n| `page` | `1` | `pageIndex + 1` in [`usePagination`](file:///C:/Work/qcash-ui-digi-guarantee/hooks/use-pagination.ts#L47) (defaults to page index `0`). |\n| `limit` | `10` | `pageLimit` state in [`usePagination`](file:///C:/Work/qcash-ui-digi-guarantee/hooks/use-pagination.ts#L32) (default is `10`). |\n| `query` | `\"\"` | `search` state from table search input ([`handleSearch`](file:///C:/Work/qcash-ui-digi-guarantee/containers/bg-issuing/index.tsx#L292)). |\n| `filter` | `\"\"` | `filter` state updated by the custom date / BG type filter modal ([`handleSetFilter`](file:///C:/Work/qcash-ui-digi-guarantee/containers/bg-issuing/index.tsx#L371)). |\n| `sort` | `status` | Derived from the default sort string `\"status:DESC\"` passed into `usePagination`. |\n| `dir` | `DESC` | Direction part of the default sort string `\"status:DESC\"`. |\n| `tab` | `on going` | Evaluated from `tabValue === \"ongoing\" ? \"on going\" : \"history\"` ([`containers/bg-issuing/index.tsx`](file:///C:/Work/qcash-ui-digi-guarantee/containers/bg-issuing/index.tsx#L272)). |\n| `filterOr` | *(Complex OR string)* | [`IssuingFilterTabs.ONGOING`](file:///C:/Work/qcash-ui-digi-guarantee/const/issuing.ts#L2). |\n\n#### 3. What `filterOr` Represents\nThe `filterOr` parameter filters for active/in-progress transactions across two systems:\n* **Issuing Portal Statuses (`data.issuingPortal`):** `Draft`, `Approval`, `Posting`, `Confirmation BRISpot`, `Draft BRISpot`, `Review`, `Hold Account`, `Insurance Covering Submission`.\n* **Workflow / Step Statuses (`workflow_doc.workflow.currentStep`):**\n  * `(status:1, currentStep:checker)` — Pending Checker\n  * `(status:1, currentStep:signer)` — Pending Signer\n  * `(status:1, currentStep:releaser)` — Pending Releaser\n  * `(status:1, currentStep:maker)` — Pending Maker\n  * `status:2` — Draft\n  * `status:3` — Returned"
+    }
+  ],
+  "source": "antigravity",
+  "tags": [
+    "coding",
+    "assistant",
+    "antigravity"
+  ]
+}

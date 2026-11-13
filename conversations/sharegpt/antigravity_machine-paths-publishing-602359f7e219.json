@@ -1,0 +1,19 @@
+{
+  "id": "antigravity-fa3864800847ffad5a0aaa4eb192a8012ce872cc68ff6640ecac602359f7e219",
+  "conversations": [
+    {
+      "from": "human",
+      "value": "You are a professional software engineer answering technical and architectural questions about this codebase. Answer concisely and accurately, citing specific components, files, or patterns when known.\n\nDo not use tools, inspect files, or search the web. Answer using only the question and any supplied vault excerpt.\n\nWhat is the vault sanitization policy for Windows and Unix machine file paths before publishing?"
+    },
+    {
+      "from": "gpt",
+      "value": "Based on the vault sanitization and privacy standards, the sanitization policy for machine file paths before publishing enforces:\n\n1. **User Home \u0026 Username Masking**:\n   - **Windows:** Absolute paths matching user directories (e.g., `C:\\Users\\\u003cusername\u003e\\...`) are scrubbed or replaced with a generic placeholder (such as `\u003cUSER_HOME\u003e`, `C:\\Users\\\u003cUSER\u003e\\`, or project-relative paths).\n   - **Unix / macOS:** Paths referencing user home directories (e.g., `/home/\u003cusername\u003e/...` or `/Users/\u003cusername\u003e/...`) are masked and replaced with `~` or `\u003cUSER_HOME\u003e/`.\n\n2. **Repository \u0026 Workspace Normalization**:\n   - Host-specific absolute prefixes (drive letters, custom workspace paths, and temp directories like `C:\\Temp\\` or `/tmp/`) are stripped and normalized to project-relative paths (e.g., `./` or `\u003cWORKSPACE\u003e/`).\n   - Path separators are typically normalized to consistent forward slashes (`/`).\n\n3. **PII \u0026 Environment Redaction**:\n   - Machine names, internal host/domain identifiers, internal corporate IDs, and any embedded credentials or authentication tokens residing in path strings are identified and redacted prior to vault publication."
+    }
+  ],
+  "source": "antigravity",
+  "tags": [
+    "coding",
+    "assistant",
+    "antigravity"
+  ]
+}

@@ -1,0 +1,19 @@
+{
+  "id": "antigravity-bdd9db5e689a3aaef874ad58d43b924bc8a0a351488bf093b9d2b1c80c633e07",
+  "conversations": [
+    {
+      "from": "human",
+      "value": "You are a professional software engineer answering technical and architectural questions about this codebase. Answer concisely and accurately, citing specific components, files, or patterns when known.\n\nDo not use tools, inspect files, or search the web. Answer using only the question and any supplied vault excerpt.\n\nHow do we calculate quantum entropy using the BB84 protocol simulation in Python?"
+    },
+    {
+      "from": "gpt",
+      "value": "To calculate quantum entropy and assess information leakage/secrecy in a BB84 protocol simulation, you typically compute either:\n\n1. **Binary Shannon Entropy ($H_2(e)$)** based on the Quantum Bit Error Rate (QBER, $e$), which bounds Eve’s potential mutual information and determines the secret key fraction ($R \\approx 1 - 2H_2(e)$).\n2. **Von Neumann Entropy ($S(\\rho) = -\\text{Tr}(\\rho \\log_2 \\rho)$)** of the quantum state/density matrix $\\rho$ directly.\n\n---\n\n### 1. Entropy via Simulated QBER (Standard Key-Distillation Approach)\n\nIn standard BB84 post-processing (Shor-Preskill / Devetak-Winter bounds), the asymptotic secret key fraction is calculated from the binary entropy of the error rate:\n\n```python\nimport numpy as np\n\ndef binary_entropy(p: float) -\u003e float:\n    \"\"\"Calculates H_2(p) = -p*log2(p) - (1-p)*log2(1-p).\"\"\"\n    if p \u003c= 0 or p \u003e= 1:\n        return 0.0\n    return -p * np.log2(p) - (1.0 - p) * np.log2(1.0 - p)\n\ndef simulate_bb84(n_bits: int = 1000, error_rate: float = 0.05):\n    # 0 = Z-basis (|0\u003e, |1\u003e), 1 = X-basis (|+\u003e, |-\u003e)\n    alice_bases = np.random.randint(0, 2, n_bits)\n    alice_bits = np.random.randint(0, 2, n_bits)\n    bob_bases = np.random.randint(0, 2, n_bits)\n\n    # Bob's measurement: identical to Alice if bases match, plus noise/eavesdropping\n    bob_bits = alice_bits.copy()\n    noise = np.random.rand(n_bits) \u003c error_rate\n    bob_bits ^= noise\n\n    # Sifting: Keep bits where Alice and Bob measured in the same basis\n    sift_mask = (alice_bases == bob_bases)\n    alice_sifted = alice_bits[sift_mask]\n    bob_sifted = bob_bits[sift_mask]\n\n    # QBER estimation (using a test subset)\n    errors = np.sum(alice_sifted != bob_sifted)\n    qber = errors / len(alice_sifted) if len(alice_sifted) \u003e 0 else 0.0\n\n    # Entropy \u0026 Privacy Amplification Bound\n    h_qber = binary_entropy(qber)\n    # Asymptotic secret key rate against collective attacks:\n    secret_key_fraction = max(0.0, 1.0 - 2.0 * h_qber)\n\n    return {\n        \"sifted_bits\": len(alice_sifted),\n        \"qber\": qber,\n        \"binary_entropy\": h_qber,\n        \"secret_key_rate\": secret_key_fraction\n    }\n```\n\n---\n\n### 2. Von Neumann Entropy from a Density Matrix\n\nIf your simulation models mixed states or Eve's state $\\rho$ explicitly:\n\n```python\nimport numpy as np\n\ndef von_neumann_entropy(rho: np.ndarray) -\u003e float:\n    \"\"\"Calculates S(rho) = -Tr(rho log2 rho) = -sum(lambda_i * log2(lambda_i)).\"\"\"\n    eigenvalues = np.linalg.eigvalsh(rho)\n    # Filter non-positive eigenvalues to handle numerical noise\n    eigenvalues = eigenvalues[eigenvalues \u003e 1e-12]\n    return float(-np.sum(eigenvalues * np.log2(eigenvalues)))\n```\n\n### Summary of Key Metrics\n* **$H_2(\\text{QBER}) \\approx 0$**: Channel is clean; Eve has zero mutual information.\n* **$H_2(\\text{QBER}) \u003e 0$**: Quantifies information lost to channel noise or eavesdropping.\n* **Threshold**: If $\\text{QBER} \\gtrsim 11\\%$ ($H_2(0.11) \\approx 0.5$), the secret key rate drops to 0 under standard one-way error correction, rendering key generation insecure."
+    }
+  ],
+  "source": "antigravity",
+  "tags": [
+    "coding",
+    "assistant",
+    "antigravity"
+  ]
+}

@@ -1,0 +1,19 @@
+{
+  "id": "antigravity-c6c409e7b28feca590d0ec039eda726357ab49c61188355e1dbbd601edefe3ef",
+  "conversations": [
+    {
+      "from": "human",
+      "value": "You are a professional software engineer answering technical and architectural questions about this codebase. Answer concisely and accurately, citing specific components, files, or patterns when known.\n\nDo not use tools, inspect files, or search the web. Answer using only the question and any supplied vault excerpt.\n\nHow is page readiness and authentication gating handled across pages in QCash micro-frontends?"
+    },
+    {
+      "from": "gpt",
+      "value": "In QCash micro-frontend (MFE) architecture, page readiness and authentication gating are typically handled through a coordinated shell-and-remote pattern using Webpack/Vite Module Federation:\n\n---\n\n### 1. Centralized Authentication Gating (Shell \u0026 Shared Context)\n\n* **Shell-Level Gatekeeping:**  \n  Primary authentication validation (SSO, JWT/OAuth tokens, session cookies) is handled by the Shell (host) application before or during route resolution. Unauthenticated users are redirected to the identity provider/login page before protected remote bundles are loaded.\n* **Shared `AuthProvider` Singleton:**  \n  The authentication state is maintained via a shared `AuthContext`/`AuthProvider` configured in `module-federation.config.js` as a shared singleton (`singleton: true`). This ensures remote MFEs consume the exact same React context and token state as the shell, preventing duplicated auth instances or desynchronized session states.\n* **Route Guards (`ProtectedRoute` / `AuthGuard`):**  \n  Routes are wrapped in guard components (e.g., `\u003cProtectedRoute\u003e`, `\u003cAuthGuard\u003e`, or role-based permission wrappers). The guard evaluates:\n  1. `isAuthenticated`: Redirects unauthenticated requests to login.\n  2. `permissions` / `roles` (RBAC): Evaluates feature flags or permissions before rendering the target page; unauthorized access routes to a `403 Forbidden` or fallback view.\n\n---\n\n### 2. Page Readiness \u0026 Lifecycle Coordination\n\n* **Initialization Readiness Flags:**  \n  The shared auth/session provider exposes lifecycle flags (e.g., `isInitialized`, `isLoading`, `isReady`). Protected page components defer rendering and network requests until `isInitialized === true` to avoid race conditions where API requests fire prior to token availability or user profile resolution.\n* **Suspense \u0026 Asynchronous Remote Resolution:**  \n  Remote pages loaded via dynamic imports (`React.lazy()`) are encapsulated within React `Suspense` boundaries with dedicated fallback loaders (spinners/skeletons). This separates network chunk readiness from domain data readiness.\n* **Pre-fetch / Route Loaders:**  \n  Where route loaders or layout wrappers exist, essential route prerequisites (e.g., configuration, permissions, tenant metadata) are resolved before flipping the page readiness flag.\n\n---\n\n### 3. API Interceptors and Session Expiry\n\n* **Shared HTTP Client / Interceptors:**  \n  Axios or fetch wrappers configured across MFEs automatically inject the current bearer token on outgoing requests.\n* **Global Auth Event Handling:**  \n  On receiving a `401 Unauthorized` from backend microservices, interceptors trigger a refresh token flow or dispatch a global session expiration event (via shared state or custom window events) to prompt the shell to terminate the session and redirect cleanly."
+    }
+  ],
+  "source": "antigravity",
+  "tags": [
+    "coding",
+    "assistant",
+    "antigravity"
+  ]
+}

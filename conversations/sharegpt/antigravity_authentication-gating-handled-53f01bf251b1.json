@@ -1,0 +1,19 @@
+{
+  "id": "antigravity-e6aedfe5b8dd67c1eba803767000f1ee6aac5fd29edeb5b31f7d53f01bf251b1",
+  "conversations": [
+    {
+      "from": "human",
+      "value": "You are a professional software engineer answering technical and architectural questions about this codebase. Answer concisely and accurately, citing specific components, files, or patterns when known.\n\nDo not use tools, inspect files, or search the web. Answer using only the question and any supplied vault excerpt.\n\nHow is page readiness and authentication gating handled across pages in QCash micro-frontends?"
+    },
+    {
+      "from": "gpt",
+      "value": "In QCash micro-frontends (MFEs), page readiness and authentication gating are handled through a layered approach coordinated between the **Host (Shell)** container and the individual **Remote MFEs**:\n\n---\n\n### 1. Authentication \u0026 Authorization Gating\n\n* **Shell-Level Single Source of Truth (`AuthProvider` / `AuthContext`):**\n  * The Host application owns session lifecycle management, token storage (JWT/refresh tokens), and base user identity.\n  * Authentication state and tokens are shared with remotes either through **Webpack Module Federation shared scope** (as a singleton React context / store) or passed down as mounting props.\n\n* **Route Guards (`ProtectedRoute` / `AuthGuard`):**\n  * Top-level routing utilizes wrapper guard components (e.g., `\u003cProtectedRoute\u003e`, `\u003cAuthGuard\u003e`) before resolving remote page routes.\n  * If the session is invalid or expired, navigation is intercepted and redirected to the login flow or SSO gateway.\n\n* **Permission \u0026 Role-Based Access Control (RBAC):**\n  * Remotes consume permissions via hooks (e.g., `useAuth()`, `usePermissions()`).\n  * Gating checks verify required feature flags, permissions, or user roles before rendering sensitive page contents; unauthorized states render an `AccessDenied` or fallback view.\n\n---\n\n### 2. Page Readiness \u0026 Lifecycle Management\n\n* **Dynamic Code Splitting \u0026 Lazy Loading:**\n  * Remote micro-frontend pages are loaded dynamically via `React.lazy()` and dynamic imports (`import('remoteApp/Page')`).\n\n* **Suspense \u0026 Fallbacks:**\n  * Remote mounts are enclosed within `\u003cReact.Suspense fallback={\u003cPageSkeleton /\u003e}\u003e` or dedicated loading layouts to provide visual continuity while remote JS chunks are fetched over the network.\n\n* **Data \u0026 Bootstrap Readiness:**\n  * Pages manage readiness states using initialization hooks or data-fetching libraries (e.g., React Query / SWR / custom `useInit` hooks).\n  * A page signals readiness once configuration, mandatory reference data, and user permissions are resolved, transitioning from skeleton/spinner to the active UI.\n\n* **Resilience via Error Boundaries:**\n  * Remotes and route pages are wrapped in `\u003cErrorBoundary\u003e` components to catch chunk-load failures, network timeouts, or remote unhandled exceptions without crashing the shell application."
+    }
+  ],
+  "source": "antigravity",
+  "tags": [
+    "coding",
+    "assistant",
+    "antigravity"
+  ]
+}

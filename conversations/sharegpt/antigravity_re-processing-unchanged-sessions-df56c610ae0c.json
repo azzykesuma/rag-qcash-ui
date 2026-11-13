@@ -1,0 +1,19 @@
+{
+  "id": "antigravity-b7e7a190186ab296f70fe624c5aacce8d0187c31df66f06420e9df56c610ae0c",
+  "conversations": [
+    {
+      "from": "human",
+      "value": "You are a professional software engineer answering technical and architectural questions about this codebase. Answer concisely and accurately, citing specific components, files, or patterns when known.\n\nDo not use tools, inspect files, or search the web. Answer using only the question and any supplied vault excerpt.\n\nHow does llm-context-vault optimize repeat scans and avoid re-processing unchanged sessions?"
+    },
+    {
+      "from": "gpt",
+      "value": "`llm-context-vault` optimizes repeat scans and avoids re-processing unchanged sessions through an **incremental indexing strategy** based on metadata tracking and content caching:\n\n1. **File Metadata \u0026 Timestamp Tracking (`mtime` / File Size)**:\n   - During scanning, the scanner checks the file modification time (`mtime`) and file size of each session transcript before opening or parsing the file.\n   - If the file metadata matches the stored index record from the previous run, the file is immediately skipped.\n\n2. **Content Hashing \u0026 Checksums**:\n   - For files requiring validation, content hashing (e.g., SHA-256 / BLAKE3) is used to detect true content changes versus superficial touch events, avoiding false invalidations.\n\n3. **Manifest / State Database**:\n   - Ingestion states, indexed session IDs, file paths, hashes, and last-processed timestamps are tracked in an internal manifest/index cache (such as an embedded SQLite database or index metadata file).\n\n4. **Pipeline Short-Circuiting**:\n   - Only new, modified, or deleted sessions proceed down the extraction pipeline. Expensive stages—such as full AST/JSON parsing, text chunking, and embedding generation—are completely bypassed for unchanged sessions."
+    }
+  ],
+  "source": "antigravity",
+  "tags": [
+    "coding",
+    "assistant",
+    "antigravity"
+  ]
+}

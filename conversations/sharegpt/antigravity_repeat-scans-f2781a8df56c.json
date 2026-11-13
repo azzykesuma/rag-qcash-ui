@@ -1,0 +1,19 @@
+{
+  "id": "antigravity-fc90e05d96235042a4adc4516f6bfd1b3d5529cc41a648077b5cf2781a8df56c",
+  "conversations": [
+    {
+      "from": "human",
+      "value": "You are a professional software engineer answering technical and architectural questions about this codebase. Answer concisely and accurately, citing specific components, files, or patterns when known.\n\nDo not use tools, inspect files, or search the web. Answer using only the question and any supplied vault excerpt.\n\nHow does llm-context-vault optimize repeat scans and avoid re-processing unchanged sessions?"
+    },
+    {
+      "from": "gpt",
+      "value": "`llm-context-vault` optimizes repeat scans and prevents redundant processing of unchanged sessions through the following mechanisms:\n\n1. **Metadata State Tracking (SQLite)**:\n   - The scanner stores state metadata for each indexed session in the local SQLite database, recording attributes such as the canonical file path, last-modified timestamp (`mtime`), file size, and/or content hash (e.g., SHA-256).\n\n2. **Early Filesystem Pre-filtering**:\n   - During directory traversal, the scanner queries file attributes (`mtime` and size) directly from the filesystem and compares them against existing database records.\n   - If the file metadata matches the stored record, the session is marked as unchanged and skipped immediately before any disk read or file deserialization occurs.\n\n3. **Content Hashing for Change Detection**:\n   - If timestamps or sizes differ (or if deep verification is enabled), the file is checked against stored content hashes to confirm actual text changes rather than superficial filesystem touch events.\n\n4. **Bypassing Expensive Downstream Pipelines**:\n   - Unchanged sessions bypass all subsequent compute- and I/O-heavy pipeline stages, specifically:\n     - JSON/JSONL parsing and transcript extraction.\n     - Text normalization and chunking.\n     - Vector embedding generation and full-text search (FTS) index rebuilding."
+    }
+  ],
+  "source": "antigravity",
+  "tags": [
+    "coding",
+    "assistant",
+    "antigravity"
+  ]
+}

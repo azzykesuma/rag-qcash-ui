@@ -1,0 +1,79 @@
+{
+  "id": "antigravity-b79920edcb198032f2ec9cf62c260a25c15ff81068c50e8248033a2fe29ce53f",
+  "conversations": [
+    {
+      "from": "human",
+      "value": "\"qcash-ui-account-receivable\": {\n    toggleKey: \"toggleAccountReceivable\",\n    routes: [\"/account-receivable\"],\n    i18n: [\"account-receivable\"],\n    config: {\n      independentLocale: true,\n    },\n  }, can you investigate what is the usage of independent locale?"
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": "In QCash UI's Micro-Frontend (MFE) architecture, **`independentLocale`** controls the **priority order for loading i18n translation bundles** between the remote module (or translation API) and the host shell application.\n\n---\n\n### Definition \u0026 Code Implementation\n\nDefined in [`FeatureOptions`](file:///C:/Work/qcash-ui/services/federation/types.ts#L26-L34):\n\n```typescript\nexport type FeatureOptions = {\n  /**\n   * When true, locale files are fetched exclusively from the feature's own\n   * remote origin (and the centralised language API in config.languageApiUrl\n   * when available), bypassing the shell's /public/locales entirely.\n   * Use this for modules that own their translation files independently.\n   */\n  independentLocale?: boolean;\n};\n```\n\nEvaluated during locale resolution in [`getLoadPathCandidates`](file:///C:/Work/qcash-ui/services/federation/utils/i18n.ts#L41-L60):\n\n```typescript\nfunction getLoadPathCandidates(lng: string, ns: string, sources: ModuleLocaleSources): string[] {\n  const { independentLocale, languageApiUrl, modulePath, moduleOrigin, shellOrigin } = sources;\n  const localePath = `${modulePath}/locales/${lng}/${ns}.json`;\n  const primary = getLoadPath(lng, ns);\n\n  const remoteCandidates = [\n    ...(languageApiUrl ? [joinUrl(languageApiUrl, `?lang=${lng}\u0026module=${ns}`)] : []),\n    ...(moduleOrigin \u0026\u0026 modulePath ? [joinUrl(moduleOrigin, localePath)] : []),\n  ];\n\n  const hostCandidates = [\n    ...(primary ? [primary, ...(shellOrigin \u0026\u0026 primary.startsWith(\"/\") ? [joinUrl(shellOrigin, primary)] : [])] : []),\n  ];\n\n  const ordered = independentLocale\n    ? [...remoteCandidates, ...hostCandidates]\n    : [...hostCandidates, ...remoteCandidates];\n\n  return [...new Set(ordered)];\n}\n```\n\n---\n\n### How It Works\n\nWhen a federated module is loaded (e.g. by [`useModuleLoading`](file:///C:/Work/qcash-ui/components/federation/hooks/useModuleLoading.ts#L41) calling [`dynamicLoadLocales`](file:///C:/Work/qcash-ui/services/federation/utils/i18n.ts#L155)), the system attempts to fetch translation JSONs for each namespace in order:\n\n| Mode | Candidate Fetch Order | Behavior |\n| :--- | :--- | :--- |\n| **`independentLocale: true`** | **1.** Language API (`/language/v1/translations`)\u003cbr\u003e**2.** Remote MFE origin (`${moduleOrigin}/${modulePath}/locales/${lng}/${ns}.json`)\u003cbr\u003e**3.** Host shell (`/v2/locales/${lng}/${ns}.json`) | **Remote-First**: Prioritizes the module's own remote translations or the centralized API. Host shell locales are only used as fallback. |\n| **`independentLocale: false`** *(or omitted)* | **1.** Host shell (`/v2/locales/${lng}/${ns}.json`)\u003cbr\u003e**2.** Language API\u003cbr\u003e**3.** Remote MFE origin | **Host-First**: Prioritizes translation files bundled inside the host shell. |\n\n---\n\n### Why It Is Used for `qcash-ui-account-receivable`\n\n1. **Independent Module Lifecycle**: It allows the `qcash-ui-account-receivable` repository and team to manage, update, and deploy its own translation files independently with its own release cycle.\n2. **Prevents Stale Shell Locales**: If the host shell happens to have an older copy of `account-receivable.json`, setting `independentLocale: true` ensures the browser pulls the latest translations from the remote module CDN or Language API rather than using the stale host version."
+    }
+  ],
+  "source": "antigravity",
+  "tags": [
+    "coding",
+    "assistant",
+    "antigravity"
+  ]
+}

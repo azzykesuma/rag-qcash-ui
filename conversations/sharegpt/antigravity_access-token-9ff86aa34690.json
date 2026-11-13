@@ -1,0 +1,399 @@
+{
+  "id": "antigravity-ea4d66ea059db317a6d8eddc9fef0e612accf0194a98f6e41cc89ff86aa34690",
+  "conversations": [
+    {
+      "from": "human",
+      "value": "can you investigate this situation\n1. when i deliberately wait for 30 minutes to make the access token expired, then when i tried changing to another browser, then returned again to that browser, suddenly i got kicked to landing page"
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": "Berdasarkan investigasi menyeluruh pada codebase dan runtime auth (`@bri/addons-auth-provider`, `HostAuthGate`, dan `react-idle-timer`), penyebab utama Anda langsung terlempar ke landing page saat kembali ke browser adalah **Idle Timer (Inactivity Timeout)**, bukan sekadar kedaluwarsanya access token.\n\n---\n\n### Root Cause Breakdown\n\n```mermaid\nflowchart TD\n    A[\"User diam 30 menit (unfocused/background)\"] --\u003e B[\"Browser men-throttle timer background\"]\n    B --\u003e C[\"User kembali ke browser\"]\n    C --\u003e D[\"Browser men-dispatch event: 'focus' / 'visibilitychange'\"]\n    D --\u003e E[\"react-idle-timer menghitung: Date.now() - lastActive (30 min) \u003e= 15 min\"]\n    E --\u003e F[\"react-idle-timer memicu onIdle()\"]\n    F --\u003e G[\"AuthProvider menjalankan logout()\"]\n    G --\u003e H[\"Hapus access-token, refresh-token, \u0026 clear storage\"]\n    H --\u003e I[\"Redirect ke router.push('/landing-page?logout=true')\"]\n```\n\n---\n\n### 1. Inactivity Timeout 15 Menit (`react-idle-timer`) Lebih Cepat dari 30 Menit\n\nDi [`@bri/addons-auth-provider/dist/src/auth.js`](file:///C:/Work/qcash-ui-dashboard/node_modules/@bri/addons-auth-provider/dist/src/auth.js#L88-L1125), durasi idle user dibatasi statis sebesar **15 menit**:\n\n```javascript\nvar FIFTEEN_MINUTES = 15 * 60 * 1000; // 15 menit\nvar _u = (0, react_1.useState)(FIFTEEN_MINUTES), isMinutes = _u[0], setIsMinutes = _u[1];\n\nvar onIdle = function () {\n    if (token !== null) {\n        return logout();\n    }\n    return;\n};\n\n// ...\nreturn (\n    \u003cIdleTimerProvider\n        onPrompt={onPrompt}\n        onIdle={onIdle}\n        onActive={onActive}\n        onAction={onAction}\n        timeout={isMinutes} // 15 menit!\n    \u003e\n        {children}\n    \u003c/IdleTimerProvider\u003e\n);\n```\n\nKetika Anda sengaja menunggu **30 menit**, Anda telah melampaui batas *inactivity threshold* (15 menit) sebanyak dua kali lipat.\n\n---\n\n### 2. Mengapa baru tertendang saat \"pindah ke browser lain lalu kembali lagi\"?\n\nIni terjadi karena mekanisme **Browser Background Throttling** dan **Event Catch-Up**:\n\n1. **Throttling Tab Background**: Ketika browser tidak aktif / berada di background (misal saat Anda beralih ke browser lain), browser modern (Chrome, Edge, Firefox) secara agresif men-throttle atau menunda eksekusi `setTimeout`/timer di background untuk menghemat resource.\n2. **Event Trigger saat Tab Aktif Kembali**: `react-idle-timer` secara default mendengarkan event [`DEFAULT_EVENTS`](file:///C:/Work/qcash-ui-dashboard/node_modules/react-idle-timer/dist/utils/defaults.d.ts) yang mencakup `visibilitychange` dan `focus`.\n3. **Pengecekan Selisih Waktu**: Saat Anda mengklik/kembali ke window browser tersebut:\n   - Event `focus` / `visibilitychange` langsung terpicu.\n   - `react-idle-timer` langsung menghitung selisih waktu:\n     $$\\Delta t = \\text{Date.now()} - \\text{lastActiveTime}$$\n   - Karena $\\Delta t \\approx 30\\text{ menit} \\ge 15\\text{ menit}$, `react-idle-timer` menyimpulkan bahwa user telah idle dan seketika memicu callback `onIdle()`.\n\n---\n\n### 3. Eksekusi `logout()` \u0026 Redirect ke `/landing-page`\n\nDi dalam callback [`onIdle`](file:///C:/Work/qcash-ui-dashboard/node_modules/@bri/addons-auth-provider/dist/src/auth.js#L607-L612), sistem memanggil [`logout()`](file:///C:/Work/qcash-ui-dashboard/node_modules/@bri/addons-auth-provider/dist/src/auth.js#L650-L684):\n\n```javascript\n// Default loginRouteUrl di konstanta adalah \"/landing-page\"\n// file: node_modules/@bri/addons-auth-provider/dist/const/index.js:4\n// exports.loginRouteUrl = \"/landing-page\";\n\nfinally {\n    localStorage.removeItem(\"access-token\");\n    localStorage.removeItem(\"refresh-token\");\n    localStorage.removeItem(\"login\");\n    sessionStorage.clear();\n    router.push(`${loginRoute}?logout=true`); // -\u003e /landing-page?logout=true\n    setToken(null);\n}\n```\n\nSemua session dan token dibersihkan, lalu Next.js router memindahkan Anda ke `/landing-page`.\n\n---\n\n### Faktor Tambahan Lain yang Perlu Diperhatikan\n\n1. **Jika di browser kedua Anda melakukan login**:\n   - Backend QCash/Qlola menerapkan *single active session* (\"Another Login Detected\"). Jika Anda login dengan akun yang sama di browser lain, refresh token \u0026 session di browser pertama langsung di-invalidate di server. Saat browser pertama aktif kembali dan mencoba memvalidasi sesi, backend menolak dengan `401 / Another Login Detected`, memicu logout seketika.\n2. **Session Freshness Cache 5 Menit (`SESSION_VALIDITY_MS`)**:\n   - Di [`auth.js`](file:///C:/Work/qcash-ui-dashboard/node_modules/@bri/addons-auth-provider/dist/src/auth.js#L89), session hanya dianggap fresh selama 5 menit. Setelah 30 menit, guard validation dipaksa menembak `validateToken()`. Jika access token mati dan refresh token gagal/hilang, guard otomatis melempar ke landing page.\n\n---\n\n### Rekomendasi Cara Mengetes Expired Token Tanpa Terkena Idle Kick\n\nJika tujuan Anda adalah menguji perilaku aplikasi saat **Access Token kedaluwarsa** (misal menguji apakah refresh token jalan atau modal session expired muncul):\n\n1. **Simulasikan Token Expired Tanpa Menunggu 30 Menit**:\n   - Jangan menunggu 30 menit secara pasif (karena pasti terkena Idle Timer 15 menit).\n   - Di DevTools `Application -\u003e Local Storage -\u003e access-token`, ubah payload JWT-nya (atau ubah string signature / expirynya), atau trigger API call dengan token kedaluwarsa.\n2. **Jika Harus Menunggu 30 Menit**:\n   - Lakukan interaksi ringan secara berkala (misal scroll / gerakkan kursor di tab tersebut sebelum 15 menit) agar timer ke-reset, atau tes di environment di mana timeout `react-idle-timer` disesuaikan."
+    },
+    {
+      "from": "human",
+      "value": "hmmm tp ketika di environment pilot v1.708.3-release branch ini, sepertinya tidak ada masalah deh dengan behaviour yang persis sama"
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": "Pengamatan Anda sangat tepat! Di environment **pilot pada branch `v1.708.3-release`**, behavior-nya memang berbeda karena **arsitektur auth di branch tersebut belum sama dengan branch saat ini**. \n\nBerikut adalah perbedaan konkret yang ditemukan setelah membandingkan commit dan konfigurasi `v1.708.3-release` dengan branch terbaru:\n\n---\n\n### 1. Di Pilot `v1.708.3-release`, Provider yang Aktif adalah `OrdentProviders`, Bukan `BriProviders`\n\nJika dicek pada [`config.ts`](file:///C:/Work/qcash-ui/config.ts) di branch `v1.708.3-release`:\n\n```typescript\n// config.ts di v1.708.3-release\ntoggleAddonsAuthProviderMigration: getValueByEnv(\n  true,  // dev\n  true,  // prestage\n  false, // preploy\n  false, // piloting -\u003e FALSE!\n  false  // prod\n)\n```\n\nDan di `pages/_app.tsx`:\n```tsx\nconst AuthProvider = config.toggleAddonsAuthProviderMigration ? BriProviders : OrdentProviders;\n```\n\nDi environment **pilot**, `toggleAddonsAuthProviderMigration` bernilai **`false`**. Artinya, di pilot branch tersebut yang berjalan adalah **`OrdentProviders` (`@ordentco/addons-auth-provider`)**, bukan `BriProviders` (`@bri/addons-auth-provider`).\n\n---\n\n### 2. Belum Ada `HostAuthGate` di `v1.708.3-release`\n\nPada branch `v1.708.3-release`:\n- [`HostAuthGate.tsx`](file:///C:/Work/qcash-ui/components/providers/HostAuthGate.tsx) **belum ada sama sekali**.\n- Di branch baru (`v1.756.x` / migrasi centralized auth guard PR #2741), `HostAuthGate` membungkus seluruh protected page.\n\n**Dampaknya:**\nDi branch saat ini, jika `access-token` hilang dari `localStorage` atau session drop:\n```tsx\n// HostAuthGate.tsx:199\nif (!token) {\n  if (!hasMountedRef.current \u0026\u0026 !redirectingRef.current) {\n    redirectingRef.current = true;\n    router.replace(\"/landing-page\"); // Langsung ditendang ke landing-page!\n  }\n  return;\n}\n```\nSedangkan di `v1.708.3-release`, karena tidak ada `HostAuthGate`, komponen halaman tetap mount dan tidak ada gatekeeper yang me-redirect paksa ke `/landing-page`.\n\n---\n\n### 3. Modal `\u003cSessionExpiredNewQlola\u003e` Muncul vs Hard Redirect\n\nDi `v1.708.3-release`, saat access token kedaluwarsa setelah 30 menit:\n1. Request API yang gagal mengembalikan status `401`.\n2. Interceptor memancarkan event `showDialog`.\n3. Hook `useSessionExpiration` menangkap event tersebut dan mengubah state `propsModal.show = true`.\n4. Popup **[`SessionExpiredNewQlola`](file:///C:/Work/qcash-ui/components/ui/SessionExpiredNewQlola.tsx)** (\"Session Ended / Please log back in\") muncul di atas dashboard. **User tidak tertendang ke landing page**, melainkan tetap di dashboard dengan modal relogin terbuka.\n\nSedangkan di branch baru dengan `@bri/addons-auth-provider`:\n- **`onIdle` di `@bri/addons-auth-provider`**: Setelah 15 menit idle, `onIdle()` langsung mengeksekusi `logout()`, yang menghapus `access-token` dan `refresh-token` dari `localStorage`, lalu memanggil `router.push('/landing-page?logout=true')`.\n- **Root/Dashboard Interceptor**: Di `auth-interceptors.js` line 410, jika request 401 terjadi di route dashboard/root (`isDashOrRoot`), interceptor melakukan:\n  ```javascript\n  if (isDashOrRoot \u0026\u0026 status === 401) {\n    clearAuthStorage(featureFlags);\n    window.location.replace(\"/landing-page\");\n  }\n  ```\n  Ini langsung me-redirect browser tanpa sempat membiarkan modal relogin terbuka.\n\n---\n\n### Kesimpulan\n\n| Aspek | Pilot `v1.708.3-release` | Branch Saat Ini (Dev / Post-Migration) |\n|---|---|---|\n| **Auth Provider** | `OrdentProviders` (`@ordentco`) | `BriProviders` (`@bri`) |\n| **`HostAuthGate`** | **Tidak ada** (halaman tetap dirender) | **Ada** (jika token hilang, auto redirect `/landing-page`) |\n| **Idle Behavior** | Tidak force-logout agresif ke landing | `onIdle` (15 min) langsung `logout()` \u0026 hapus token |\n| **Saat Token Expired** | Muncul modal relogin `\u003cSessionExpiredNewQlola\u003e` | Tertendang langsung ke `/landing-page` via `HostAuthGate` / Interceptor |\n\nItulah mengapa di pilot `v1.708.3-release` Anda tidak tertendang ke landing page, sedangkan di branch saat ini Anda langsung terlempar keluar."
+    }
+  ],
+  "source": "antigravity",
+  "tags": [
+    "coding",
+    "assistant",
+    "antigravity"
+  ]
+}

@@ -1,0 +1,19 @@
+{
+  "id": "antigravity-1547af43ab56f3801db11fe85141089f2ffe0ba79929b513d4ee2ffa7a09a3ee",
+  "conversations": [
+    {
+      "from": "human",
+      "value": "You are a professional software engineer answering technical and architectural questions about this codebase. Answer concisely and accurately, citing specific components, files, or patterns when known.\n\nDo not use tools, inspect files, or search the web. Answer using only the question and any supplied vault excerpt.\n\nHow is page readiness and authentication gating handled across pages in QCash micro-frontends?"
+    },
+    {
+      "from": "gpt",
+      "value": "In QCash micro-frontends (MFEs), **page readiness** and **authentication gating** follow a layered architecture distributed between the host/shell container and the federated remote micro-frontends:\n\n---\n\n### 1. Authentication Gating\n\n* **Shell-Level Auth Provider \u0026 Session Management:**\n  * Authentication (tokens, user profile, and RBAC permissions) is managed centrally in the **Host/Shell container** (e.g., via an `AuthProvider` or root store).\n  * Remote MFEs consume auth context either as a federated shared module (single instance) or passed down via shared context/props to prevent multiple conflicting session states.\n* **Route Protection (`ProtectedRoute` / `AuthGuard`):**\n  * Top-level and sub-routes are wrapped in a route guard (e.g., `AuthGuard` or `ProtectedRoute`).\n  * Gating checks for active authentication tokens before rendering child routes. If unauthenticated or expired, it redirects to the central login/SSO portal.\n* **Permission / RBAC Gating:**\n  * Pages or specific sub-views check user permissions/roles (e.g., `usePermissions` or `\u003cPermissionGate permissions={[...]} /\u003e`).\n  * If the user lacks the required permission, a standardized `403 Forbidden` / `Unauthorized` fallback is rendered.\n\n---\n\n### 2. Page Readiness \u0026 Remote Lifecycle\n\n* **Federated Dynamic Imports \u0026 Suspense:**\n  * Remote micro-frontend entry points are loaded lazily using `React.lazy(() =\u003e import('mfe_name/Page'))`.\n  * Page loading readiness is handled by wrapping dynamic remote routes in `\u003cSuspense fallback={\u003cPageSkeleton /\u003e}\u003e` (or shared `LoadingSpinner`).\n* **Error Boundaries (`RemoteErrorBoundary`):**\n  * To prevent one failing remote from breaking the entire application shell, remote page chunks are wrapped in dedicated `ErrorBoundary` components that catch chunk loading errors, network failures, or remote runtime exceptions.\n* **Data Initialization \u0026 Readiness Checks:**\n  * Remote pages typically manage their internal readiness state using standard queries (e.g., TanStack/React Query) and an `isReady` or `isLoading` flag:\n    * Configuration, user session, and initial reference data are validated before transitioning out of the initial skeleton state.\n* **Shared Singleton Dependencies:**\n  * Core libraries (`react`, `react-dom`, routing libraries, and query clients) are configured as **shared singletons** in the Module Federation configuration to ensure synchronization of auth state and avoid multiple runtime contexts across federated boundaries."
+    }
+  ],
+  "source": "antigravity",
+  "tags": [
+    "coding",
+    "assistant",
+    "antigravity"
+  ]
+}

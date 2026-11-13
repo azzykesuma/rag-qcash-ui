@@ -1,0 +1,19 @@
+{
+  "id": "antigravity-fe8189db171484536dbf2dcae0ebd75f198a4ef389f1c25dd7ac0b7bfce5a8da",
+  "conversations": [
+    {
+      "from": "human",
+      "value": "You are a professional software engineer answering technical and architectural questions about this codebase. Answer concisely and accurately, citing specific components, files, or patterns when known.\n\nDo not use tools, inspect files, or search the web. Answer using only the question and any supplied vault excerpt.\n\nHow is page readiness and authentication gating handled across pages in QCash micro-frontends?"
+    },
+    {
+      "from": "gpt",
+      "value": "In QCash micro-frontend (MFE) architecture, page readiness and authentication gating are coordinated between the host container (shell) and individual remote modules using the following patterns:\n\n---\n\n### 1. Authentication Gating (Host / Shell Boundary)\n* **Shell-Level Route Protection (`AuthGuard` / `ProtectedRoute`)**:  \n  Authentication state (JWT/tokens, active session, user profile) is primarily owned and validated at the Host Shell level. Routes mounting remote MFE containers are wrapped in an `AuthGuard` or `ProtectedRoute` component before remote chunks are loaded or rendered.\n* **Shared Authentication State**:  \n  The host shares authentication tokens and session context with remotes either via shared dependencies configured as singletons in Webpack Module Federation (e.g., a shared `AuthContext` or Redux store) or via a shared client package/cookie/storage mechanism. Unauthenticated sessions are redirected to the central login/SSO flow.\n\n---\n\n### 2. Page Readiness \u0026 Remote Loading (`React.Suspense` + `PageLoader`)\n* **Dynamic Chunk Resolution**:  \n  Remote pages are imported lazily using `React.lazy(() =\u003e import('remoteMfe/Page'))` and wrapped within `React.Suspense`.\n* **Loading Fallbacks**:  \n  While the remote entry and component chunks are being fetched across the network, a shared shell fallback (e.g., `PageLoader`, skeleton UI, or global spinner) renders to prevent blank frames and layout shifts.\n* **Component-Level Readiness / Data Hydration**:  \n  Within the remote page itself, page readiness is managed through local data-fetching state (such as React Query / RTK Query status flags or a custom initialization hook e.g., `isReady` / `isLoading`). Critical dependencies (lookup tables, account/user context) are resolved before exposing interactive UI elements.\n\n---\n\n### 3. Role \u0026 Permission Gating (`PermissionGuard` / RBAC)\n* **Granular Feature Access**:  \n  Beyond standard authentication, remote routes and views are gated using role-based access control (RBAC) via components like `PermissionGuard` or route metadata checks.\n* **Fallback \u0026 Redirects**:  \n  If the authenticated user lacks specific operational privileges for a micro-frontend page, the guard intercepts rendering and directs the user to an unauthorized (`/403` / Access Denied) view."
+    }
+  ],
+  "source": "antigravity",
+  "tags": [
+    "coding",
+    "assistant",
+    "antigravity"
+  ]
+}

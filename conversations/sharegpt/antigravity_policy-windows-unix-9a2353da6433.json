@@ -1,0 +1,19 @@
+{
+  "id": "antigravity-22b9b7e44ff81c16bd8faee2d3890cabeb6a856fac191d3535e09a2353da6433",
+  "conversations": [
+    {
+      "from": "human",
+      "value": "You are a professional software engineer answering technical and architectural questions about this codebase. Answer concisely and accurately, citing specific components, files, or patterns when known.\n\nDo not use tools, inspect files, or search the web. Answer using only the question and any supplied vault excerpt.\n\nWhat is the vault sanitization policy for Windows and Unix machine file paths before publishing?"
+    },
+    {
+      "from": "gpt",
+      "value": "Based on the vault sanitization policy for publishing conversational transcripts and artifacts:\n\n1. **User Directory Redaction**:\n   - **Windows:** Absolute paths matching user home directories (e.g., `C:\\Users\\\u003cusername\u003e\\...`) are stripped or replaced with standard placeholders such as `~` or `\u003cHOME\u003e`.\n   - **Unix / macOS:** Paths referencing `/home/\u003cusername\u003e/` or `/Users/\u003cusername\u003e/` are normalized to `~/` or `\u003cHOME\u003e/`.\n\n2. **Workspace \u0026 Repository Root Abstraction**:\n   - Machine-specific workspace checkouts (e.g., `C:\\code\\...` or `/workspace/...`) are converted to relative repository paths or replaced with repository root tokens (e.g., `\u003crepo-root\u003e/...` or `\u003cWORKSPACE\u003e/`).\n\n3. **Temporary Directories \u0026 Environment Paths**:\n   - Machine-specific scratch paths such as `AppData\\Local\\Temp`, `/tmp`, and `/var/tmp` (or `/var/folders/...`) are masked or excised.\n\n4. **Separator Normalization**:\n   - Windows backslashes (`\\`) in sanitized file paths are normalized to POSIX forward slashes (`/`) to maintain cross-platform uniformity and avoid escaping anomalies across markdown consumers."
+    }
+  ],
+  "source": "antigravity",
+  "tags": [
+    "coding",
+    "assistant",
+    "antigravity"
+  ]
+}

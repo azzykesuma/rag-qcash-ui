@@ -1,0 +1,155 @@
+{
+  "id": "antigravity-e46fd2f8abe4a178c0ee597bab78afd7a373374d6fdcff75e27a1c366419d978",
+  "conversations": [
+    {
+      "from": "human",
+      "value": "check this screeenshot. it seems there are too many translation fetch api, can you investigate why it's like this?"
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": "Berdasarkan screenshot DevTools Network Anda (`internal-service.example.com/v2/landing-page`), ada **14 request translation** yang terjadi secara bersamaan.\n\nPenyebab utamanya adalah **3 layer pemanggilan translation yang berjalan paralel tanpa koordinasi dan deduplikasi** antara Host (`qcash-ui`) dan Remote MFE (`qcash-ui-landing-page`).\n\n---\n\n### Pemetaan 14 Request pada Screenshot\n\n| No | Request | Status \u0026 Tipe | Initiator | Asal Muasal / Penyebab |\n|---|---|---|---|---|\n| **1-3** | `translation.json`, `header-footer`, `common` (`lang=en`) | 304 / 200 (fetch) | `26954...` (Host Bundle) | **Host ni18n initial hydration**: Saat aplikasi pertama kali hydrate, `ni18n` membaca default/fallback language (`en`). |\n| **4-6** | `translation.json`, `header-footer`, `common` (`lang=id`) | 304 / 200 (fetch) | `26954...` (Host Bundle) | **Host language switch ke \"id\"**: Begitu [`ModuleFederationProvider`](file:///C:/Work/qcash-ui/components/federation/provider.tsx#L81-L85) me-mount `useSyncLanguage(localStorage.getItem(\"locale\"))`, bahasa berubah dari `en` ke `id`, memicu `ni18n` me-load ulang seluruh namespace `id`. |\n| **7-9** | `landing-page`, `common`, `header-footer` (`lang=id`) | 200 (fetch) | `5922...` (Host MFE Loader) | **Host `useModuleLoading`**: Saat route `/landing-page` aktif, [`dynamicLoadLocales`](file:///C:/Work/qcash-ui/services/federation/utils/i18n.ts#L164) dipanggil. Fungsi ini **meng-hardcode** penambahan `\"common\"` dan `\"header-footer\"` ke dalam namespace modul MFE, sehingga men-download ulang `common` dan `header-footer` yang tadi sudah di-fetch oleh `ni18n`. |\n| **10** | `landing-page` / `common` (`lang=en`) | 200 (fetch) | `26954...` (Host Bundle) | **`reloadResources` tanpa spesifikasi bahasa**: Pada [`useModuleLoading.ts#L133`](file:///C:/Work/qcash-ui/components/federation/hooks/useModuleLoading.ts#L133), ada pemanggilan `i18n.reloadResources(undefined, [\"common\", \"header-footer\"])`. Parameter `undefined` menyebabkan i18next me-load ulang semua bahasa (termasuk fallback `en`). |\n| **11-14** | `common`, `landing-page` (`lang=id`) | 200 (**xhr**) | `_federation_expose_...` | **Remote MFE Axios calls**: Remote MFE memiliki hook sendiri ([`useLanguageSync.ts`](file:///C:/Work/qcash-ui-landing-page/hooks/useLanguageSync.ts#L143-L190)) yang memanggil API via Axios (XHR). Karena hook ini dipanggil di **3 komponen berbeda sekaligus**, request terduplikasi ganda. |\n\n---\n\n### Akar Masalah \u0026 Rekomendasi Solusi\n\n#### 1. Remote MFE memanggil `useLanguageSync()` sebanyak 3 kali secara paralel\n* **Penyebab**: Di repository `qcash-ui-landing-page`, hook `useLanguageSync()` dipanggil di:\n  1. [`hooks/useLandingPageContent.ts`](file:///C:/Work/qcash-ui-landing-page/hooks/useLandingPageContent.ts#L7) (dipakai di `LandingPageContent`)\n  2. [`containers/landing-page.tsx`](file:///C:/Work/qcash-ui-landing-page/containers/landing-page.tsx#L26) (`LandingPageQlola`)\n  3. [`components/newskin/navbar/navbar-newskin.tsx`](file:///C:/Work/qcash-ui-landing-page/components/newskin/navbar/navbar-newskin.tsx#L47) (`NavbarNewSkin`)\n  Karena ketiganya me-mount pada waktu yang sama dan memiliki state/instance terpisah, masing-masing menembak Axios `getTranslations` \u0026 `getCommonTranslations` secara bersamaan (menghasilkan request 11–14).\n* **Solusi**: \n  - Hapus pemanggilan `useLanguageSync()` dari `LandingPageQlola` dan `NavbarNewSkin`. Cukup panggil **sekali saja** di level parent/hook utama (`useLandingPageContent`).\n  - Tambahkan in-flight promise deduplication atau rely pada singleton i18n host jika running di dalam host MFE.\n\n#### 2. Redundansi Namespace di Host MFE Loader (`dynamicLoadLocales`)\n* **Penyebab**: Di [`services/federation/utils/i18n.ts#L164`](file:///C:/Work/qcash-ui/services/federation/utils/i18n.ts#L164):\n  ```ts\n  const nss = Array.from(new Set([...requestedNs, \"common\", \"header-footer\"]));\n  ```\n  Host selalu memaksa me-fetch `\"common\"` dan `\"header-footer\"` setiap kali memuat locales modul MFE, padahal kedua namespace ini sudah dimuat oleh `ni18n`.\n* **Solusi**: Hanya fetch `feature.i18n` (misal `[\"landing-page\"]`) dan hindari menambah `\"common\"` \u0026 `\"header-footer\"` jika namespace tersebut sudah di-*handle* oleh host `ni18n`.\n\n#### 3. Pemanggilan `i18n.reloadResources(undefined, ...)`\n* **Penyebab**: Di [`components/federation/hooks/useModuleLoading.ts#L133`](file:///C:/Work/qcash-ui/components/federation/hooks/useModuleLoading.ts#L133):\n  ```ts\n  i18n?.reloadResources(undefined, [\"common\", \"header-footer\"]);\n  ```\n  Ini dieksekusi setiap kali rute dimuat, memicu reload untuk semua bahasa fallback (`en` dan `id`).\n* **Solusi**: Batasi pemanggilan `reloadResources` hanya saat benar-benar ada perubahan bahasa atau sertakan bahasa aktif saja (`[i18n.language]`).\n\n#### 4. Flip Bahasa Awal (`en` ➔ `id`) Saat Hydration\n* **Penyebab**: SSR/initial render me-load resource bahasa default `en`, lalu segera setelah mount di browser membaca `localStorage.getItem(\"locale\") = \"id\"` dan me-load ulang semua resource untuk `id`.\n* **Solusi**: Pastikan deteksi bahasa memanfaatkan cookie/header pada saat SSR atau `ni18n` detection config agar langsung menginisialisasi bahasa yang sesuai sejak awal render."
+    }
+  ],
+  "source": "antigravity",
+  "tags": [
+    "coding",
+    "assistant",
+    "antigravity"
+  ]
+}

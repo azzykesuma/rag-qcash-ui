@@ -1,0 +1,19 @@
+{
+  "id": "antigravity-8fe3c9f6e35ae1f79fcf5326ea31c2bf1574ca1d1556840656073a81e0295670",
+  "conversations": [
+    {
+      "from": "human",
+      "value": "You are a professional software engineer answering technical and architectural questions about this codebase. Answer concisely and accurately, citing specific components, files, or patterns when known.\n\nDo not use tools, inspect files, or search the web. Answer using only the question and any supplied vault excerpt.\n\nHow do we calculate quantum entropy using the BB84 protocol simulation in Python?"
+    },
+    {
+      "from": "gpt",
+      "value": "In a BB84 protocol simulation, quantum entropy is typically evaluated in one of two contexts: **von Neumann entropy** of the transmitted quantum states (density matrices) to quantify state purity and entanglement/eavesdropping disturbance, or the **binary Shannon entropy** over the Quantum Bit Error Rate (QBER) to quantify information leakage to Eve during privacy amplification.\n\n---\n\n### 1. Binary Entropy of QBER (Information Leakage \u0026 Secret Key Rate)\nIn BB84, eavesdropping introduces quantum state collapse and errors. If Alice and Bob measure a Quantum Bit Error Rate $e$, Eve’s theoretical upper bound on information is given by the binary entropy function $h_2(e)$:\n\n$$h_2(e) = -e \\log_2(e) - (1 - e) \\log_2(1 - e)$$\n\nThe asymptotic secret key fraction $r$ (Devetak-Winter bound) is calculated as:\n$$r \\ge 1 - 2h_2(e)$$\n\n#### Python Implementation:\n```python\nimport numpy as np\n\ndef binary_entropy(p: float) -\u003e float:\n    \"\"\"Calculates binary Shannon entropy h_2(p).\"\"\"\n    if p \u003c= 0.0 or p \u003e= 1.0:\n        return 0.0\n    return -p * np.log2(p) - (1.0 - p) * np.log2(1.0 - p)\n\ndef calculate_bb84_key_rate(alice_sifted: list[int], bob_sifted: list[int]) -\u003e tuple[float, float, float]:\n    \"\"\"Calculates QBER, Eve's entropy, and the extractable secret key fraction.\"\"\"\n    errors = sum(a != b for a, b in zip(alice_sifted, bob_sifted))\n    qber = errors / len(alice_sifted) if alice_sifted else 0.0\n    \n    eve_entropy = binary_entropy(qber)\n    key_rate = max(0.0, 1.0 - 2.0 * eve_entropy)\n    \n    return qber, eve_entropy, key_rate\n```\n\n---\n\n### 2. von Neumann Entropy of the Quantum State ($\\rho$)\nIf your simulation models qubits using density operators $\\rho$ (e.g., in the presence of an intercept-resend attack or noise channel), the von Neumann quantum entropy $S(\\rho)$ is:\n\n$$S(\\rho) = -\\mathrm{Tr}(\\rho \\log_2 \\rho) = -\\sum_i \\lambda_i \\log_2(\\lambda_i)$$\n\nwhere $\\lambda_i$ are the non-zero eigenvalues of the density matrix $\\rho$. A pure state has $S(\\rho) = 0$, while a maximally mixed state (e.g., fully decohered/intercepted qubit) has $S(\\rho) = 1$.\n\n#### Python Implementation:\n```python\nimport numpy as np\n\ndef von_neumann_entropy(rho: np.ndarray, tolerance: float = 1e-12) -\u003e float:\n    \"\"\"Calculates von Neumann entropy S(rho) = -Tr(rho log2(rho)) for a density matrix rho.\"\"\"\n    eigenvalues = np.linalg.eigvalsh(rho)\n    # Discard non-positive eigenvalues due to numerical precision\n    valid_evals = eigenvalues[eigenvalues \u003e tolerance]\n    \n    if len(valid_evals) == 0:\n        return 0.0\n    return -float(np.sum(valid_evals * np.log2(valid_evals)))\n```"
+    }
+  ],
+  "source": "antigravity",
+  "tags": [
+    "coding",
+    "assistant",
+    "antigravity"
+  ]
+}

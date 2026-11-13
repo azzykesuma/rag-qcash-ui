@@ -1,0 +1,19 @@
+{
+  "id": "antigravity-537fb9fd7151b8fc277123cfb8a000cba624d76779bccc2857fd308e332b240a",
+  "conversations": [
+    {
+      "from": "human",
+      "value": "You are a professional software engineer answering technical and architectural questions about this codebase. Answer concisely and accurately, citing specific components, files, or patterns when known.\n\nDo not use tools, inspect files, or search the web. Answer using only the question and any supplied vault excerpt.\n\nWhat is the vault sanitization policy for Windows and Unix machine file paths before publishing?"
+    },
+    {
+      "from": "gpt",
+      "value": "The vault sanitization policy for machine file paths before publishing enforces strict redaction and normalization to prevent information disclosure (such as local usernames, machine hostnames, and proprietary local directory structures):\n\n1. **User Directory Redaction (PII Protection)**:\n   - **Windows**: Paths matching `C:\\Users\\\u003cusername\u003e\\...` (or other drive letters) have the personal user account identifier redacted or replaced with a generic placeholder (e.g., `\u003cUSER_HOME\u003e`, `~`, or `[REDACTED]`).\n   - **Unix/macOS**: Paths matching `/home/\u003cusername\u003e/...` and `/Users/\u003cusername\u003e/...` are scrubbed to strip specific machine account names.\n\n2. **Workspace Root \u0026 Drive Letter Normalization**:\n   - Drive letters (e.g., `C:`, `D:`) and absolute machine-specific workspace prefixes are normalized to generic root placeholders (e.g., `\u003cWORKSPACE\u003e/` or relative project paths) so conversations remain portable and agnostic of individual machine setups.\n\n3. **Path Separator Uniformity**:\n   - Windows backslashes (`\\`) are normalized to POSIX-compliant forward slashes (`/`) across all indexed code snippets, logs, and stack traces to maintain cross-platform search consistency.\n\n4. **Temporary and System Cache Scrubbing**:\n   - Machine-specific scratch/temp directories (e.g., `AppData\\Local\\Temp`, `/tmp`, `/var/tmp`) and process IDs/session-bound hashes in path strings are sanitized or stripped."
+    }
+  ],
+  "source": "antigravity",
+  "tags": [
+    "coding",
+    "assistant",
+    "antigravity"
+  ]
+}

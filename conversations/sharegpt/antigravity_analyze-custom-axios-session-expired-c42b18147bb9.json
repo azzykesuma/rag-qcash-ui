@@ -1,0 +1,327 @@
+{
+  "id": "antigravity-d22ccec0816f190d13e8630c268632896855aa8bcf73d97bdcc8c42b18147bb9",
+  "conversations": [
+    {
+      "from": "human",
+      "value": "can you analyze the custom axios here and why the session expired is not showing? compare it to other repo like language management"
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": "The primary reason the **session expired dialog does not appear** in `qcash-ui-rdn-transaction` is an event and payload mismatch with the host shell (`qcash-ui`), combined with a control-flow bug that breaks promise handling.\n\n---\n\n### Root Cause Analysis\n\n#### 1. Native `Event` vs `CustomEvent` with `detail` (Primary Culprit)\nIn [`qcash-ui-rdn-transaction/services/custom-axios.ts`](file:///C:/Work/qcash-ui-rdn-transaction/services/custom-axios.ts#L94-L99):\n```typescript\nif (error?.response?.status === 401) {\n  document.dispatchEvent(new Event(\"showDialog\"));\n  return Promise.reject({ ...error });\n}\n```\nIn the host container shell [`qcash-ui/hooks/use-session-expiration.ts`](file:///C:/Work/qcash-ui/hooks/use-session-expiration.ts#L27-L40), the listener is implemented as:\n```typescript\nconst handleSetShowModal = useCallback((value: any) =\u003e {\n  if (typeof window !== \"undefined\" \u0026\u0026 (window as any).__mfaActive) {\n    return;\n  }\n  if (value?.detail) {\n    setPropsModal((prev) =\u003e ({\n      show: true,\n      exception: {\n        ...value.detail,\n        shouldRefresh: value.detail.shouldRefresh || prev?.exception?.shouldRefresh,\n      },\n    }));\n  }\n}, []);\n```\n* **The issue**: `new Event(\"showDialog\")` creates a standard DOM Event which has **no `detail` property** (`value.detail === undefined`).\n* Because `value?.detail` is falsy, `setPropsModal` is **never called** and the host shell silently ignores the event. The modal never renders.\n\n---\n\n#### 2. Immediate Rejection vs Pending Promise\n* **In `rdn-transaction`**: Immediately calls `return Promise.reject({ ...error })`. The requesting query/mutation fails instantly, which triggers component error states and error toasts before any dialog can intervene.\n* **In `language-management`**: Returns an unresolved `Promise`:\n  ```typescript\n  return new Promise((resolve, reject) =\u003e {\n    document.dispatchEvent(\n      new CustomEvent(\"showDialog\", { detail: { ...originalRequest, resolve, reject, queue } })\n    );\n  });\n  ```\n  The caller stays in a pending state while the modal is shown. Once the user enters credentials or re-authenticates in the dialog, `detail.resolve()` is called to replay the failed request seamlessly.\n\n---\n\n#### 3. Control Flow Bug \u0026 Dead Code\nIn [`qcash-ui-rdn-transaction/services/custom-axios.ts`](file:///C:/Work/qcash-ui-rdn-transaction/services/custom-axios.ts#L94-L108):\n```typescript\n// Line 94\nif (error?.response?.status === 401) {\n  document.dispatchEvent(new Event(\"showDialog\"));\n  return Promise.reject({ ...error });\n}\n\n// Line 101 - UNREACHABLE for 401 responses\nif (error?.response?.data?.message === \"Another Login Detected\" || error?.message === \"Another Login Detected\") {\n  ...\n}\n\n// Line 108 - DEAD CODE: NEVER REACHED\nif (error?.response?.status === 401 \u0026\u0026 !originalRequest._retry) {\n  ...\n}\n```\n* The check at line 94 catches **every 401** and immediately rejects.\n* The remaining refresh-token queue logic (lines 108–190) is completely shadowed and never executes.\n\n---\n\n#### 4. Hard Redirect on \"Another Login Detected\"\n* **In `rdn-transaction`**: Forces `window.location.href = \"/main-page?logout=true\"`.\n* **In `language-management`**: Supports the `newEventSessionExpired` feature flag:\n  ```typescript\n  if (error?.response?.data?.message === \"Another Login Detected\" || error?.message === \"Another Login Detected\") {\n    if (config.newEventSessionExpired) {\n      originalRequest._retry = true;\n      return new Promise(function (resolve, reject) {\n        document.dispatchEvent(\n          new CustomEvent(\"showDialog\", {\n            detail: { ...originalRequest, resolve, reject, queue },\n          })\n        );\n      });\n    }\n    ...\n  }\n  ```\n\n---\n\n#### 5. Missing Status Codes (`499`, `408`)\nIn microservices and API gateways (Envoy/Kong), expired sessions or client timeouts can return `499` or `408`.\n* `rdn-transaction` only checks `status === 401`.\n* `language-management` checks `[401, 499, 408].includes(error?.response?.status)`.\n\n---\n\n### Comparison Summary\n\n| Feature | `qcash-ui-rdn-transaction` | `qcash-ui-language-management` |\n| :--- | :--- | :--- |\n| **Event Dispatched** | `new Event(\"showDialog\")` *(missing `detail`)* | `new CustomEvent(\"showDialog\", { detail: { ...originalRequest, resolve, reject, queue } })` |\n| **Host Listener Compatibility** | **Fails** (`value?.detail` is `undefined`) | **Works** (`setPropsModal` is triggered) |\n| **Promise State** | Immediately rejected (`Promise.reject`) | Kept pending in `new Promise((resolve, reject) =\u003e ...)` |\n| **Request Replay on Relogin** | Not supported | Supported via `detail.resolve` / `queue` |\n| **Status Codes Covered** | `401` only | `401`, `499`, `408` |\n| **Another Login Detected** | Hard redirect to `/main-page?logout=true` | Shows modal if `config.newEventSessionExpired` is `true` |\n| **Home/Root Handling** | Checks only `pathname === \"/main-page\"` | Guards `/homepage`, `/`, and `/main-page` properly |\n\n---\n\n### Recommended Solution for `qcash-ui-rdn-transaction`\n\nUpdate [`services/custom-axios.ts`](file:///C:/Work/qcash-ui-rdn-transaction/services/custom-axios.ts) to match the standard pattern:\n\n1. Add `queue` array:\n   ```typescript\n   const queue: Array\u003cany\u003e = [];\n   ```\n2. Replace lines 94–190 in the error interceptor with:\n   ```typescript\n   const pathname = globalThis.location.pathname;\n   const isMain = pathname === \"/main-page\";\n   const isMainWithParam = pathname === \"/main-page?logout=true\";\n   const isDashboard = pathname === \"/homepage\";\n   const isRoot = pathname === \"/\";\n\n   if ((isDashboard || isRoot) \u0026\u0026 error?.response?.status === 401) {\n     localStorage.removeItem(\"access-token\");\n     localStorage.removeItem(\"refresh-token\");\n     localStorage.removeItem(\"login\");\n     globalThis.location.replace(\"/main-page\");\n     return;\n   }\n\n   if ([401, 499, 408].includes(error?.response?.status) \u0026\u0026 !originalRequest._retry \u0026\u0026 !(isMainWithParam || isMain)) {\n     originalRequest._retry = true;\n\n     return new Promise((resolve, reject) =\u003e {\n       document.dispatchEvent(\n         new CustomEvent(\"showDialog\", {\n           detail: { ...originalRequest, resolve, reject, queue },\n         })\n       );\n     });\n   }\n\n   if (error?.response?.data?.message === \"Another Login Detected\" || error?.message === \"Another Login Detected\") {\n     if (config.newEventSessionExpired) {\n       originalRequest._retry = true;\n\n       return new Promise(function (resolve, reject) {\n         document.dispatchEvent(\n           new CustomEvent(\"showDialog\", {\n             detail: { ...originalRequest, resolve, reject, queue },\n           })\n         );\n       });\n     }\n\n     localStorage.removeItem(\"access-token\");\n     localStorage.removeItem(\"refresh-token\");\n     globalThis.location.href = \"/main-page?logout=true\";\n     return;\n   }\n   ```\n3. Add `newEventSessionExpired` to [`config.ts`](file:///C:/Work/qcash-ui-rdn-transaction/config.ts)."
+    },
+    {
+      "from": "human",
+      "value": "go ahead implement"
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": ""
+    },
+    {
+      "from": "gpt",
+      "value": "The implementation has been completed in [`qcash-ui-rdn-transaction`](file:///C:/Work/qcash-ui-rdn-transaction).\n\n---\n\n### Changes Summary\n\n#### 1. [`services/custom-axios.ts`](file:///C:/Work/qcash-ui-rdn-transaction/services/custom-axios.ts)\n* **Replaced `new Event(\"showDialog\")` with `new CustomEvent(\"showDialog\", { detail })`**:\n  * Host listener in [`qcash-ui/hooks/use-session-expiration.ts`](file:///C:/Work/qcash-ui/hooks/use-session-expiration.ts#L27-L40) checks `if (value?.detail)`. It now receives `detail: { ...originalRequest, resolve, reject, queue }`.\n* **Pending Promise Flow**:\n  * Instead of immediately calling `Promise.reject`, requests now return a pending `Promise((resolve, reject) =\u003e ...)` that will seamlessly replay or cancel once the user re-authenticates in the session modal.\n* **Expanded Expiry Codes (`401`, `499`, `408`)**:\n  * Catches gateway timeout and token expiration status codes (`499`, `408`) along with `401`.\n* **\"Another Login Detected\" with Feature Flag**:\n  * Intercepts \"Another Login Detected\" and opens the session expiration dialog when `config.newEventSessionExpired` is enabled.\n* **Dead Code Cleanup**:\n  * Eliminated the unreachable dead refresh token block and unused `crypto-js` HMAC helper.\n* **Headers \u0026 Compatibility**:\n  * Retained `processId` / `Process-Id` header assignment and added `x-lang` localization header.\n\n#### 2. [`config.ts`](file:///C:/Work/qcash-ui-rdn-transaction/config.ts#L48-L54)\n* Added the `newEventSessionExpired` environment toggle matching the QCash standard:\n  ```typescript\n  newEventSessionExpired: getValueByEnv(\n    true,  // dev\n    true,  // prestage\n    true,  // preploy\n    true,  // piloting\n    false  // prod\n  ),\n  ```\n\n#### 3. [`__tests__/services/custom-axios.test.ts`](file:///C:/Work/qcash-ui-rdn-transaction/__tests__/services/custom-axios.test.ts)\n* Added unit test suite covering:\n  * Dispatching `CustomEvent(\"showDialog\")` with `resolve`, `reject`, and `queue` in `detail` on `401`, `499`, and `408`.\n  * Handling \"Another Login Detected\" when `newEventSessionExpired` is enabled vs disabled.\n  * Clearing credentials and redirecting when on `/` or `/homepage`.\n  * Proper attachment of `Authorization`, `Process-Id`, and `x-lang` headers."
+    }
+  ],
+  "source": "antigravity",
+  "tags": [
+    "coding",
+    "assistant",
+    "antigravity"
+  ]
+}

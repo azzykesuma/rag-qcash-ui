@@ -1,0 +1,19 @@
+{
+  "id": "antigravity-b60919d4da46c48a69948bb42b165961fcaeaae5f82230ca1bc0d73aecd79d1d",
+  "conversations": [
+    {
+      "from": "human",
+      "value": "You are a professional software engineer answering technical and architectural questions about this codebase. Answer concisely and accurately, citing specific components, files, or patterns when known.\n\nDo not use tools, inspect files, or search the web. Answer using only the question and any supplied vault excerpt.\n\nHow do we calculate quantum entropy using the BB84 protocol simulation in Python?"
+    },
+    {
+      "from": "gpt",
+      "value": "In a BB84 protocol simulation, **quantum entropy** and information leakage are calculated either through the **von Neumann entropy** of the transmitted quantum states (density matrix) or through the **binary Shannon entropy of the Quantum Bit Error Rate (QBER)** for secret key distillation bounds.\n\n---\n\n### 1. Quantum Bit Error Rate (QBER) and Binary Shannon Entropy\n\nDuring key sifting, Alice and Bob compare bases and sample a subset of matching-basis bits to estimate the error rate ($e$). The uncertainty/entropy introduced by noise or an eavesdropper (Eve) is given by the binary entropy function $H_2(e)$:\n\n$$H_2(e) = -e \\log_2(e) - (1 - e) \\log_2(1 - e)$$\n\n```python\nimport numpy as np\n\ndef calculate_qber(alice_sifted_sample, bob_sifted_sample):\n    \"\"\"Calculates Quantum Bit Error Rate (QBER).\"\"\"\n    mismatches = sum(a != b for a, b in zip(alice_sifted_sample, bob_sifted_sample))\n    return mismatches / len(alice_sifted_sample)\n\ndef binary_entropy(e):\n    \"\"\"Calculates binary Shannon entropy H_2(e).\"\"\"\n    if e \u003c= 0 or e \u003e= 1:\n        return 0.0\n    return -e * np.log2(e) - (1 - e) * np.log2(1 - e)\n\ndef asymptotic_secret_key_rate(qber):\n    \"\"\"\n    Computes asymptotic secret key rate r = 1 - 2*H_2(e) \n    against collective attacks (Shor-Preskill / Devetak-Winter bound).\n    \"\"\"\n    h_e = binary_entropy(qber)\n    return max(0.0, 1.0 - 2 * h_e)\n```\n\n---\n\n### 2. Von Neumann Entropy of Quantum States ($S(\\rho)$)\n\nIf simulating state transmission and eavesdropping (e.g., intercept-resend or collective attacks) using density matrices $\\rho$:\n\n$$S(\\rho) = -\\text{Tr}(\\rho \\log_2 \\rho) = -\\sum_{i} \\lambda_i \\log_2 \\lambda_i$$\n\nwhere $\\lambda_i$ are the non-zero eigenvalues of the density matrix $\\rho$.\n\n```python\nimport numpy as np\n\ndef von_neumann_entropy(rho):\n    \"\"\"\n    Calculates von Neumann quantum entropy S(rho) given a density matrix rho.\n    \"\"\"\n    eigenvalues = np.linalg.eigvalsh(rho)\n    # Filter out zero and negative eigenvalues due to numerical precision\n    positive_evals = eigenvalues[eigenvalues \u003e 1e-12]\n    return -np.sum(positive_evals * np.log2(positive_evals))\n```\n\n---\n\n### Summary of Workflow in BB84\n1. **Basis Matching \u0026 Sifting**: Discard bit positions where Alice and Bob prepared/measured in different bases.\n2. **Error Estimation**: Measure $e = \\text{QBER}$. If $e \u003e 11\\%$ (for standard BB84 asymptotic limit), the channel is aborted.\n3. **Entropy / Privacy Amplification**: Calculate Eve's potential information $H_2(e)$ to determine how many bits must be sacrificed during privacy amplification via hash functions."
+    }
+  ],
+  "source": "antigravity",
+  "tags": [
+    "coding",
+    "assistant",
+    "antigravity"
+  ]
+}

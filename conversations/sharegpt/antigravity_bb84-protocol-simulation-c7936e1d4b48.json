@@ -1,0 +1,19 @@
+{
+  "id": "antigravity-78f557df61f7006c2088137dd96d8fdedbe733411e09eea54e10c7936e1d4b48",
+  "conversations": [
+    {
+      "from": "human",
+      "value": "You are a professional software engineer answering technical and architectural questions about this codebase. Answer concisely and accurately, citing specific components, files, or patterns when known.\n\nDo not use tools, inspect files, or search the web. Answer using only the question and any supplied vault excerpt.\n\nNo relevant previous conversations found in the vault.\n\nUser Question:\nHow do we calculate quantum entropy using the BB84 protocol simulation in Python?"
+    },
+    {
+      "from": "gpt",
+      "value": "In a BB84 protocol simulation, **quantum entropy** is typically evaluated in one of two contexts:\n\n1. **Shannon / Binary Entropy of QBER ($H_2(e)$)**: Measures information leakage to an eavesdropper (Eve) and bounds the distillable secret key rate:\n   $$R \\ge 1 - 2H_2(e), \\quad \\text{where } H_2(e) = -e \\log_2(e) - (1 - e) \\log_2(1 - e)$$\n2. **Von Neumann Entropy ($S(\\rho)$)**: Measures the entanglement or state mixture of the density matrix $\\rho$:\n   $$S(\\rho) = -\\mathrm{Tr}(\\rho \\log_2 \\rho) = -\\sum_i \\lambda_i \\log_2 \\lambda_i$$\n\n---\n\n### Python Implementation\n\n```python\nimport numpy as np\n\n# -------------------------------------------------------------\n# 1. Binary Entropy of QBER (Information Leakage / Secret Key Rate)\n# -------------------------------------------------------------\ndef binary_entropy(p: float) -\u003e float:\n    \"\"\"Computes Shannon entropy H_2(p) for error probability p.\"\"\"\n    if p \u003c= 0.0 or p \u003e= 1.0:\n        return 0.0\n    return -p * np.log2(p) - (1 - p) * np.log2(1 - p)\n\ndef secret_key_rate(qber: float) -\u003e float:\n    \"\"\"Asymptotic secret key rate under one-way BB84.\"\"\"\n    h = binary_entropy(qber)\n    rate = 1.0 - 2.0 * h\n    return max(0.0, rate)\n\n\n# -------------------------------------------------------------\n# 2. Von Neumann Entropy of a Density Matrix\n# -------------------------------------------------------------\ndef von_neumann_entropy(rho: np.ndarray) -\u003e float:\n    \"\"\"\n    Computes S(rho) = -Tr(rho log2(rho)) from density matrix eigenvalues.\n    \"\"\"\n    eigenvalues = np.linalg.eigvalsh(rho)\n    # Filter out numerical zeros/negatives\n    pos_eigvals = eigenvalues[eigenvalues \u003e 1e-12]\n    return float(-np.sum(pos_eigvals * np.log2(pos_eigvals)))\n\n\n# -------------------------------------------------------------\n# 3. Example BB84 State \u0026 QBER Simulation\n# -------------------------------------------------------------\nif __name__ == \"__main__\":\n    # BB84 ensemble density matrix (equal mix of |0\u003e, |1\u003e, |+\u003e, |-\u003e):\n    # rho = 1/4 * (|0\u003e\u003c0| + |1\u003e\u003c1| + |+\u003e\u003c+| + |-\u003e\u003c-|) = I / 2\n    rho_ensemble = 0.5 * np.eye(2, dtype=complex)\n    s_rho = von_neumann_entropy(rho_ensemble)\n    print(f\"Von Neumann Entropy S(rho): {s_rho:.4f} bits\")  # Expected: 1.0 bit\n\n    # Simulated QBER (e.g., 5% channel error / Eve intercept)\n    qber = 0.05\n    leakage = binary_entropy(qber)\n    asymptotic_rate = secret_key_rate(qber)\n    print(f\"QBER: {qber * 100:.1f}%\")\n    print(f\"Binary Entropy H_2(e): {leakage:.4f} bits\")\n    print(f\"Distillable Key Fraction: {asymptotic_rate:.4f}\")\n```\n\n### Key Considerations\n- **Threshold Limit**: If the QBER exceeds $\\approx 11\\%$ ($H_2(0.11) \\approx 0.5$), $1 - 2H_2(e) \\le 0$, meaning no secure key can be distilled via standard one-way post-processing.\n- **Finite-Key Effects**: In finite-length key simulations, replace asymptotic formulas with smooth min-entropy $H_{\\min}^\\varepsilon(A|E)$ bounds via the Leftover Hash Lemma."
+    }
+  ],
+  "source": "antigravity",
+  "tags": [
+    "coding",
+    "assistant",
+    "antigravity"
+  ]
+}

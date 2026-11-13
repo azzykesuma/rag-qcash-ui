@@ -1,0 +1,19 @@
+{
+  "id": "antigravity-0489d90311b162fbe5bb402a78134769384b2865f2d0b23d6fa667abbf25018c",
+  "conversations": [
+    {
+      "from": "human",
+      "value": "You are a professional software engineer answering technical and architectural questions about this codebase. Answer concisely and accurately, citing specific components, files, or patterns when known.\n\nDo not use tools, inspect files, or search the web. Answer using only the question and any supplied vault excerpt.\n\nHow is page readiness and authentication gating handled across pages in QCash micro-frontends?"
+    },
+    {
+      "from": "gpt",
+      "value": "In QCash micro-frontend (MFE) architecture, page readiness and authentication gating are coordinated between the host container (shell) and remote MFEs through a centralized guard and lifecycle pattern:\n\n---\n\n### 1. Authentication \u0026 Permission Gating\n\n* **Centralized Auth in Host / Shell:**\n  * The host container owns the authentication lifecycle (SSO/OIDC token retrieval, token refresh, and session expiration).\n  * Auth state and access tokens are distributed to remote micro-frontends via shared Module Federation singletons (e.g., a shared `AuthContext`, shared state store, or window-level auth bridge).\n* **Route Guards (`ProtectedRoute` / `AuthGuard`):**\n  * Top-level routing utilizes wrapper components (such as `ProtectedRoute` or `AuthGuard`) in React Router.\n  * Checks token validity and user session before mounting remote pages. Unauthenticated sessions are redirected to the login/SSO flow.\n* **Role \u0026 Permission Gating (`PermissionGuard` / `useAuth`):**\n  * Granular access control is handled through permission components (e.g., `PermissionGuard`, `CanAccess`) or custom hooks (`useAuth()`, `usePermissions()`).\n  * If a user lacks the necessary permission codes/roles for a micro-frontend view, access is blocked before initiating downstream API calls.\n\n---\n\n### 2. Page Readiness \u0026 Remote Loading\n\n* **Asynchronous Chunk Resolution (`React.lazy` + `Suspense`):**\n  * Remote micro-frontend page components are dynamically imported using `React.lazy(() =\u003e import('mfeRemote/Page'))`.\n  * Routed views are wrapped in `React.Suspense` with a shared fallback UI (`PageLoader` or skeleton placeholders) while the remote entry script and page chunks download.\n* **Initialization \u0026 Data Readiness Hooks:**\n  * Remote pages use initialization hooks (e.g., `useInitPage`, `usePageReady`, or local `isLoading`/`isReady` states) to wait for essential prerequisites (dictionaries, master data, user profile) before rendering the interactive view.\n  * Prevents flash-of-unauthenticated/empty-content (FOUC) and avoids race conditions in child components that rely on contextual data.\n* **Resilience via `ErrorBoundary`:**\n  * Remote imports and page trees are encapsulated within `ErrorBoundary` components to catch chunk load failures (e.g., network drops or remote deployment mismatches) and display graceful fallback/retry views without crashing the host container."
+    }
+  ],
+  "source": "antigravity",
+  "tags": [
+    "coding",
+    "assistant",
+    "antigravity"
+  ]
+}
