@@ -1,8 +1,8 @@
 # run yarn dev
 
-- **ID**: `antigravity-0a3dbda58e680cde5136670d48a3faae3086c9c4d6fb47dfe7f19210007b3f87`
+- **ID**: `antigravity-2fb3483e4a5905f08ddb9811364e1c08ccb5768b6c4f6e5109f7b5935709cf5e`
 - **Source Tool**: `antigravity`
-- **Date**: `2026-11-13 13:49:26`
+- **Date**: `2026-11-13 16:02:35`
 - **Tags**: `coding`, `assistant`, `antigravity`
 
 ---
@@ -16134,6 +16134,1820 @@ Optimasi performa di level **local MFE (`qcash-ui-account-receivable`)** telah d
 
 ### Verifikasi & Hasil Test
 Seluruh unit test suite terkait (`action-modal`, `maker-confirmation`, `receivable-action`, dll.) telah dijalankan dan **lulus 100%** (29/29 tests pass).
+
+---
+
+## Turn 1268: User
+
+hmm saya ngerti sih untuk perubahan sekarang, jadi basically perubahan sekarang itu nge cache tembakan multiple filters sehingga dia ga akan ditembak berulang2 setiap kali ada pergantian bahasa kan? 
+saya mau ada console log dong untuk membuktikan bahwa kita berhasil nge cache tembakan filter itu
+
+---
+
+## Turn 1269: Assistant
+
+<details><summary>🔧 Tool Invocations (1)</summary>
+
+- **read_file**: 
+
+</details>
+
+
+
+---
+
+## Turn 1270: Assistant
+
+<details><summary>🔧 Tool Invocations (1)</summary>
+
+- **read_file**: 
+
+</details>
+
+
+
+---
+
+## Turn 1271: Assistant
+
+<details><summary>🔧 Tool Invocations (1)</summary>
+
+- **read_file**: 
+
+</details>
+
+
+
+---
+
+## Turn 1272: Assistant
+
+<details><summary>🔧 Tool Invocations (1)</summary>
+
+- **read_file**: 
+
+</details>
+
+
+
+---
+
+## Turn 1273: Assistant
+
+<details><summary>🔧 Tool Invocations (1)</summary>
+
+- **edit_file**: 
+
+</details>
+
+
+
+---
+
+## Turn 1274: Assistant
+
+<details><summary>🔧 Tool Invocations (1)</summary>
+
+- **read_file**: 
+
+</details>
+
+
+
+---
+
+## Turn 1275: Assistant
+
+<details><summary>🔧 Tool Invocations (1)</summary>
+
+- **edit_file**: 
+
+</details>
+
+
+
+---
+
+## Turn 1276: Assistant
+
+<details><summary>🔧 Tool Invocations (1)</summary>
+
+- **run_command**: 
+
+</details>
+
+
+
+---
+
+## Turn 1277: Assistant
+
+<details><summary>🔧 Tool Invocations (1)</summary>
+
+- **manage_task**: 
+
+</details>
+
+
+
+---
+
+## Turn 1278: Assistant
+
+<details><summary>🔧 Tool Invocations (1)</summary>
+
+- **manage_task**: 
+
+</details>
+
+
+
+---
+
+## Turn 1279: Assistant
+
+<details><summary>🔧 Tool Invocations (1)</summary>
+
+- **manage_task**: 
+
+</details>
+
+
+
+---
+
+## Turn 1280: Assistant
+
+<details><summary>🔧 Tool Invocations (1)</summary>
+
+- **manage_task**: 
+
+</details>
+
+
+
+---
+
+## Turn 1281: Assistant
+
+<details><summary>🔧 Tool Invocations (1)</summary>
+
+- **manage_task**: 
+
+</details>
+
+
+
+---
+
+## Turn 1282: Assistant
+
+<details><summary>🔧 Tool Invocations (1)</summary>
+
+- **run_command**: 
+
+</details>
+
+
+
+---
+
+## Turn 1283: Assistant
+
+Console logs telah ditambahkan untuk membuktikan bahwa opsi filter di-cache di memori dan **tidak pernah ditembak ulang ke API saat terjadi pergantian bahasa**.
+
+---
+
+### Console Log yang Ditambahkan
+
+1. **Saat Komponen Pertama Kali Mount (Fetch 1x)**:
+   Di [hooks/use-search-form-mappings.ts](file:///C:/Work/qcash-ui-account-receivable/hooks/use-search-form-mappings.ts#L50-L95):
+   ```
+   [MFE][FilterCache] 🚀 Initial fetch for form mappings (executing 1x on mount)...
+   [MFE][FilterCache] ✅ Form mappings loaded into memory & cached. Categories: [mandateType, mandateCategory, batchType, fileFormat]. Subsequent re-renders and language switches will NOT refetch API!
+   ```
+
+2. **Saat Pergantian Bahasa Terjadi (Zero Network Requests)**:
+   Di [hooks/use-translate.ts](file:///C:/Work/qcash-ui-account-receivable/hooks/use-translate.ts#L68-L85):
+   ```
+   [MFE][LanguageSync] 🌐 Language changed: "en" ➔ "id". Filter options are translated on-the-fly from memory cache (NO network refetch triggered)!
+   ```
+
+---
+
+### Cara Membuktikan di DevTools Console
+
+1. Buka halaman **Konfirmasi Maker** (atau *Receivable Action* / *Inquiry*).
+2. Buka DevTools (`F12`), perhatikan tab **Console** dan tab **Network** (filter `mapping`).
+3. Saat halaman pertama kali terbuka:
+   - Terlihat log biru: `[MFE][FilterCache] 🚀 Initial fetch...`
+   - Diikuti log hijau: `[MFE][FilterCache] ✅ Form mappings loaded into memory & cached...`
+   - Di tab **Network**, request `batch-type`, `mandate-category`, dll. hanya terpanggil **1 kali**.
+4. Sekarang, **ganti bahasa di header (misal ID ➔ 中文 atau EN)**:
+   - Di tab **Console** akan muncul:
+     `[MFE][LanguageSync] 🌐 Language changed: "id" ➔ "zh". Filter options are translated on-the-fly from memory cache (NO network refetch triggered)!`
+   - Perhatikan tab **Network**: **TIDAK ADA SATUPUN request baru** ke endpoint mapping (`batch-type`, `mandate-category`, dll.).
+   - Namun teks label pada dropdown/badge filter di UI langsung berubah bahasa secara dinamis (*in-memory*).
+
+---
+
+## Turn 1284: User
+
+nice thanks. tolong jelaskan lebih mendetail kenapa pembuatan lazy function factory mampu untuk meng cache tembakan api
+
+---
+
+## Turn 1285: Assistant
+
+Perbedaan mendasar mengapa *Lazy Function Factory* mampu menghentikan tembakan API berulang terletak pada **fase eksekusi JavaScript (Eager vs. Lazy Evaluation)** dan **siklus hidup render React (Render Phase vs. Effect Phase)**.
+
+---
+
+### 1. Analogi Sederhana: Memesan Barang vs. Memberikan Voucher
+
+* **Sebelumnya (Eager Execution)**:
+  Anda langsung memesan barang ke kurir setiap kali pintu rumah Anda diketuk. Jika kurir datang 3 kali sehari, Anda memesan barang 3 kali.
+* **Sesudahnya (Lazy Factory Function)**:
+  Anda hanya memberikan *kartu voucher* ("hubungi kurir hanya jika diminta"). Pihak yang memegang voucher (`useEffect`) hanya menggunakannya **satu kali saja saat rumah pertama kali dibangun**, dan tidak pernah menggunakannya lagi.
+
+---
+
+### 2. Penjelasan Teknis JavaScript: Eager Invocation vs. Function Reference
+
+Mari bandingkan dua sintaks berikut:
+
+#### ❌ Sebelum: Eager Function Invocation (Langsung Eksekusi)
+```typescript
+// MakerConfirmationSearchCriteriaView (Setiap kali re-render)
+requests: [
+  getMandateTypeMappings(),      // <-- Tanda () adalah Operator Invocation!
+  getMandateCategoryMappings(),
+]
+```
+Di JavaScript, ketika interpreter membaca `fn()`, fungsi tersebut **langsung dieksekusi detik itu juga** saat baris kode tersebut dilewati.
+
+Karena kode di atas berada di dalam *body* fungsi komponen React:
+1. Saat komponen pertama kali me-render: `getMandateCategoryMappings()` jalan ➔ **Request #1 ditembak ke network**.
+2. Komponen mengalami re-render (misal karena `router.query` selesai dimuat, context auth ter-update, atau state berubah): baris itu dilewati lagi ➔ `getMandateCategoryMappings()` jalan lagi ➔ **Request #2 ditembak ke network**.
+3. Komponen re-render lagi saat user mengubah bahasa: `getMandateCategoryMappings()` jalan lagi ➔ **Request #3 ditembak ke network**.
+
+> **Catatan Penting:** Meskipun di dalam hook terdapat `useEffect(..., [])`, request HTTP **sudah terlanjur terbang ke server** di fase render, bahkan sebelum `useEffect` sempat dijalankan!
+
+---
+
+#### ✅ Sesudah: Lazy Factory Function (Fungsi Ditunda)
+```typescript
+// MakerConfirmationSearchCriteriaView (Setiap kali re-render)
+requests: [
+  () => getMandateTypeMappings(),      // <-- Membuat referensi fungsi (Closure)
+  () => getMandateCategoryMappings(),
+]
+```
+Dengan menambahkan `() => ...`, kita **tidak memanggil API**. Kita hanya membuat sebuah *arrow function* kecil di memori:
+- Membuat fungsi di JavaScript adalah operasi yang sangat instan dan murah (hanya alokasi pointer di memori).
+- **Tidak ada panggilan HTTP atau Axios yang terjadi** saat komponen me-render.
+
+---
+
+### 3. Peran `useEffect(..., [])` sebagai "Gatekeeper" Eksekusi
+
+Di dalam [hooks/use-search-form-mappings.ts](file:///C:/Work/qcash-ui-account-receivable/hooks/use-search-form-mappings.ts#L48-L60):
+
+```typescript
+React.useEffect(() => {
+  // Hanya dieksekusi 1x saat MOUNT karena dependency array []
+  const executableRequests = requests.map((req) =>
+    typeof req === "function" ? req() : req  // <-- Di sinilah () baru dipanggil!
+  );
+
+  const responses = await Promise.allSettled(executableRequests);
+  // Simpan hasil ke state React (Memori)
+  setFormMappings((prev) => ({ ...prev, ...newMappings }));
+}, []); // <--- Empty dependency: HANYA JALAN SEKALI
+```
+
+Dengan arsitektur ini:
+1. **Saat Mount Pertama Kali**:
+   - `useEffect` berjalan untuk pertama dan terakhir kalinya.
+   - `req()` memanggil fungsi factory ➔ API ditembak ke server **1 kali**.
+   - Data diterima dan disimpan ke dalam state React (`formMappings`).
+2. **Saat Pergantian Bahasa / Re-render**:
+   - Komponen me-render ulang.
+   - Body komponen hanya membuat referensi arrow function baru `() => ...` (tanpa menembak API).
+   - `useEffect` **TIDAK BERJALAN** karena dependensinya `[]`.
+   - Data filter yang sudah ada di state `formMappings` tetap utuh di memori (*in-memory cache*).
+
+---
+
+### 4. Diagram Alur Perbandingan
+
+```
+SEBELUM (Eager Invocation):
+Component Render ──> getMappings() dieksekusi ──> HTTP Request #1 Terkirim
+Re-render (Lang) ──> getMappings() dieksekusi ──> HTTP Request #2 Terkirim (DUPLIKAT!)
+
+SESUDAH (Lazy Factory Function):
+Component Render ──> Buat () => getMappings() ──> [useEffect Mount] ──> req() ──> HTTP Request #1 Terkirim & Cache di State
+Re-render (Lang) ──> Buat () => getMappings() ──> [useEffect Dilewati] ──> 0 Request (Ambil dari State Memori)
+```
+
+### Kesimpulan
+Lazy function factory memisahkan antara **"definisi apa yang ingin dipanggil"** dengan **"kapan panggilan itu boleh dilakukan"**. Panggilan HTTP diserahkan sepenuhnya ke bawah kendali `useEffect(..., [])`, sehingga API tidak akan pernah ditembak ulang saat komponen me-render karena pergantian bahasa atau perubahan state lainnya.
+
+---
+
+## Turn 1286: User
+
+thanks tp saya belum puas sama jawabanya, bisa ga kaitkan dengan react life cycle dan jelaskan kenapa dengan membuat sebuah referensi fungsi / closure kita bisa men skip tembakan function tersebut. sangkutkan juga dengan basic javascript behaviour ya saya mau refresh ilmu
+
+---
+
+## Turn 1287: Assistant
+
+Mari kita bedah secara mendalam dari **fondasi JavaScript Engine (Call Stack, Memory Heap, & Closure)** hingga **Arsitektur Lifecycle React (Fiber Engine: Render Phase vs Commit Phase)**.
+
+---
+
+### 1. Fondasi JavaScript Engine: Evaluasi Nilai vs Referensi Fungsi
+
+Di JavaScript, fungsi adalah **First-Class Citizens**. Artinya, fungsi adalah sebuah objek yang bisa disimpan di variabel, dioper sebagai argumen, atau dikembalikan dari fungsi lain.
+
+#### A. Operator Pemanggilan `()` vs Referensi Fungsi
+Perhatikan dua baris berikut:
+
+```javascript
+// Kasus 1: Referensi Fungsi (Function Reference)
+const a = getMandateCategoryMappings; 
+
+// Kasus 2: Pemanggilan Fungsi (Function Invocation)
+const b = getMandateCategoryMappings(); 
+```
+
+* Pada **Kasus 1 (`a`)**:
+  - `a` hanyalah sebuah **pointer / alamat memori** di Heap yang menunjuk ke definisi fungsi.
+  - Kode di dalam fungsi **TIDAK DIJALANKAN**.
+  - Call Stack JavaScript kosong (tidak ada frame baru yang di-push).
+
+* Pada **Kasus 2 (`b`)**:
+  - Tanda kurung `()` adalah **Call Operator** dalam JavaScript Grammar.
+  - Begitu JS Engine (seperti V8) melihat tanda `()`, engine langsung membuat **Execution Context** baru dan men-push fungsi tersebut ke dalam **Call Stack**.
+  - `getMandateCategoryMappings()` langsung berjalan detik itu juga, membuat Promise, dan menembakkan HTTP request via network socket.
+  - Variabel `b` bukan berisi fungsinya, melainkan **nilai return-nya** (yaitu objek `Promise { <pending> }`).
+
+---
+
+#### B. Mengapa Membuat Closure / Arrow Function Tidak Mengeksekusi Apapun?
+
+Ketika kita menulis:
+```javascript
+const requestFactory = () => getMandateCategoryMappings();
+```
+
+Di level JavaScript Engine, apa yang sebenarnya terjadi?
+1. Engine mengalokasikan memori baru di Heap untuk sebuah objek fungsi baru (Closure).
+2. Engine mencatat **Lexical Environment** di mana arrow function tersebut dibuat (menangkap variabel-variabel di sekitarnya).
+3. **KODE DI DALAM BODY ARROW FUNCTION (`getMandateCategoryMappings()`) TIDAK DIJALANKAN SAMA SEKALI!**
+4. Tubuh fungsi itu hanyalah sebuah teks instruksi yang tersimpan dorman di memori sampai ada pihak lain yang sengaja menambahkan tanda `()` pada variabel tersebut (`requestFactory()`).
+
+---
+
+### 2. Arsitektur React Lifecycle: Render Phase vs. Commit Phase
+
+React (sejak React 16.8+ dan React Fiber) membagi siklus hidup komponen menjadi dua fase utama:
+
+```
+┌────────────────────────────────────────────────────────┐
+│ 1. RENDER PHASE (Pure & Bebas Side-Effect)             │
+│    - Menjalankan fungsi komponen: MyComponent(props)   │
+│    - Menghitung Virtual DOM diff                       │
+│    - BISA DIJALANKAN BERKALI-KALI (Re-render)          │
+└──────────────────────────┬─────────────────────────────┘
+                           │
+                           ▼
+┌────────────────────────────────────────────────────────┐
+│ 2. COMMIT PHASE (Mutasi DOM & Side-Effects)            │
+│    - Menempelkan elemen ke Real DOM                    │
+│    - Menjalankan useLayoutEffect (sinkron)             │
+│    - Menjalankan useEffect (asinkron setelah paint)    │
+└────────────────────────────────────────────────────────┘
+```
+
+#### Aturan Emas React:
+> **"Body dari sebuah Functional Component adalah RENDER PHASE. Render Phase harus murni (pure) dan sama sekali dilarang memicu Side-Effect (seperti HTTP Request, manipulasi DOM, dsb)."**
+
+---
+
+### 3. Mengapa Kode Lama Mengalami "Kebocoran" Request API?
+
+Mari bedah kode lama baris per baris saat React menjalankan *Render Phase*:
+
+```typescript
+export const MakerConfirmationSearchCriteriaView = (props: Props) => {
+  // ... state & hooks lainnya ...
+
+  // ⚠️ DI SINI MASALAHNYA (Render Phase):
+  const { loadingMapping } = useSearchFormMappings({
+    requests: [
+      getMandateTypeMappings(),      // <-- EKSEKUSI DI SINI! (Call Operator ())
+      getMandateCategoryMappings(),  // <-- EKSEKUSI DI SINI!
+      getBatchTypeMappings(),        // <-- EKSEKUSI DI SINI!
+    ],
+    // ...
+  });
+```
+
+#### Kronologi Kegagalan Kode Lama:
+1. Sebelum JavaScript memanggil fungsi `useSearchFormMappings(...)`, engine harus mengevaluasi seluruh nilai argumennya terlebih dahulu (*Argument Evaluation Phase*).
+2. Karena ditulis `getMandateCategoryMappings()`, operator `()` langsung **memaksa fungsi tersebut masuk ke Call Stack**.
+3. Axios langsung membuat `XMLHttpRequest / fetch` ke server detik itu juga.
+4. **Apa yang diterima oleh hook `useSearchFormMappings`?**
+   Hook tersebut bukan menerima fungsi, melainkan sudah menerima array berisi **Promise yang sedang berjalan**: `requests = [Promise<pending>, Promise<pending>]`.
+5. Di dalam `useSearchFormMappings`:
+   ```typescript
+   React.useEffect(() => {
+     Promise.allSettled(requests);
+   }, []); // Hook ini mengira dia mengontrol eksekusi, padahal REQUEST SUDAH LEPAS KE JARINGAN!
+   ```
+6. **Ketika user mengganti bahasa:**
+   - Context bahasa berubah ➔ React memicu **Re-render**.
+   - React mengeksekusi ulang fungsi `MakerConfirmationSearchCriteriaView()`.
+   - Engine kembali membaca baris `requests: [ getMandateTypeMappings(), ... ]`.
+   - **Tanda `()` kembali dieksekusi!** Request HTTP baru kembali ditembakkan ke server untuk kedua kalinya, mengabaikan fakta bahwa `useEffect` di bawahnya memiliki dependency array `[]`.
+
+---
+
+### 4. Mengapa Lazy Factory Function Mampu Men-skip Eksekusi?
+
+Sekarang mari lihat apa yang terjadi dengan kode baru:
+
+```typescript
+export const MakerConfirmationSearchCriteriaView = (props: Props) => {
+  const { loadingMapping } = useSearchFormMappings({
+    requests: [
+      () => getMandateTypeMappings(),      // <-- HANYA MENGALOKASIKAN CLOSURE!
+      () => getMandateCategoryMappings(),  // <-- HANYA MENGALOKASIKAN CLOSURE!
+      () => getBatchTypeMappings(),        // <-- HANYA MENGALOKASIKAN CLOSURE!
+    ],
+    // ...
+  });
+```
+
+#### A. Pada Fase Render (Render Phase):
+1. Interpreter membaca `() => getMandateCategoryMappings()`.
+2. Engine hanya membuat referensi fungsi closure di Heap memori. **Call Stack tidak pernah mengeksekusi `getMandateCategoryMappings`**.
+3. **NOL panggilan HTTP terjadi di Render Phase.**
+
+#### B. Pemindahan Wewenang Eksekusi ke Commit Phase (`useEffect`):
+Di dalam [hooks/use-search-form-mappings.ts](file:///C:/Work/qcash-ui-account-receivable/hooks/use-search-form-mappings.ts#L48-L60):
+
+```typescript
+React.useEffect(() => {
+  // Operator () dipindahkan ke sini:
+  const executableRequests = requests.map((req) =>
+    typeof req === "function" ? req() : req  // <--- Operator () BARU DIPANGGIL DI SINI!
+  );
+  Promise.allSettled(executableRequests);
+}, []); // <--- Dependency Array KOSONG!
+```
+
+---
+
+### 5. Trace Eksekusi Komparatif: Mount vs. Ganti Bahasa
+
+Berikut perbandingan apa yang terjadi di internal engine:
+
+#### Skenario 1: Halaman Pertama Kali Dibuka (Mount)
+1. **Render Phase**:
+   - `MakerConfirmationSearchCriteriaView` dipanggil.
+   - Dibuat 3 arrow functions (closures) di memori.
+   - Belum ada request network.
+2. **Commit Phase**:
+   - React menyelesaikan render DOM.
+3. **Passive Effect Phase (`useEffect`)**:
+   - Karena ini adalah **Mounting**, React mengecek dependency array `[]`. Karena ini render pertama, effect wajib dijalankan.
+   - Loop `req()` dijalankan ➔ Operator `()` dipanggil ➔ **Request HTTP #1 dikirim ke server**.
+   - Hasil diterima dan disimpan di React State: `setFormMappings(...)`.
+
+---
+
+#### Skenario 2: User Mengganti Bahasa (Re-render)
+1. **Trigger**:
+   - User mengklik tombol bahasa di header (`ID` ➔ `EN`).
+   - Hook `useTranslate` menerima event bahasa dan memanggil `setLang("en")`.
+2. **Render Phase (Re-render)**:
+   - React memanggil ulang `MakerConfirmationSearchCriteriaView()`.
+   - Interpreter membaca `requests: [ () => getMandateCategoryMappings(), ... ]`.
+   - 3 referensi arrow function baru dibuat di memori. **Tidak ada pemanggilan `()` ke Axios!**
+3. **Commit Phase**:
+   - React meng-update teks-teks DOM yang berubah.
+4. **Passive Effect Phase (`useEffect`)**:
+   - React mengevaluasi dependency array hook `useSearchFormMappings`:
+     ```javascript
+     // Algoritma internal React: Object.is() comparison
+     oldDeps = [];
+     newDeps = [];
+     // oldDeps.length === 0 && newDeps.length === 0 ==> TRUE (Sama/Tidak berubah)
+     ```
+   - Karena dependensinya `[]` dan sudah pernah berjalan saat mount, React Fiber **MEN-SKIP SELURUH BODY `useEffect`**.
+   - Baris `req()` **TIDAK PERNAH DIJALANKAN**.
+   - **Hasil Akhir:** **0 byte request ke jaringan**, dan opsi dropdown tetap menggunakan data yang sudah tersimpan di state memori komponen.
+
+---
+
+## Turn 1288: User
+
+ah i see keren banget penjelasan kamu, trus saya mau tanya lg
+karena kita balikin bahasa dari tembakan api, ko hasil filter api bisa tahu bahasa apa yang tepat yang harus di balikin meski kita ga pernah nembak ulang lg ya?
+
+---
+
+## Turn 1289: Assistant
+
+Ini pertanyaan yang sangat tajam dan menarik! 
+
+Jawabannya adalah: **Data di state memori sebenarnya TIDAK PERNAH BERUBAH. Yang berubah adalah "kacamata penerjemahnya" saat komponen me-render ulang (Render-Time Translation).**
+
+Frontend kita menggunakan konsep arsitektur yang disebut **Canonical Key Normalization** (atau pola *Batu Rosetta*). Mari kita bedah alurnya langkah demi langkah:
+
+---
+
+### 1. Ilusi di Balik State React
+
+Ketika API mapping pertama kali ditembak saat halaman dibuka dalam bahasa Mandarin, data yang diterima dari server dan disimpan di React State (`formMappings.batchType`) adalah:
+
+```javascript
+// State di memori React (HANYA DISIMPAN 1x DAN TIDAK PERNAH BERUBAH):
+[
+  { value: "1", label: "任务管理" },
+  { value: "2", label: "直接借记" }
+]
+```
+
+Ketika Anda mengganti bahasa ke **Bahasa Indonesia (`id`)**:
+- State di atas **TETAP** berisi teks Mandarin `"任务管理"`. Kita tidak pernah memodifikasi isi state tersebut dan tidak pernah menembak API lagi.
+- Lalu bagaimana UI bisa menampilkan **"Manajemen Mandat"**? Jawabannya ada pada fungsi filter kita di [components/local/filter-items/index.tsx](file:///C:/Work/qcash-ui-account-receivable/components/local/filter-items/index.tsx#L190-L213).
+
+---
+
+### 2. Konsep "Batu Rosetta" (`mapTranslate`)
+
+Masalah umum dari API backend adalah: **backend mengembalikan string teks display, bukan i18n key**. 
+Terkadang backend mengembalikan bahasa Inggris (`"Mandate Management"`), terkadang Indonesia (`"Manajemen Mandat"`), dan terkadang Mandarin (`"任务管理"`).
+
+Untuk mengatasi ini, kita membuat kamus normalisasi di [utils/map-translate.ts](file:///C:/Work/qcash-ui-account-receivable/utils/map-translate.ts#L120-L125):
+
+```typescript
+export const mapTranslate: Record<string, string> = {
+  // Semua varian bahasa dinormalisasi ke 1 CANONICAL KEY yang sama:
+  "Mandate Management": "module.mandateManagement",
+  "Manajemen Mandat":   "module.mandateManagement",
+  "授权管理":           "module.mandateManagement",
+  "任务管理":           "module.mandateManagement", // <-- String dari API Anda
+};
+```
+
+Apapun bahasa yang dikembalikan oleh backend, fungsi `getMappedTranslationKey()` akan menormalisasikannya menjadi satu kunci universal: **`module.mandateManagement`**.
+
+---
+
+### 3. Pipeline Translasi 2 Arah (The 2-Hop Translation Pipeline)
+
+Ketika Anda mengganti bahasa ke **Bahasa Indonesia (`id`)**:
+
+```
+[Raw String dari API di State]
+        "任务管理"
+            │
+            ▼  (Hop 1: Normalisasi via mapTranslate)
+   "module.mandateManagement"  <-- Kunci Kamus Universal
+            │
+            ▼  (Hop 2: Dictionary Lookup i18n untuk bahasa aktif "id")
+     "Manajemen Mandat"
+```
+
+Mari kita telusuri kodenya saat React me-render:
+
+#### Langkah 1: Hook `useTranslate` mendeteksi bahasa aktif
+Saat bahasa diganti ke `id`, `useTranslate` meng-update state bahasa aktif menjadi `"id"`. Ini memicu komponen filter me-render ulang.
+
+#### Langkah 2: Komponen me-render label opsi lewat fungsi `t()`
+Di [filter-items/index.tsx](file:///C:/Work/qcash-ui-account-receivable/components/local/filter-items/index.tsx#L190-L213):
+```tsx
+// options di dropdown:
+formatOptionLabel={(option) => t(option.label)} // option.label adalah "任务管理"
+
+// badge pill yang terpilih:
+value: t(foundBatchType.label)                   // foundBatchType.label adalah "任务管理"
+```
+
+#### Langkah 3: Eksekusi di dalam `t("任务管理")`
+1. Hook `t` memanggil `getMappedTranslationKey("任务管理")`.
+2. Hasilnya adalah canonical key: **`"module.mandateManagement"`**.
+3. Hook `t` lalu mencari key `"module.mandateManagement"` di kamus bahasa aktif:
+   - Jika bahasa aktif = **`id`** ➔ Kamus `id` mengembalikan: **`"Manajemen Mandat"`**.
+   - Jika bahasa aktif = **`en`** ➔ Kamus `en` mengembalikan: **`"Mandate Management"`**.
+   - Jika bahasa aktif = **`zh`** ➔ Kamus `zh` mengembalikan: **`"授权管理"`**.
+
+---
+
+### 4. Mengapa Pendekatan Ini Jauh Lebih Superior?
+
+| Parameter | Jika Refetch API Setiap Ganti Bahasa | Pendekatan In-Memory Normalization Kita |
+| :--- | :--- | :--- |
+| **Waktu Respon (Latency)** | 300 ms – 1000 ms (Tergantung koneksi jaringan server) | **< 0.1 ms** (Instan di memori CPU) |
+| **Beban Server / DB** | Berat (Server di-query ulang setiap user klik tombol bahasa) | **Nol** (Hanya 1x fetch di awal) |
+| **User Experience (UX)** | Dropdown berkedip (*loading spinner / flicker*) | Halus tanpa jeda (*seamless instant switch*) |
+| **Ketergantungan Jaringan** | Jika jaringan lag/putus saat ganti bahasa, filter kosong/error | Filter tetap aman dan berfungsi penuh |
+
+### Ringkasan
+Kita tidak perlu menembak API lagi karena **string mentah dari API (`"任务管理"`) hanya dijadikan sebagai "identitas/ID"**. Melalui `mapTranslate`, identitas tersebut dipetakan ke i18n key (`module.mandateManagement`), dan sistem i18n frontend yang bertugas merender teksnya sesuai bahasa aktif saat itu.
+
+---
+
+## Turn 1290: User
+
+i see, nice love this
+{
+    "error": false,
+    "code": 200,
+    "message": "Success get data",
+    "data": [
+        {
+            "id": "9500e2cd-5636-4262-bab3-b7079d0e3b73",
+            "fileId": "DDI_Report-20261113114223",
+            "reportType": "Direct Debit",
+            "fileName": "DDI_Report-20261113114223.csv",
+            "fileSize": "0",
+            "periodDate": "01/11/2026-13/11/2026",
+            "requestTime": "13/11/2026 11:42",
+            "status": "Success",
+            "companyName": "BYRON TESTING COMPANY MAU SEPANJANG APA NAMANYA YAAAAAA"
+        }
+    ],
+    "pagination": {
+        "limit": 10,
+        "page": 1,
+        "sort": "request_time",
+        "dir": "DESC",
+        "totalPages": "1",
+        "totalRows": "1",
+        "filter": ""
+    }
+}
+okay now take a look at this response return 
+https://internal-service.example.com/api/account-receivable/receivable-reports/list in the page https://internal-service.example.com/v2/account-receivable/receivable-reports
+as you can see, the return response there is a status of success, is it possible that we translate it as well?
+
+---
+
+## Turn 1291: Assistant
+
+<details><summary>🔧 Tool Invocations (1)</summary>
+
+- **run_command**: 
+
+</details>
+
+
+
+---
+
+## Turn 1292: Assistant
+
+<details><summary>🔧 Tool Invocations (1)</summary>
+
+- **run_command**: 
+
+</details>
+
+
+
+---
+
+## Turn 1293: Assistant
+
+<details><summary>🔧 Tool Invocations (1)</summary>
+
+- **read_file**: 
+
+</details>
+
+
+
+---
+
+## Turn 1294: Assistant
+
+<details><summary>🔧 Tool Invocations (1)</summary>
+
+- **read_file**: 
+
+</details>
+
+
+
+---
+
+## Turn 1295: Assistant
+
+<details><summary>🔧 Tool Invocations (1)</summary>
+
+- **run_command**: 
+
+</details>
+
+
+
+---
+
+## Turn 1296: Assistant
+
+<details><summary>🔧 Tool Invocations (1)</summary>
+
+- **read_file**: 
+
+</details>
+
+
+
+---
+
+## Turn 1297: Assistant
+
+<details><summary>🔧 Tool Invocations (1)</summary>
+
+- **run_command**: 
+
+</details>
+
+
+
+---
+
+## Turn 1298: Assistant
+
+<details><summary>🔧 Tool Invocations (1)</summary>
+
+- **read_file**: 
+
+</details>
+
+
+
+---
+
+## Turn 1299: Assistant
+
+<details><summary>🔧 Tool Invocations (1)</summary>
+
+- **run_command**: 
+
+</details>
+
+
+
+---
+
+## Turn 1300: Assistant
+
+<details><summary>🔧 Tool Invocations (1)</summary>
+
+- **run_command**: 
+
+</details>
+
+
+
+---
+
+## Turn 1301: Assistant
+
+<details><summary>🔧 Tool Invocations (1)</summary>
+
+- **run_command**: 
+
+</details>
+
+
+
+---
+
+## Turn 1302: Assistant
+
+<details><summary>🔧 Tool Invocations (1)</summary>
+
+- **run_command**: 
+
+</details>
+
+
+
+---
+
+## Turn 1303: Assistant
+
+<details><summary>🔧 Tool Invocations (1)</summary>
+
+- **run_command**: 
+
+</details>
+
+
+
+---
+
+## Turn 1304: Assistant
+
+<details><summary>🔧 Tool Invocations (1)</summary>
+
+- **run_command**: 
+
+</details>
+
+
+
+---
+
+## Turn 1305: Assistant
+
+<details><summary>🔧 Tool Invocations (1)</summary>
+
+- **run_command**: 
+
+</details>
+
+
+
+---
+
+## Turn 1306: Assistant
+
+<details><summary>🔧 Tool Invocations (1)</summary>
+
+- **read_file**: 
+
+</details>
+
+
+
+---
+
+## Turn 1307: Assistant
+
+<details><summary>🔧 Tool Invocations (1)</summary>
+
+- **read_file**: 
+
+</details>
+
+
+
+---
+
+## Turn 1308: Assistant
+
+<details><summary>🔧 Tool Invocations (1)</summary>
+
+- **run_command**: 
+
+</details>
+
+
+
+---
+
+## Turn 1309: Assistant
+
+<details><summary>🔧 Tool Invocations (1)</summary>
+
+- **read_file**: 
+
+</details>
+
+
+
+---
+
+## Turn 1310: Assistant
+
+<details><summary>🔧 Tool Invocations (1)</summary>
+
+- **run_command**: 
+
+</details>
+
+
+
+---
+
+## Turn 1311: Assistant
+
+<details><summary>🔧 Tool Invocations (1)</summary>
+
+- **read_file**: 
+
+</details>
+
+
+
+---
+
+## Turn 1312: Assistant
+
+<details><summary>🔧 Tool Invocations (1)</summary>
+
+- **edit_file**: 
+
+</details>
+
+
+
+---
+
+## Turn 1313: Assistant
+
+<details><summary>🔧 Tool Invocations (1)</summary>
+
+- **edit_file**: 
+
+</details>
+
+
+
+---
+
+## Turn 1314: Assistant
+
+<details><summary>🔧 Tool Invocations (1)</summary>
+
+- **read_file**: 
+
+</details>
+
+
+
+---
+
+## Turn 1315: Assistant
+
+<details><summary>🔧 Tool Invocations (1)</summary>
+
+- **edit_file**: 
+
+</details>
+
+
+
+---
+
+## Turn 1316: Assistant
+
+<details><summary>🔧 Tool Invocations (1)</summary>
+
+- **run_command**: 
+
+</details>
+
+
+
+---
+
+## Turn 1317: Assistant
+
+<details><summary>🔧 Tool Invocations (1)</summary>
+
+- **manage_task**: 
+
+</details>
+
+
+
+---
+
+## Turn 1318: Assistant
+
+<details><summary>🔧 Tool Invocations (1)</summary>
+
+- **manage_task**: 
+
+</details>
+
+
+
+---
+
+## Turn 1319: Assistant
+
+<details><summary>🔧 Tool Invocations (1)</summary>
+
+- **manage_task**: 
+
+</details>
+
+
+
+---
+
+## Turn 1320: Assistant
+
+<details><summary>🔧 Tool Invocations (1)</summary>
+
+- **manage_task**: 
+
+</details>
+
+
+
+---
+
+## Turn 1321: Assistant
+
+<details><summary>🔧 Tool Invocations (1)</summary>
+
+- **manage_task**: 
+
+</details>
+
+
+
+---
+
+## Turn 1322: Assistant
+
+<details><summary>🔧 Tool Invocations (1)</summary>
+
+- **manage_task**: 
+
+</details>
+
+
+
+---
+
+## Turn 1323: Assistant
+
+<details><summary>🔧 Tool Invocations (1)</summary>
+
+- **manage_task**: 
+
+</details>
+
+
+
+---
+
+## Turn 1324: Assistant
+
+<details><summary>🔧 Tool Invocations (1)</summary>
+
+- **manage_task**: 
+
+</details>
+
+
+
+---
+
+## Turn 1325: Assistant
+
+<details><summary>🔧 Tool Invocations (1)</summary>
+
+- **run_command**: 
+
+</details>
+
+
+
+---
+
+## Turn 1326: Assistant
+
+<details><summary>🔧 Tool Invocations (1)</summary>
+
+- **manage_task**: 
+
+</details>
+
+
+
+---
+
+## Turn 1327: Assistant
+
+<details><summary>🔧 Tool Invocations (1)</summary>
+
+- **manage_task**: 
+
+</details>
+
+
+
+---
+
+## Turn 1328: Assistant
+
+<details><summary>🔧 Tool Invocations (1)</summary>
+
+- **manage_task**: 
+
+</details>
+
+
+
+---
+
+## Turn 1329: Assistant
+
+<details><summary>🔧 Tool Invocations (1)</summary>
+
+- **manage_task**: 
+
+</details>
+
+
+
+---
+
+## Turn 1330: Assistant
+
+<details><summary>🔧 Tool Invocations (1)</summary>
+
+- **manage_task**: 
+
+</details>
+
+
+
+---
+
+## Turn 1331: Assistant
+
+<details><summary>🔧 Tool Invocations (1)</summary>
+
+- **manage_task**: 
+
+</details>
+
+
+
+---
+
+## Turn 1332: Assistant
+
+<details><summary>🔧 Tool Invocations (1)</summary>
+
+- **manage_task**: 
+
+</details>
+
+
+
+---
+
+## Turn 1333: Assistant
+
+<details><summary>🔧 Tool Invocations (1)</summary>
+
+- **manage_task**: 
+
+</details>
+
+
+
+---
+
+## Turn 1334: Assistant
+
+<details><summary>🔧 Tool Invocations (1)</summary>
+
+- **manage_task**: 
+
+</details>
+
+
+
+---
+
+## Turn 1335: Assistant
+
+<details><summary>🔧 Tool Invocations (1)</summary>
+
+- **run_command**: 
+
+</details>
+
+
+
+---
+
+## Turn 1336: Assistant
+
+<details><summary>🔧 Tool Invocations (1)</summary>
+
+- **manage_task**: 
+
+</details>
+
+
+
+---
+
+## Turn 1337: Assistant
+
+<details><summary>🔧 Tool Invocations (1)</summary>
+
+- **read_file**: 
+
+</details>
+
+
+
+---
+
+## Turn 1338: Assistant
+
+<details><summary>🔧 Tool Invocations (1)</summary>
+
+- **run_command**: 
+
+</details>
+
+
+
+---
+
+## Turn 1339: Assistant
+
+<details><summary>🔧 Tool Invocations (1)</summary>
+
+- **manage_task**: 
+
+</details>
+
+
+
+---
+
+## Turn 1340: Assistant
+
+<details><summary>🔧 Tool Invocations (1)</summary>
+
+- **run_command**: 
+
+</details>
+
+
+
+---
+
+## Turn 1341: Assistant
+
+<details><summary>🔧 Tool Invocations (1)</summary>
+
+- **run_command**: 
+
+</details>
+
+
+
+---
+
+## Turn 1342: Assistant
+
+<details><summary>🔧 Tool Invocations (1)</summary>
+
+- **run_command**: 
+
+</details>
+
+
+
+---
+
+## Turn 1343: Assistant
+
+<details><summary>🔧 Tool Invocations (1)</summary>
+
+- **run_command**: 
+
+</details>
+
+
+
+---
+
+## Turn 1344: Assistant
+
+<details><summary>🔧 Tool Invocations (1)</summary>
+
+- **run_command**: 
+
+</details>
+
+
+
+---
+
+## Turn 1345: Assistant
+
+**Bisa banget!**
+
+Penyebab sebelumnya status `"Success"` tidak diterjemahkan di halaman [receivable-reports](file:///C:/Work/qcash-ui-account-receivable/containers/receivable-reports/table.tsx#L115-L121) adalah karena nilai status di-pass langsung dari API tanpa melalui fungsi translasi:
+
+```tsx
+// ❌ SEBELUM (containers/receivable-reports/table.tsx):
+Cell: ({ row }: any) => (
+  <div className="rcv-text-center">
+    <StatusBadge
+      variant={getStatusBadgeVariant(row.original.status)}
+      value={row.original.status} // <-- Nilai mentah "Success" langsung ditampilkan
+    />
+  </div>
+),
+```
+
+---
+
+### Perubahan yang Diterapkan
+
+Di [containers/receivable-reports/table.tsx](file:///C:/Work/qcash-ui-account-receivable/containers/receivable-reports/table.tsx#L115-L121), kita bungkus nilainya menggunakan helper [translateStatus](file:///C:/Work/qcash-ui-account-receivable/utils/get-status-translation-key.ts#L25-L31):
+
+```tsx
+// ✅ SESUDAH:
+import { ..., translateStatus } from "@/utils";
+
+// ...
+Cell: ({ row }: any) => (
+  <div className="rcv-text-center">
+    <StatusBadge
+      variant={getStatusBadgeVariant(row.original.status)} // Varian warna tetap dihitung dari string asli (hijau/merah/kuning)
+      value={translateStatus(row.original.status, t)}      // Label teks diterjemahkan otomatis
+    />
+  </div>
+),
+```
+
+---
+
+### Hasil Tampilan di UI
+
+Ketika API mengembalikan `"status": "Success"`:
+* **Bahasa Indonesia (`id`)**: Menampilkan **`Berhasil`** (Badge Hijau)
+* **Bahasa Inggris (`en`)**: Menampilkan **`Success`** (Badge Hijau)
+* **Bahasa Mandarin (`zh`)**: Menampilkan **`成功`** (Badge Hijau)
+
+Hal yang sama juga berlaku jika statusnya `"Failed"` (menjadi **Gagal** / **失败**) atau status lainnya yang terdaftar di `STATUS_TRANSLATION_MAP`.
+
+---
+
+## Turn 1346: User
+
+nice, make commit please
+
+---
+
+## Turn 1347: Assistant
+
+<details><summary>🔧 Tool Invocations (1)</summary>
+
+- **read_file**: 
+
+</details>
+
+
+
+---
+
+## Turn 1348: Assistant
+
+<details><summary>🔧 Tool Invocations (1)</summary>
+
+- **run_command**: 
+
+</details>
+
+
+
+---
+
+## Turn 1349: Assistant
+
+<details><summary>🔧 Tool Invocations (1)</summary>
+
+- **run_command**: 
+
+</details>
+
+
+
+---
+
+## Turn 1350: Assistant
+
+<details><summary>🔧 Tool Invocations (1)</summary>
+
+- **run_command**: 
+
+</details>
+
+
+
+---
+
+## Turn 1351: Assistant
+
+<details><summary>🔧 Tool Invocations (1)</summary>
+
+- **run_command**: 
+
+</details>
+
+
+
+---
+
+## Turn 1352: Assistant
+
+<details><summary>🔧 Tool Invocations (1)</summary>
+
+- **manage_task**: 
+
+</details>
+
+
+
+---
+
+## Turn 1353: Assistant
+
+<details><summary>🔧 Tool Invocations (1)</summary>
+
+- **manage_task**: 
+
+</details>
+
+
+
+---
+
+## Turn 1354: Assistant
+
+<details><summary>🔧 Tool Invocations (1)</summary>
+
+- **run_command**: 
+
+</details>
+
+
+
+---
+
+## Turn 1355: Assistant
+
+<details><summary>🔧 Tool Invocations (1)</summary>
+
+- **run_command**: 
+
+</details>
+
+
+
+---
+
+## Turn 1356: Assistant
+
+<details><summary>🔧 Tool Invocations (1)</summary>
+
+- **run_command**: 
+
+</details>
+
+
+
+---
+
+## Turn 1357: Assistant
+
+<details><summary>🔧 Tool Invocations (1)</summary>
+
+- **manage_task**: 
+
+</details>
+
+
+
+---
+
+## Turn 1358: Assistant
+
+<details><summary>🔧 Tool Invocations (1)</summary>
+
+- **manage_task**: 
+
+</details>
+
+
+
+---
+
+## Turn 1359: Assistant
+
+<details><summary>🔧 Tool Invocations (1)</summary>
+
+- **manage_task**: 
+
+</details>
+
+
+
+---
+
+## Turn 1360: Assistant
+
+<details><summary>🔧 Tool Invocations (1)</summary>
+
+- **manage_task**: 
+
+</details>
+
+
+
+---
+
+## Turn 1361: Assistant
+
+<details><summary>🔧 Tool Invocations (1)</summary>
+
+- **manage_task**: 
+
+</details>
+
+
+
+---
+
+## Turn 1362: Assistant
+
+<details><summary>🔧 Tool Invocations (1)</summary>
+
+- **manage_task**: 
+
+</details>
+
+
+
+---
+
+## Turn 1363: Assistant
+
+<details><summary>🔧 Tool Invocations (1)</summary>
+
+- **manage_task**: 
+
+</details>
+
+
+
+---
+
+## Turn 1364: Assistant
+
+<details><summary>🔧 Tool Invocations (1)</summary>
+
+- **manage_task**: 
+
+</details>
+
+
+
+---
+
+## Turn 1365: Assistant
+
+<details><summary>🔧 Tool Invocations (1)</summary>
+
+- **manage_task**: 
+
+</details>
+
+
+
+---
+
+## Turn 1366: Assistant
+
+<details><summary>🔧 Tool Invocations (1)</summary>
+
+- **manage_task**: 
+
+</details>
+
+
+
+---
+
+## Turn 1367: Assistant
+
+<details><summary>🔧 Tool Invocations (1)</summary>
+
+- **manage_task**: 
+
+</details>
+
+
+
+---
+
+## Turn 1368: Assistant
+
+<details><summary>🔧 Tool Invocations (1)</summary>
+
+- **manage_task**: 
+
+</details>
+
+
+
+---
+
+## Turn 1369: Assistant
+
+<details><summary>🔧 Tool Invocations (1)</summary>
+
+- **manage_task**: 
+
+</details>
+
+
+
+---
+
+## Turn 1370: Assistant
+
+<details><summary>🔧 Tool Invocations (1)</summary>
+
+- **manage_task**: 
+
+</details>
+
+
+
+---
+
+## Turn 1371: Assistant
+
+<details><summary>🔧 Tool Invocations (1)</summary>
+
+- **run_command**: 
+
+</details>
+
+
+
+---
+
+## Turn 1372: Assistant
+
+<details><summary>🔧 Tool Invocations (1)</summary>
+
+- **run_command**: 
+
+</details>
+
+
+
+---
+
+## Turn 1373: Assistant
+
+<details><summary>🔧 Tool Invocations (1)</summary>
+
+- **read_file**: 
+
+</details>
+
+
+
+---
+
+## Turn 1374: Assistant
+
+<details><summary>🔧 Tool Invocations (1)</summary>
+
+- **run_command**: 
+
+</details>
+
+
+
+---
+
+## Turn 1375: Assistant
+
+<details><summary>🔧 Tool Invocations (1)</summary>
+
+- **manage_task**: 
+
+</details>
+
+
+
+---
+
+## Turn 1376: Assistant
+
+<details><summary>🔧 Tool Invocations (1)</summary>
+
+- **manage_task**: 
+
+</details>
+
+
+
+---
+
+## Turn 1377: Assistant
+
+<details><summary>🔧 Tool Invocations (1)</summary>
+
+- **run_command**: 
+
+</details>
+
+
+
+---
+
+## Turn 1378: Assistant
+
+<details><summary>🔧 Tool Invocations (1)</summary>
+
+- **run_command**: 
+
+</details>
+
+
+
+---
+
+## Turn 1379: Assistant
+
+Nah, ini dia **akar penyebabnya**! Dari hasil query SQL di DBeaver pada screenshot tersebut, terlihat jelas penyebab kenapa di bahasa Indonesia nilainya tetap bahasa Inggris:
+
+---
+
+### 1. Analisis Temuan di Database (`qcash_language`)
+
+Perhatikan baris 1 dan 2 pada hasil query:
+* **`module_id: 1` (`common`) | `key: module.mandateManagement` (`key_id: 35409`)**:
+  * `language_code: en` $\rightarrow$ `Mandate Management`
+  * `language_code: id` $\rightarrow$ **`Mandate Management`** ⚠️ *(bukan "Manajemen Mandat")*
+* Hal yang sama juga terjadi pada menu dan breadcrumb header-footer:
+  * `navigation.breadcrumb.accountReceivable...` (`key_id: 5732`): `id` bernilai `"Mandate Management"`
+  * `navigation.menu.Mandate Management...` (`key_id: 3991`): `id` bernilai `"Mandate Management"`
+
+> **Kesimpulan:** Saat data bahasa dimasukkan ke database backend (`qcash_language.language_values`), translation value untuk bahasa Indonesia (`id`) **tidak diterjemahkan**, melainkan di-copy/paste sama persis dengan bahasa Inggris (`"Mandate Management"`).
+
+---
+
+### 2. Hubungannya dengan Frontend MFE
+
+* Di frontend lokal fallback ([public/locales/id/common.json](file:///C:/Work/qcash-ui-account-receivable/public/locales/id/common.json#L8)), teksnya sebenarnya sudah benar:
+  ```json
+  "mandateManagement": "Manajemen Mandat"
+  ```
+* Namun, saat aplikasi berjalan di browser pada environment **DEV**, QCash memuat dictionary terjemahan dari API/database `qcash_language`.
+* Ketika user memilih bahasa **ID**, sistem memanggil `t("module.mandateManagement")`. Karena kamus dari database mengembalikan `"Mandate Management"`, maka teks itulah yang tampil di layar.
+
+---
+
+### 3. Kenapa Mandarin (`zh`) Tidak Muncul di Tabel Query?
+
+Pada query DBeaver:
+```sql
+WHERE lv.value ILIKE 'Mandate Management'
+```
+Karena klausul `WHERE` memfilter teks yang bernilai `'Mandate Management'`, baris untuk bahasa Mandarin (`zh`) otomatis terfilter (karena nilainya adalah karakter Hanzi seperti `'任务管理'` atau `'授权管理'`).
+
+Jika dicek berdasarkan `key_id`:
+```sql
+SELECT * FROM qcash_language.language_values WHERE language_key_id = 35409;
+```
+Akan terlihat 3 baris: `id` (1), `en` (2), dan `zh` (3).
+
+---
+
+### 4. Rekomendasi Solusi
+
+Sama seperti kasus `module.rcvOnUs` sebelumnya yang isinya tertukar, untuk kasus ini solusinya adalah **mengupdate value pada database**:
+
+```sql
+UPDATE qcash_language.language_values
+SET value = 'Manajemen Mandat'
+WHERE language_key_id = 35409 
+  AND language_id = (SELECT id FROM qcash_language.languages WHERE code = 'id');
+```
+*(Opsional: Jika breadcrumb & menu header-footer juga ingin diselaraskan ke bahasa Indonesia, bisa sekalian update `language_key_id` `5732` dan `3991`)*.
 
 ---
 
